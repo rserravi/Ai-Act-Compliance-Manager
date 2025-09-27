@@ -1,6 +1,8 @@
 from datetime import datetime
 from uuid import uuid4
 
+from typing import Optional
+
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,7 +27,8 @@ class UserModel(Base):
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    contact: Mapped["ContactPreferenceModel" | None] = relationship(
+    contact: Mapped[Optional["ContactPreferenceModel"]] = relationship(
+
         "ContactPreferenceModel",
         back_populates="user",
         uselist=False,
