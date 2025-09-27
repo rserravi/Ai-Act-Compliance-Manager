@@ -11,11 +11,18 @@ import ProjectsWizardView from './pages/Projects/ProjectsWizard.view'
 import OrgRolesView from './pages/OrgRoles/OrgRoles.view'
 import AuditEvidencesView from './pages/AuditEvidences/AuditEvidences.view'
 import SettingsView from './pages/Settings/Settings.view'
+import AuthLayout from './pages/Auth/AuthLayout.view'
+import LoginView from './pages/Auth/Login.view'
+import SignInView from './pages/Auth/SignIn.view'
 
 export default function App() {
   return (
-    <AppShell>
-      <Routes>
+    <Routes>
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginView />} />
+        <Route path="/sign-in" element={<SignInView />} />
+      </Route>
+      <Route element={<AppShell />}>
         <Route path="/" element={<DashboardView />} />
         <Route path="/projects" element={<ProjectsView />} />
         <Route path="/projects/new" element={<ProjectsWizardView />} />
@@ -27,7 +34,7 @@ export default function App() {
         <Route path="/systems/:id" element={<SystemDetailView />} />
         <Route path="/incidents" element={<IncidentsView />} />
         <Route path="/settings" element={<SettingsView />} />
-      </Routes>
-    </AppShell>
+      </Route>
+    </Routes>
   )
 }

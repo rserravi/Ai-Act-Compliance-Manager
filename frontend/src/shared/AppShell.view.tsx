@@ -24,7 +24,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import { alpha, useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { supportedLanguages, type SupportedLanguage } from './i18n'
 import { useProjectContext } from './project-context'
 
@@ -44,7 +44,7 @@ const userProfile = {
   initials: 'RS'
 }
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
+export default function AppShell() {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const location = useLocation()
@@ -205,7 +205,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </Box>
       <Box component="main" sx={{ flexGrow: 1 }}>
         <Toolbar />
-        <Container maxWidth="lg" sx={{ py: 3 }}>{children}</Container>
+        <Container maxWidth="lg" sx={{ py: 3 }}>
+          <Outlet />
+        </Container>
       </Box>
     </Box>
   )
