@@ -28,7 +28,6 @@ class UserModel(Base):
     )
 
     contact: Mapped[Optional["ContactPreferenceModel"]] = relationship(
-
         "ContactPreferenceModel",
         back_populates="user",
         uselist=False,
