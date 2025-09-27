@@ -13,6 +13,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
+load_dotenv()
+
 from backend.database import SessionLocal, get_db, init_db
 from backend.services.email_service import send_registration_code_email, send_welcome_email
 from backend.repositories.pending_user_repository import (
@@ -69,8 +71,6 @@ from backend.schemas import (
     User,
     UserPreferences,
 )
-
-load_dotenv()
 
 app = FastAPI(title="AI Act Compliance Manager API", version="0.1.0")
 
