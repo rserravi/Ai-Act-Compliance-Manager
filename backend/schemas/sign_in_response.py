@@ -1,8 +1,9 @@
-from pydantic import BaseModel
+from datetime import datetime
 
-from .user import User
+from pydantic import BaseModel
 
 
 class SignInResponse(BaseModel):
-    user: User
+    registration_id: str
     message: str
+    expires_at: datetime
