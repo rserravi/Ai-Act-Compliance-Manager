@@ -57,8 +57,18 @@ def create_user(
     avatar: Optional[str],
     contact: ContactPreference,
     password: Optional[str] = None,
+    password_hash: Optional[str] = None,
     preferences: Optional[UserPreferences] = None,
 ) -> UserModel:
+    if password and password_hash:
+        raise ValueError("Provide either password or password_hash, not both")
+
+    if password_hash is not None:
+        hashed_password = password_hash
+    elif password is not None:
+        hashed_password = hash_password(password)
+    else:
+        hashed_password = None
     normalized_email = email.lower()
     user_model = UserModel(
         id=user_id,
@@ -66,7 +76,7 @@ def create_user(
         full_name=full_name,
         email=normalized_email,
         avatar=avatar,
-        password_hash=hash_password(password) if password else None,
+        password_hash=hashed_password,
         preferences_language=preferences.language if preferences else None,
     )
 

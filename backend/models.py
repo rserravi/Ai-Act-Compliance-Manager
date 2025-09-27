@@ -53,3 +53,31 @@ class ContactPreferenceModel(Base):
     )
 
     user: Mapped[UserModel] = relationship("UserModel", back_populates="contact")
+
+
+class PendingUserRegistrationModel(Base):
+    __tablename__ = "pending_user_registrations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    user_id: Mapped[str] = mapped_column(String(36), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    company: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    contact_method: Mapped[str] = mapped_column(String(50), nullable=False)
+    contact_value_encrypted: Mapped[str] = mapped_column(String(1024), nullable=False)
+    contact_workspace_encrypted: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    contact_channel_encrypted: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    preferences_language: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    verification_code: Mapped[str] = mapped_column(String(32), nullable=False)
+    code_sent_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
+    code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )

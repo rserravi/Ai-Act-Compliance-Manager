@@ -22,6 +22,9 @@ from .risk_wizard_config import RiskWizardConfig
 from .settings import Settings
 from .sign_in_payload import SignInPayload
 from .sign_in_response import SignInResponse
+from .sign_in_verification_payload import SignInVerificationPayload
+from .sign_in_verification_resend_payload import SignInVerificationResendPayload
+from .sign_in_verification_response import SignInVerificationResponse
 from .sso_login_payload import SSOLoginPayload
 from .task import Task
 from .task_update import TaskUpdate
@@ -56,6 +59,9 @@ __all__ = [
     "Settings",
     "SignInPayload",
     "SignInResponse",
+    "SignInVerificationPayload",
+    "SignInVerificationResendPayload",
+    "SignInVerificationResponse",
     "SSOLoginPayload",
     "Task",
     "TaskUpdate",

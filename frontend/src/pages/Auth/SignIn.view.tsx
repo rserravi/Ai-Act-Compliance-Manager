@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
   Avatar,
@@ -14,10 +14,10 @@ import {
   ToggleButtonGroup,
   Typography
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { signIn } from '../../services/auth'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
+import { useAuth } from '../../shared/auth-context'
 
 type ContactMethod = 'email' | 'sms' | 'whatsapp' | 'slack'
 
@@ -34,6 +34,8 @@ function fileToBase64(file: File): Promise<string> {
 
 export default function SignInView() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { register: registerUser, verifyRegistration, resendRegistrationCode, isAuthenticating } = useAuth()
   const [fullName, setFullName] = useState('')
   const [company, setCompany] = useState('')
   const [email, setEmail] = useState('')
@@ -45,9 +47,16 @@ export default function SignInView() {
   const [avatarData, setAvatarData] = useState<string | null>(null)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [registration, setRegistration] = useState<{
+    id: string
+    expiresAt: string
+    email: string
+  } | null>(null)
+  const [verificationCode, setVerificationCode] = useState('')
+  const [activeAction, setActiveAction] = useState<'register' | 'verify' | 'resend' | null>(null)
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const browserLanguage = useMemo(
     () => (typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en'),
     []
@@ -93,11 +102,19 @@ export default function SignInView() {
     }
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) {
+        clearTimeout(redirectTimer.current)
+      }
+    }
+  }, [])
+
+  const handleRegisterSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setLoading(true)
     setError(null)
     setSuccess(null)
+    setActiveAction('register')
 
     try {
       const contact = {
@@ -107,22 +124,72 @@ export default function SignInView() {
         channel: contactMethod === 'slack' ? slackChannel.trim() || undefined : undefined
       }
 
-      const response = await signIn({
+      const trimmedEmail = email.trim()
+
+      const response = await registerUser({
         full_name: fullName.trim(),
         company: company.trim(),
-        email: email.trim(),
+        email: trimmedEmail,
         contact,
         avatar: avatarData ?? undefined,
         password,
         preferences: { language: browserLanguage }
       })
 
-      setSuccess(response.message ?? t('auth.feedback.signUpSuccess', { name: response.user.full_name }))
+      setRegistration({ id: response.registration_id, expiresAt: response.expires_at, email: trimmedEmail })
+      setVerificationCode('')
+      setSuccess(t('auth.feedback.signUpVerificationSent', { email: trimmedEmail }))
     } catch (err) {
       console.error(err)
       setError(t('auth.feedback.signUpError'))
     } finally {
-      setLoading(false)
+      setActiveAction(null)
+    }
+  }
+
+  const handleVerificationSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!registration) return
+
+    setError(null)
+    setSuccess(null)
+    setActiveAction('verify')
+
+    try {
+      const response = await verifyRegistration({
+        registration_id: registration.id,
+        code: verificationCode.trim()
+      })
+
+      setSuccess(response.message ?? t('auth.feedback.signUpVerified'))
+      redirectTimer.current = setTimeout(() => {
+        navigate('/', { replace: true })
+      }, 1000)
+    } catch (err) {
+      console.error(err)
+      setError(t('auth.feedback.signUpVerificationError'))
+    } finally {
+      setActiveAction(null)
+    }
+  }
+
+  const handleResendCode = async () => {
+    if (!registration) return
+
+    setError(null)
+    setSuccess(null)
+    setActiveAction('resend')
+
+    try {
+      const response = await resendRegistrationCode({ registration_id: registration.id })
+      setRegistration(prev => (prev ? { ...prev, expiresAt: response.expires_at } : prev))
+      setVerificationCode('')
+      setSuccess(t('auth.feedback.signUpVerificationResent', { email: registration.email }))
+    } catch (err) {
+      console.error(err)
+      setError(t('auth.feedback.signUpVerificationError'))
+    } finally {
+      setActiveAction(null)
     }
   }
 
@@ -135,9 +202,66 @@ export default function SignInView() {
       ? slackWorkspace.trim().length > 0 && slackChannel.trim().length > 0
       : contactValue.trim().length > 0)
 
+  const registering = isAuthenticating && activeAction === 'register'
+  const verifying = isAuthenticating && activeAction === 'verify'
+  const resending = isAuthenticating && activeAction === 'resend'
+
+  if (registration) {
+    return (
+      <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
+        <Stack spacing={3} component="form" onSubmit={handleVerificationSubmit}>
+          <Stack spacing={0.5}>
+            <Typography variant="h4" fontWeight={600}>
+              {t('auth.signup.verificationTitle')}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t('auth.signup.verificationSubtitle', { email: registration.email })}
+            </Typography>
+          </Stack>
+
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
+
+          <TextField
+            label={t('auth.signup.verificationCodeLabel')}
+            value={verificationCode}
+            onChange={(event) => setVerificationCode(event.target.value.toUpperCase())}
+            inputProps={{ maxLength: 8, style: { letterSpacing: '0.3em', textTransform: 'uppercase' } }}
+            required
+            fullWidth
+          />
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={verifying || verificationCode.trim().length !== 8}
+            >
+              {t('auth.signup.verifyButton')}
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              size="large"
+              onClick={handleResendCode}
+              disabled={resending}
+            >
+              {t('auth.signup.resendButton')}
+            </Button>
+          </Stack>
+
+          <Typography variant="body2" textAlign="center" color="text.secondary">
+            {t('auth.signup.resendHelp')}
+          </Typography>
+        </Stack>
+      </Paper>
+    )
+  }
+
   return (
     <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
-      <Stack spacing={3} component="form" onSubmit={handleSubmit}>
+      <Stack spacing={3} component="form" onSubmit={handleRegisterSubmit}>
         <Stack spacing={0.5}>
           <Typography variant="h4" fontWeight={600}>
             {t('auth.signup.title')}
@@ -268,7 +392,7 @@ export default function SignInView() {
           </Stack>
         </Stack>
 
-        <Button type="submit" variant="contained" size="large" disabled={loading || !isFormValid}>
+        <Button type="submit" variant="contained" size="large" disabled={registering || !isFormValid}>
           {t('auth.signup.submit')}
         </Button>
 

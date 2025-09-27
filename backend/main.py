@@ -1,16 +1,27 @@
 import os
+import secrets
+import string
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from backend.database import SessionLocal, get_db, init_db
+from backend.services.email_service import send_registration_code_email, send_welcome_email
+from backend.repositories.pending_user_repository import (
+    delete_pending_registration,
+    get_pending_registration_by_id,
+    pending_contact_to_schema,
+    pending_preferences_to_schema,
+    refresh_verification_code,
+    upsert_pending_registration,
+)
 from backend.repositories.user_repository import (
     create_user,
     get_user_by_id,
@@ -45,6 +56,9 @@ from backend.schemas import (
     Settings,
     SignInPayload,
     SignInResponse,
+    SignInVerificationPayload,
+    SignInVerificationResponse,
+    SignInVerificationResendPayload,
     SSOLoginPayload,
     Task,
     TaskUpdate,
@@ -62,6 +76,7 @@ app = FastAPI(title="AI Act Compliance Manager API", version="0.1.0")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-key")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+VERIFICATION_CODE_TTL_MINUTES = int(os.getenv("SIGN_IN_CODE_TTL_MINUTES", "15"))
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -81,6 +96,11 @@ def _decode_token(token: str) -> Dict[str, Any]:
         return payload
     except JWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials") from exc
+
+
+def _generate_verification_code(length: int = 8) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 def get_current_user(
@@ -239,32 +259,99 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
 
 
 @app.post("/auth/sign-in", response_model=SignInResponse)
-def sign_in(payload: SignInPayload, db: Session = Depends(get_db)):
+def sign_in(
+    payload: SignInPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     email = payload.email.lower()
     existing = get_user_model_by_email(db, email)
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    company = payload.company.strip() if payload.company.strip() else None
-    if company is None:
-        company = _infer_company_from_email(payload.email)
-    user_id = str(uuid4())
+    payload.email = email
+    code = _generate_verification_code()
+    expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
+    pending = upsert_pending_registration(db, payload, code, expires_at)
 
+    background_tasks.add_task(send_registration_code_email, pending.email, code)
+
+    message = "Verification code sent to your email."
+    return SignInResponse(
+        registration_id=pending.id,
+        message=message,
+        expires_at=pending.code_expires_at,
+    )
+
+
+@app.post("/auth/sign-in/verify", response_model=SignInVerificationResponse)
+def verify_sign_in(
+    payload: SignInVerificationPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    pending = get_pending_registration_by_id(db, payload.registration_id)
+    if pending is None:
+        raise HTTPException(status_code=404, detail="Registration not found")
+
+    if pending.code_expires_at < datetime.utcnow():
+        delete_pending_registration(db, pending)
+        raise HTTPException(status_code=400, detail="Verification code expired")
+
+    provided_code = payload.code.strip().upper()
+    if pending.verification_code.upper() != provided_code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+
+    if get_user_model_by_email(db, pending.email):
+        delete_pending_registration(db, pending)
+        raise HTTPException(status_code=400, detail="User already verified")
+
+    contact = pending_contact_to_schema(pending)
+    preferences = pending_preferences_to_schema(pending)
     user_model = create_user(
         db,
-        user_id=user_id,
-        company=company,
-        full_name=payload.full_name,
-        email=payload.email,
-        avatar=payload.avatar,
-        contact=payload.contact,
-        password=payload.password,
-        preferences=payload.preferences,
+        user_id=pending.user_id,
+        company=pending.company,
+        full_name=pending.full_name,
+        email=pending.email,
+        avatar=pending.avatar,
+        contact=contact,
+        password_hash=pending.password_hash,
+        preferences=preferences,
     )
 
     user = model_to_schema(user_model)
-    message = "User registered successfully."
-    return SignInResponse(user=user, message=message)
+    token = _create_access_token(user)
+
+    delete_pending_registration(db, pending)
+    background_tasks.add_task(send_welcome_email, user.email, user.full_name)
+
+    message = "Registration verified successfully."
+    return SignInVerificationResponse(token=token, user=user, message=message)
+
+
+@app.post("/auth/sign-in/resend", response_model=SignInResponse)
+def resend_sign_in_code(
+    payload: SignInVerificationResendPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    pending = get_pending_registration_by_id(db, payload.registration_id)
+    if pending is None:
+        raise HTTPException(status_code=404, detail="Registration not found")
+
+    code = _generate_verification_code()
+    expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
+    pending = refresh_verification_code(db, pending, code, expires_at)
+
+    background_tasks.add_task(send_registration_code_email, pending.email, code)
+
+    message = "A new verification code has been sent."
+    return SignInResponse(
+        registration_id=pending.id,
+        message=message,
+        expires_at=pending.code_expires_at,
+    )
 
 
 # ---------------------------------------------------------------------------

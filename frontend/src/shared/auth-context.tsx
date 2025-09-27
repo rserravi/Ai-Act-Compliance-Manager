@@ -5,9 +5,19 @@ import type {
   SSOLoginPayload,
   SignInPayload,
   SignInResponse,
+  SignInVerificationPayload,
+  SignInVerificationResendPayload,
+  SignInVerificationResponse,
   User
 } from '../services/auth'
-import { fetchCurrentUser, login, loginWithSSO, signIn } from '../services/auth'
+import {
+  fetchCurrentUser,
+  login,
+  loginWithSSO,
+  resendSignInCode,
+  signIn,
+  verifySignIn
+} from '../services/auth'
 import { clearStoredAuth, readStoredAuth, storeAuthState } from './auth-storage'
 
 interface AuthContextValue {
@@ -18,6 +28,8 @@ interface AuthContextValue {
   loginWithPassword: (payload: LoginPayload) => Promise<LoginResponse>
   loginWithSso: (payload: SSOLoginPayload) => Promise<LoginResponse>
   register: (payload: SignInPayload) => Promise<SignInResponse>
+  verifyRegistration: (payload: SignInVerificationPayload) => Promise<SignInVerificationResponse>
+  resendRegistrationCode: (payload: SignInVerificationResendPayload) => Promise<SignInResponse>
   logout: () => void
 }
 
@@ -112,6 +124,23 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
     [runAuthAction]
   )
 
+  const verifyRegistration = useCallback(
+    async (payload: SignInVerificationPayload) =>
+      runAuthAction(async () => {
+        const response = await verifySignIn(payload)
+        setToken(response.token)
+        setUser(response.user)
+        return response
+      }),
+    [runAuthAction]
+  )
+
+  const resendRegistrationCode = useCallback(
+    async (payload: SignInVerificationResendPayload) =>
+      runAuthAction(() => resendSignInCode(payload)),
+    [runAuthAction]
+  )
+
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)
@@ -127,9 +156,22 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       loginWithPassword,
       loginWithSso,
       register,
+      verifyRegistration,
+      resendRegistrationCode,
       logout
     }),
-    [isAuthenticating, isRestoringSession, loginWithPassword, loginWithSso, logout, register, token, user]
+    [
+      isAuthenticating,
+      isRestoringSession,
+      loginWithPassword,
+      loginWithSso,
+      logout,
+      register,
+      resendRegistrationCode,
+      token,
+      user,
+      verifyRegistration
+    ]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -70,7 +70,13 @@ const resources = {
           changeAvatar: "Cambiar avatar",
           submit: "Registrarme",
           hasAccount: "¿Ya tienes cuenta?",
-          goToLogin: "Volver al login"
+          goToLogin: "Volver al login",
+          verificationTitle: "Verifica tu cuenta",
+          verificationSubtitle: "Hemos enviado un código de verificación a {{email}}. Introdúcelo para completar el registro.",
+          verificationCodeLabel: "Código de verificación",
+          verifyButton: "Confirmar código",
+          resendButton: "Enviar nuevo código",
+          resendHelp: "Si no lo recibes, revisa tu carpeta de spam o solicita un nuevo código."
         },
         contactMethods: {
           email: "Correo",
@@ -85,6 +91,10 @@ const resources = {
           ssoError: "El inicio de sesión SSO ha fallado.",
           signUpSuccess: "Registro completado para {{name}}.",
           signUpError: "No se pudo completar el registro.",
+          signUpVerificationSent: "Hemos enviado un código de verificación a {{email}}.",
+          signUpVerificationError: "El código de verificación no es válido o ha caducado.",
+          signUpVerificationResent: "Se ha enviado un nuevo código a {{email}}.",
+          signUpVerified: "Tu cuenta se ha verificado correctamente.",
           avatarError: "No se pudo cargar la imagen seleccionada."
         }
       },
@@ -741,7 +751,13 @@ const resources = {
           changeAvatar: "Change avatar",
           submit: "Create account",
           hasAccount: "Already have an account?",
-          goToLogin: "Back to login"
+          goToLogin: "Back to login",
+          verificationTitle: "Verify your account",
+          verificationSubtitle: "We sent a verification code to {{email}}. Enter it below to finish your registration.",
+          verificationCodeLabel: "Verification code",
+          verifyButton: "Confirm code",
+          resendButton: "Send new code",
+          resendHelp: "Didn't receive it? Check your spam folder or request another code."
         },
         contactMethods: {
           email: "Email",
@@ -756,6 +772,10 @@ const resources = {
           ssoError: "SSO sign-in failed.",
           signUpSuccess: "Registration completed for {{name}}.",
           signUpError: "We couldn't finish the registration.",
+          signUpVerificationSent: "We've sent a verification code to {{email}}.",
+          signUpVerificationError: "The verification code is invalid or has expired.",
+          signUpVerificationResent: "A new verification code was sent to {{email}}.",
+          signUpVerified: "Your account has been verified successfully.",
           avatarError: "We couldn't process the selected image."
         }
       },
@@ -1261,7 +1281,13 @@ const resources = {
           changeAvatar: "Canvia l'avatar",
           submit: "Registrar-me",
           hasAccount: "Ja tens compte?",
-          goToLogin: "Torna al login"
+          goToLogin: "Torna al login",
+          verificationTitle: "Verifica el teu compte",
+          verificationSubtitle: "Hem enviat un codi de verificació a {{email}}. Introdueix-lo per completar el registre.",
+          verificationCodeLabel: "Codi de verificació",
+          verifyButton: "Confirmar codi",
+          resendButton: "Enviar un nou codi",
+          resendHelp: "Si no el reps, revisa el correu brossa o sol·licita un nou codi."
         },
         contactMethods: {
           email: "Correu",
@@ -1276,6 +1302,10 @@ const resources = {
           ssoError: "Error en l'inici de sessió SSO.",
           signUpSuccess: "Registre completat per {{name}}.",
           signUpError: "No s'ha pogut completar el registre.",
+          signUpVerificationSent: "Hem enviat un codi de verificació a {{email}}.",
+          signUpVerificationError: "El codi de verificació no és vàlid o ha caducat.",
+          signUpVerificationResent: "S'ha enviat un nou codi a {{email}}.",
+          signUpVerified: "El teu compte s'ha verificat correctament.",
           avatarError: "No s'ha pogut carregar la imatge seleccionada."
         }
       },
@@ -1781,7 +1811,13 @@ const resources = {
           changeAvatar: "Modifier l'avatar",
           submit: "Créer le compte",
           hasAccount: "Vous avez déjà un compte ?",
-          goToLogin: "Retour au login"
+          goToLogin: "Retour au login",
+          verificationTitle: "Vérifiez votre compte",
+          verificationSubtitle: "Nous avons envoyé un code de vérification à {{email}}. Saisissez-le pour finaliser l'inscription.",
+          verificationCodeLabel: "Code de vérification",
+          verifyButton: "Confirmer le code",
+          resendButton: "Envoyer un nouveau code",
+          resendHelp: "Vous ne l'avez pas reçu ? Vérifiez vos spams ou demandez un nouveau code."
         },
         contactMethods: {
           email: "E-mail",
@@ -1796,6 +1832,10 @@ const resources = {
           ssoError: "La connexion SSO a échoué.",
           signUpSuccess: "Inscription terminée pour {{name}}.",
           signUpError: "Impossible de finaliser l'inscription.",
+          signUpVerificationSent: "Nous avons envoyé un code de vérification à {{email}}.",
+          signUpVerificationError: "Le code de vérification est invalide ou a expiré.",
+          signUpVerificationResent: "Un nouveau code a été envoyé à {{email}}.",
+          signUpVerified: "Votre compte a été vérifié avec succès.",
           avatarError: "Impossible de traiter l'image sélectionnée."
         }
       },

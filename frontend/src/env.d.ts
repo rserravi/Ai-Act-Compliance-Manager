@@ -4,7 +4,9 @@ declare interface ImportMetaEnv {
   readonly VITE_API_BASE: string
   readonly VITE_AUTH_LOGIN_ENDPOINT: string
   readonly VITE_AUTH_LOGIN_SSO_ENDPOINT: string
-  readonly VITE_AUTH_SIGNIN_ENDPOINT: string
+    readonly VITE_AUTH_SIGNIN_ENDPOINT: string
+    readonly VITE_AUTH_SIGNIN_VERIFY_ENDPOINT: string
+    readonly VITE_AUTH_SIGNIN_RESEND_ENDPOINT: string
   readonly VITE_AUTH_PROFILE_ENDPOINT: string
 }
 
