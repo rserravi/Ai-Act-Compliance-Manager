@@ -2,7 +2,7 @@ import os
 from contextlib import contextmanager
 from typing import Iterator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
@@ -38,6 +38,16 @@ def init_db() -> None:
     from . import models  # noqa: F401 - ensure models are imported
 
     Base.metadata.create_all(bind=engine)
+
+    inspector = inspect(engine)
+    user_columns = {column["name"] for column in inspector.get_columns("users")}
+    if "preferences_language" not in user_columns:
+        with engine.connect() as connection:
+            if is_sqlite:
+                connection.execute(text("ALTER TABLE users ADD COLUMN preferences_language VARCHAR(50)"))
+            else:
+                connection.execute(text("ALTER TABLE users ADD COLUMN preferences_language VARCHAR(50)"))
+            connection.commit()
 
 
 def get_db() -> Iterator[Session]:

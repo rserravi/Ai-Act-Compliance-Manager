@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.models import ContactPreferenceModel, UserModel
-from backend.schemas import ContactMethod, ContactPreference, User
+from backend.schemas import ContactMethod, ContactPreference, User, UserPreferences
 from backend.security import decrypt_value, encrypt_value, hash_password
 
 
@@ -20,6 +20,8 @@ def _model_to_schema(model: UserModel) -> User:
         channel=decrypt_value(contact_model.channel_encrypted),
     )
 
+    preferences = UserPreferences(language=model.preferences_language or "en")
+
     return User(
         id=model.id,
         company=model.company,
@@ -27,6 +29,7 @@ def _model_to_schema(model: UserModel) -> User:
         email=model.email,
         contact=contact,
         avatar=model.avatar,
+        preferences=preferences,
     )
 
 
@@ -54,6 +57,7 @@ def create_user(
     avatar: Optional[str],
     contact: ContactPreference,
     password: Optional[str] = None,
+    preferences: Optional[UserPreferences] = None,
 ) -> UserModel:
     normalized_email = email.lower()
     user_model = UserModel(
@@ -63,6 +67,7 @@ def create_user(
         email=normalized_email,
         avatar=avatar,
         password_hash=hash_password(password) if password else None,
+        preferences_language=preferences.language if preferences else None,
     )
 
     contact_model = ContactPreferenceModel(

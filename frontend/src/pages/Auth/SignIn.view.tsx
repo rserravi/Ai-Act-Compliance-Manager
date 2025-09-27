@@ -4,6 +4,8 @@ import {
   Avatar,
   Button,
   Grid,
+  IconButton,
+  InputAdornment,
   Link,
   Paper,
   Stack,
@@ -15,6 +17,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { signIn } from '../../services/auth'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 
 type ContactMethod = 'email' | 'sms' | 'whatsapp' | 'slack'
 
@@ -32,6 +35,7 @@ function fileToBase64(file: File): Promise<string> {
 export default function SignInView() {
   const { t } = useTranslation()
   const [fullName, setFullName] = useState('')
+  const [company, setCompany] = useState('')
   const [email, setEmail] = useState('')
   const [contactMethod, setContactMethod] = useState<ContactMethod>('email')
   const [contactValue, setContactValue] = useState('')
@@ -39,10 +43,22 @@ export default function SignInView() {
   const [slackChannel, setSlackChannel] = useState('')
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [avatarData, setAvatarData] = useState<string | null>(null)
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null)
+  const browserLanguage = useMemo(
+    () => (typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'en'),
+    []
+  )
+
+  const isPasswordValid = useMemo(() => {
+    if (password.length < 6) return false
+    const hasUppercase = /[A-Z]/.test(password)
+    const hasExtended = /[^A-Za-z0-9]/.test(password)
+    return hasUppercase && hasExtended
+  }, [password])
 
   const contactLabel = useMemo(() => {
     if (contactMethod === 'email') return t('auth.signup.contactEmail')
@@ -82,7 +98,6 @@ export default function SignInView() {
     setLoading(true)
     setError(null)
     setSuccess(null)
-    setTemporaryPassword(null)
 
     try {
       const contact = {
@@ -94,13 +109,15 @@ export default function SignInView() {
 
       const response = await signIn({
         full_name: fullName.trim(),
+        company: company.trim(),
         email: email.trim(),
         contact,
-        avatar: avatarData ?? undefined
+        avatar: avatarData ?? undefined,
+        password,
+        preferences: { language: browserLanguage }
       })
 
-      setSuccess(t('auth.feedback.signUpSuccess', { name: response.user.full_name }))
-      setTemporaryPassword(response.temporary_password)
+      setSuccess(response.message ?? t('auth.feedback.signUpSuccess', { name: response.user.full_name }))
     } catch (err) {
       console.error(err)
       setError(t('auth.feedback.signUpError'))
@@ -111,7 +128,9 @@ export default function SignInView() {
 
   const isFormValid =
     fullName.trim().length > 0 &&
+    company.trim().length > 0 &&
     email.trim().length > 0 &&
+    isPasswordValid &&
     (contactMethod === 'slack'
       ? slackWorkspace.trim().length > 0 && slackChannel.trim().length > 0
       : contactValue.trim().length > 0)
@@ -130,9 +149,6 @@ export default function SignInView() {
 
         {error && <Alert severity="error">{error}</Alert>}
         {success && <Alert severity="success">{success}</Alert>}
-        {temporaryPassword && (
-          <Alert severity="info">{t('auth.feedback.temporaryPassword', { password: temporaryPassword })}</Alert>
-        )}
 
         <Stack spacing={2}>
           <TextField
@@ -143,12 +159,42 @@ export default function SignInView() {
             fullWidth
           />
           <TextField
+            label={t('auth.signup.company')}
+            value={company}
+            onChange={(event) => setCompany(event.target.value)}
+            required
+            fullWidth
+          />
+          <TextField
             label={t('auth.signup.email')}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             type="email"
             required
             fullWidth
+          />
+          <TextField
+            label={t('auth.signup.password')}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            type={showPassword ? 'text' : 'password'}
+            required
+            fullWidth
+            error={password.length > 0 && !isPasswordValid}
+            helperText={t('auth.signup.passwordHelper')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(prev => !prev)}
+                    edge="end"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
         </Stack>
 

@@ -27,6 +27,11 @@ export interface User {
   email: string
   contact: ContactPreference
   avatar?: string | null
+  preferences: UserPreferences
+}
+
+export interface UserPreferences {
+  language: string
 }
 
 export interface LoginPayload {
@@ -48,14 +53,16 @@ export interface SSOLoginPayload {
 
 export interface SignInPayload {
   full_name: string
+  company: string
   email: string
   contact: ContactPreference
   avatar?: string
+  password: string
+  preferences: UserPreferences
 }
 
 export interface SignInResponse {
   user: User
-  temporary_password: string
   message: string
 }
 
