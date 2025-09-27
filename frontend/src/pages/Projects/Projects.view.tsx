@@ -11,7 +11,7 @@ import {
   Stack,
   Typography
 } from '@mui/material'
-import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetterParams } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetter } from '@mui/x-data-grid'
 import { useTranslation } from 'react-i18next'
 import { useProjectsViewModel } from './Projects.viewmodel'
 import { useNavigate } from 'react-router-dom'
@@ -30,6 +30,10 @@ type ProjectRow = AISystem & {
   riskLabel: string
   docLabel: string
 }
+
+const roleValueGetter: GridValueGetter<ProjectRow, string> = (_value, row) => row.roleLabel
+const riskValueGetter: GridValueGetter<ProjectRow, string> = (_value, row) => row.riskLabel
+const docValueGetter: GridValueGetter<ProjectRow, string> = (_value, row) => row.docLabel
 
 function resolveProjectState(system: AISystem): ProjectState {
   if (!system.docStatus || system.docStatus === 'na') return 'initial'
@@ -78,7 +82,7 @@ export default function ProjectsView() {
       field: 'role',
       headerName: t('projects.columns.role'),
       width: 180,
-      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.roleLabel,
+      valueGetter: roleValueGetter,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.roleLabel}
@@ -107,7 +111,7 @@ export default function ProjectsView() {
       field: 'risk',
       headerName: t('projects.columns.risk'),
       width: 160,
-      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.riskLabel,
+      valueGetter: riskValueGetter,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.riskLabel}
@@ -121,7 +125,7 @@ export default function ProjectsView() {
       field: 'docStatus',
       headerName: t('projects.columns.docStatus'),
       width: 160,
-      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.docLabel,
+      valueGetter: docValueGetter,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.docLabel}

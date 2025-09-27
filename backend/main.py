@@ -1,5 +1,8 @@
+import secrets
 from collections import defaultdict
+from enum import Enum
 from typing import Dict, List, Optional
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -177,6 +180,59 @@ class PendingActivity(BaseModel):
     due_date: Optional[str] = None
 
 
+class ContactMethod(str, Enum):
+    email = "email"
+    sms = "sms"
+    whatsapp = "whatsapp"
+    slack = "slack"
+
+
+class ContactPreference(BaseModel):
+    method: ContactMethod
+    value: str
+    workspace: Optional[str] = None
+    channel: Optional[str] = None
+
+
+class User(BaseModel):
+    id: str
+    company: Optional[str] = None
+    full_name: str
+    email: str
+    contact: ContactPreference
+    avatar: Optional[str] = None
+
+
+class LoginPayload(BaseModel):
+    company: str
+    email: str
+    password: str
+
+
+class SSOLoginPayload(BaseModel):
+    company: str
+    email: str
+    provider: str
+
+
+class LoginResult(BaseModel):
+    token: str
+    user: User
+
+
+class SignInPayload(BaseModel):
+    full_name: str
+    email: str
+    contact: ContactPreference
+    avatar: Optional[str] = None
+
+
+class SignInResponse(BaseModel):
+    user: User
+    temporary_password: str
+    message: str
+
+
 # ---------------------------------------------------------------------------
 # In-memory stores (placeholders until real persistence is added)
 # ---------------------------------------------------------------------------
@@ -197,6 +253,40 @@ technical_dossier_templates = TechnicalDossierTemplate()
 technical_dossiers: Dict[str, TechnicalDossier] = {}
 teams = defaultdict(list)
 pending_activities: List[PendingActivity] = []
+users: Dict[str, User] = {}
+user_index_by_email: Dict[str, str] = {}
+user_credentials: Dict[str, str] = {}
+
+
+def _infer_company_from_email(email: str) -> Optional[str]:
+    if "@" not in email:
+        return None
+    domain = email.split("@", 1)[1]
+    if not domain:
+        return None
+    name_part = domain.split(".", 1)[0]
+    cleaned = name_part.replace("-", " ").replace("_", " ").strip()
+    if not cleaned:
+        return None
+    return cleaned.title()
+
+
+def _register_user(user: User, password: Optional[str] = None) -> None:
+    users[user.id] = user
+    user_index_by_email[user.email.lower()] = user.id
+    if password:
+        user_credentials[user.email.lower()] = password
+
+
+default_user = User(
+    id=str(uuid4()),
+    company="Acme Corp",
+    full_name="Rocío Serrano",
+    email="rocio.serrano@acme.ai",
+    contact=ContactPreference(method=ContactMethod.email, value="rocio.serrano@acme.ai"),
+    avatar=None,
+)
+_register_user(default_user, password="demo123")
 
 
 # ---------------------------------------------------------------------------
@@ -207,6 +297,80 @@ pending_activities: List[PendingActivity] = []
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+
+@app.post("/auth/login", response_model=LoginResult)
+def login(payload: LoginPayload):
+    email = payload.email.lower()
+    user_id = user_index_by_email.get(email)
+    if not user_id:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = users[user_id]
+    if user.company:
+        if payload.company.lower().strip() != user.company.lower().strip():
+            raise HTTPException(status_code=403, detail="Company mismatch")
+    else:
+        user.company = payload.company
+
+    stored_password = user_credentials.get(email)
+    if stored_password is None:
+        raise HTTPException(status_code=403, detail="Password login unavailable for this user")
+    if stored_password != payload.password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = f"token-{user.id}"
+    return LoginResult(token=token, user=user)
+
+
+@app.post("/auth/login/sso", response_model=LoginResult)
+def login_sso(payload: SSOLoginPayload):
+    email = payload.email.lower()
+    user_id = user_index_by_email.get(email)
+    if user_id:
+        user = users[user_id]
+    else:
+        inferred_company = _infer_company_from_email(payload.email)
+        user = User(
+            id=str(uuid4()),
+            company=inferred_company,
+            full_name=payload.email.split("@", 1)[0].replace(".", " ").title(),
+            email=payload.email,
+            contact=ContactPreference(method=ContactMethod.email, value=payload.email),
+            avatar=None,
+        )
+        _register_user(user)
+
+    user.company = payload.company or user.company
+    token = f"sso-token-{payload.provider}-{user.id}"
+    return LoginResult(token=token, user=user)
+
+
+@app.post("/auth/sign-in", response_model=SignInResponse)
+def sign_in(payload: SignInPayload):
+    email = payload.email.lower()
+    if email in user_index_by_email:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    company = _infer_company_from_email(payload.email)
+    user = User(
+        id=str(uuid4()),
+        company=company,
+        full_name=payload.full_name,
+        email=payload.email,
+        contact=payload.contact,
+        avatar=payload.avatar,
+    )
+
+    temporary_password = secrets.token_urlsafe(8)
+    _register_user(user, password=temporary_password)
+
+    message = "User registered successfully. Use the temporary password to log in."
+    return SignInResponse(user=user, temporary_password=temporary_password, message=message)
 
 
 # ---------------------------------------------------------------------------

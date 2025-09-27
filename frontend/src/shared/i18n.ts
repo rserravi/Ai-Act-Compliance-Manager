@@ -33,6 +33,59 @@ const resources = {
           audit: "Auditoría"
         }
       },
+      auth: {
+        fields: {
+          company: "Empresa",
+          email: "Correo electrónico",
+          password: "Contraseña"
+        },
+        login: {
+          title: "Inicia sesión",
+          subtitle: "Accede al panel de cumplimiento con tus credenciales corporativas.",
+          submit: "Entrar",
+          or: "o",
+          ssoButton: "Continuar con SSO corporativo",
+          ssoHint: "El acceso SSO requiere una suscripción activa de tu organización.",
+          ssoLabel: "SSO corporativo",
+          noAccount: "¿Aún no tienes cuenta?",
+          goToSignUp: "Crear una nueva cuenta"
+        },
+        signup: {
+          title: "Crea tu cuenta",
+          subtitle: "Registra tu equipo para comenzar a gestionar el cumplimiento.",
+          fullName: "Nombre completo",
+          email: "Correo electrónico",
+          contactLabel: "Preferencia de contacto principal",
+          contactEmail: "Correo de contacto",
+          contactPhoneSms: "Número de móvil (SMS)",
+          contactPhoneWhatsapp: "Número de WhatsApp",
+          contactSlackUser: "Usuario o canal de Slack",
+          slackWorkspace: "Workspace de Slack",
+          slackChannel: "Canal o usuario",
+          avatarLabel: "Avatar (opcional)",
+          uploadAvatar: "Subir avatar",
+          changeAvatar: "Cambiar avatar",
+          submit: "Registrarme",
+          hasAccount: "¿Ya tienes cuenta?",
+          goToLogin: "Volver al login"
+        },
+        contactMethods: {
+          email: "Correo",
+          sms: "SMS",
+          whatsapp: "WhatsApp",
+          slack: "Slack"
+        },
+        feedback: {
+          loginSuccess: "Bienvenido/a de nuevo, {{name}}.",
+          loginError: "No se pudo iniciar sesión con esas credenciales.",
+          ssoSuccess: "Has accedido mediante {{provider}} como {{name}}.",
+          ssoError: "El inicio de sesión SSO ha fallado.",
+          signUpSuccess: "Registro completado para {{name}}.",
+          signUpError: "No se pudo completar el registro.",
+          temporaryPassword: "Tu contraseña temporal es: {{password}}",
+          avatarError: "No se pudo cargar la imagen seleccionada."
+        }
+      },
       deliverables: {
         title: "Entregables del Proyecto",
         columns: {
@@ -649,6 +702,59 @@ const resources = {
           audit: "Audit"
         }
       },
+      auth: {
+        fields: {
+          company: "Company",
+          email: "Email",
+          password: "Password"
+        },
+        login: {
+          title: "Sign in",
+          subtitle: "Access the compliance workspace with your corporate credentials.",
+          submit: "Sign in",
+          or: "or",
+          ssoButton: "Continue with corporate SSO",
+          ssoHint: "Corporate SSO requires an active subscription from your organization.",
+          ssoLabel: "Corporate SSO",
+          noAccount: "Don't have an account yet?",
+          goToSignUp: "Create a new account"
+        },
+        signup: {
+          title: "Create your account",
+          subtitle: "Register your team to start managing AI Act compliance.",
+          fullName: "Full name",
+          email: "Work email",
+          contactLabel: "Preferred contact method",
+          contactEmail: "Contact email",
+          contactPhoneSms: "Mobile number (SMS)",
+          contactPhoneWhatsapp: "WhatsApp number",
+          contactSlackUser: "Slack user or channel",
+          slackWorkspace: "Slack workspace",
+          slackChannel: "Channel or user",
+          avatarLabel: "Avatar (optional)",
+          uploadAvatar: "Upload avatar",
+          changeAvatar: "Change avatar",
+          submit: "Create account",
+          hasAccount: "Already have an account?",
+          goToLogin: "Back to login"
+        },
+        contactMethods: {
+          email: "Email",
+          sms: "SMS",
+          whatsapp: "WhatsApp",
+          slack: "Slack"
+        },
+        feedback: {
+          loginSuccess: "Welcome back, {{name}}.",
+          loginError: "We couldn't sign you in with those credentials.",
+          ssoSuccess: "Signed in with {{provider}} as {{name}}.",
+          ssoError: "SSO sign-in failed.",
+          signUpSuccess: "Registration completed for {{name}}.",
+          signUpError: "We couldn't finish the registration.",
+          temporaryPassword: "Your temporary password is: {{password}}",
+          avatarError: "We couldn't process the selected image."
+        }
+      },
       deliverables: {
         title: "Project Deliverables",
         columns: {
@@ -1114,6 +1220,59 @@ const resources = {
           audit: "Auditoria"
         }
       },
+      auth: {
+        fields: {
+          company: "Empresa",
+          email: "Correu electrònic",
+          password: "Contrasenya"
+        },
+        login: {
+          title: "Inicia sessió",
+          subtitle: "Accedeix a l'entorn de compliment amb les teves credencials corporatives.",
+          submit: "Entrar",
+          or: "o",
+          ssoButton: "Continua amb SSO corporatiu",
+          ssoHint: "L'SSO corporatiu requereix una subscripció activa de l'organització.",
+          ssoLabel: "SSO corporatiu",
+          noAccount: "Encara no tens compte?",
+          goToSignUp: "Crear un nou compte"
+        },
+        signup: {
+          title: "Crea el teu compte",
+          subtitle: "Registra el teu equip per començar a gestionar el compliment de l'AI Act.",
+          fullName: "Nom complet",
+          email: "Correu electrònic",
+          contactLabel: "Mètode de contacte preferit",
+          contactEmail: "Correu de contacte",
+          contactPhoneSms: "Número mòbil (SMS)",
+          contactPhoneWhatsapp: "Número de WhatsApp",
+          contactSlackUser: "Usuari o canal de Slack",
+          slackWorkspace: "Workspace de Slack",
+          slackChannel: "Canal o usuari",
+          avatarLabel: "Avatar (opcional)",
+          uploadAvatar: "Puja un avatar",
+          changeAvatar: "Canvia l'avatar",
+          submit: "Registrar-me",
+          hasAccount: "Ja tens compte?",
+          goToLogin: "Torna al login"
+        },
+        contactMethods: {
+          email: "Correu",
+          sms: "SMS",
+          whatsapp: "WhatsApp",
+          slack: "Slack"
+        },
+        feedback: {
+          loginSuccess: "Benvingut/da de nou, {{name}}.",
+          loginError: "No s'ha pogut iniciar sessió amb aquestes credencials.",
+          ssoSuccess: "Sessió iniciada amb {{provider}} com a {{name}}.",
+          ssoError: "Error en l'inici de sessió SSO.",
+          signUpSuccess: "Registre completat per {{name}}.",
+          signUpError: "No s'ha pogut completar el registre.",
+          temporaryPassword: "La teva contrasenya temporal és: {{password}}",
+          avatarError: "No s'ha pogut carregar la imatge seleccionada."
+        }
+      },
       deliverables: {
         title: "Lliurables del Projecte",
         columns: {
@@ -1577,6 +1736,59 @@ const resources = {
           calendar: "Calendrier",
           org: "Org & Rôles",
           audit: "Audit"
+        }
+      },
+      auth: {
+        fields: {
+          company: "Entreprise",
+          email: "E-mail",
+          password: "Mot de passe"
+        },
+        login: {
+          title: "Connexion",
+          subtitle: "Accédez à la plateforme de conformité avec vos identifiants d'entreprise.",
+          submit: "Se connecter",
+          or: "ou",
+          ssoButton: "Continuer avec le SSO d'entreprise",
+          ssoHint: "Le SSO d'entreprise nécessite un abonnement actif de votre organisation.",
+          ssoLabel: "SSO d'entreprise",
+          noAccount: "Pas encore de compte ?",
+          goToSignUp: "Créer un compte"
+        },
+        signup: {
+          title: "Créer votre compte",
+          subtitle: "Inscrivez votre équipe pour gérer la conformité à l'AI Act.",
+          fullName: "Nom complet",
+          email: "E-mail professionnel",
+          contactLabel: "Méthode de contact préférée",
+          contactEmail: "E-mail de contact",
+          contactPhoneSms: "Numéro de mobile (SMS)",
+          contactPhoneWhatsapp: "Numéro WhatsApp",
+          contactSlackUser: "Utilisateur ou canal Slack",
+          slackWorkspace: "Espace de travail Slack",
+          slackChannel: "Canal ou utilisateur",
+          avatarLabel: "Avatar (optionnel)",
+          uploadAvatar: "Télécharger un avatar",
+          changeAvatar: "Modifier l'avatar",
+          submit: "Créer le compte",
+          hasAccount: "Vous avez déjà un compte ?",
+          goToLogin: "Retour au login"
+        },
+        contactMethods: {
+          email: "E-mail",
+          sms: "SMS",
+          whatsapp: "WhatsApp",
+          slack: "Slack"
+        },
+        feedback: {
+          loginSuccess: "Bon retour, {{name}}.",
+          loginError: "Impossible de vous connecter avec ces identifiants.",
+          ssoSuccess: "Connecté avec {{provider}} en tant que {{name}}.",
+          ssoError: "La connexion SSO a échoué.",
+          signUpSuccess: "Inscription terminée pour {{name}}.",
+          signUpError: "Impossible de finaliser l'inscription.",
+          temporaryPassword: "Votre mot de passe temporaire est : {{password}}",
+          avatarError: "Impossible de traiter l'image sélectionnée."
         }
       },
       deliverables: {
