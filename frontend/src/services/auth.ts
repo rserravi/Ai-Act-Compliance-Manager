@@ -10,10 +10,10 @@ function requiredEnv(key: keyof ImportMetaEnv): string {
 
 const LOGIN_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_ENDPOINT')
 const LOGIN_SSO_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_SSO_ENDPOINT')
-const SIGN_IN_ENDPOINT = requiredEnv('VITE_AUTH_SIGNIN_ENDPOINT')
+const REGISTRATION_INIT_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_INIT_ENDPOINT')
 const PROFILE_ENDPOINT = requiredEnv('VITE_AUTH_PROFILE_ENDPOINT')
-const SIGN_IN_VERIFY_ENDPOINT = requiredEnv('VITE_AUTH_SIGNIN_VERIFY_ENDPOINT')
-const SIGN_IN_RESEND_ENDPOINT = requiredEnv('VITE_AUTH_SIGNIN_RESEND_ENDPOINT')
+const REGISTRATION_VERIFY_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_VERIFY_ENDPOINT')
+const REGISTRATION_RESEND_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_RESEND_ENDPOINT')
 
 export interface ContactPreference {
   method: 'email' | 'sms' | 'whatsapp' | 'slack'
@@ -99,21 +99,21 @@ export function loginWithSSO(payload: SSOLoginPayload) {
 }
 
 export function signIn(payload: SignInPayload) {
-  return api<SignInResponse>(SIGN_IN_ENDPOINT, {
+  return api<SignInResponse>(REGISTRATION_INIT_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
 }
 
 export function verifySignIn(payload: SignInVerificationPayload) {
-  return api<SignInVerificationResponse>(SIGN_IN_VERIFY_ENDPOINT, {
+  return api<SignInVerificationResponse>(REGISTRATION_VERIFY_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
 }
 
 export function resendSignInCode(payload: SignInVerificationResendPayload) {
-  return api<SignInResponse>(SIGN_IN_RESEND_ENDPOINT, {
+  return api<SignInResponse>(REGISTRATION_RESEND_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
