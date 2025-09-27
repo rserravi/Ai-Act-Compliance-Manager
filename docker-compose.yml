@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai-act-postgres
+    environment:
+      POSTGRES_DB: ai_act_compliance
+      POSTGRES_USER: ai_act
+      POSTGRES_PASSWORD: ai_act
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_act -d ai_act_compliance"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+volumes:
+  postgres_data:
