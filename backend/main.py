@@ -258,12 +258,11 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
 
-@app.post("/auth/sign-in", response_model=SignInResponse)
-def sign_in(
+def _initiate_registration(
     payload: SignInPayload,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
+    db: Session,
+) -> SignInResponse:
     email = payload.email.lower()
     existing = get_user_model_by_email(db, email)
     if existing:
@@ -284,12 +283,11 @@ def sign_in(
     )
 
 
-@app.post("/auth/sign-in/verify", response_model=SignInVerificationResponse)
-def verify_sign_in(
+def _verify_registration(
     payload: SignInVerificationPayload,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
+    db: Session,
+) -> SignInVerificationResponse:
     pending = get_pending_registration_by_id(db, payload.registration_id)
     if pending is None:
         raise HTTPException(status_code=404, detail="Registration not found")
@@ -330,12 +328,11 @@ def verify_sign_in(
     return SignInVerificationResponse(token=token, user=user, message=message)
 
 
-@app.post("/auth/sign-in/resend", response_model=SignInResponse)
-def resend_sign_in_code(
+def _resend_registration_code(
     payload: SignInVerificationResendPayload,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
+    db: Session,
+) -> SignInResponse:
     pending = get_pending_registration_by_id(db, payload.registration_id)
     if pending is None:
         raise HTTPException(status_code=404, detail="Registration not found")
@@ -352,6 +349,60 @@ def resend_sign_in_code(
         message=message,
         expires_at=pending.code_expires_at,
     )
+
+
+@app.post("/auth/sign-in", response_model=SignInResponse)
+def sign_in(
+    payload: SignInPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _initiate_registration(payload, background_tasks, db)
+
+
+@app.post("/auth/sign-in/verify", response_model=SignInVerificationResponse)
+def verify_sign_in(
+    payload: SignInVerificationPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _verify_registration(payload, background_tasks, db)
+
+
+@app.post("/auth/sign-in/resend", response_model=SignInResponse)
+def resend_sign_in_code(
+    payload: SignInVerificationResendPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _resend_registration_code(payload, background_tasks, db)
+
+
+@app.post("/auth/sign-up/init", response_model=SignInResponse)
+def sign_up_init(
+    payload: SignInPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _initiate_registration(payload, background_tasks, db)
+
+
+@app.post("/auth/sign-up/verify", response_model=SignInVerificationResponse)
+def sign_up_verify(
+    payload: SignInVerificationPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _verify_registration(payload, background_tasks, db)
+
+
+@app.post("/auth/sign-up/resend", response_model=SignInResponse)
+def sign_up_resend(
+    payload: SignInVerificationResendPayload,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    return _resend_registration_code(payload, background_tasks, db)
 
 
 # ---------------------------------------------------------------------------
