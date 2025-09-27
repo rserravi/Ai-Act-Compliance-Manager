@@ -1,5 +1,18 @@
 import { api } from './api'
 
+function requiredEnv(key: keyof ImportMetaEnv): string {
+  const value = import.meta.env[key]
+  if (!value) {
+    throw new Error(`Missing environment variable: ${key}`)
+  }
+  return value
+}
+
+const LOGIN_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_ENDPOINT')
+const LOGIN_SSO_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_SSO_ENDPOINT')
+const SIGN_IN_ENDPOINT = requiredEnv('VITE_AUTH_SIGNIN_ENDPOINT')
+const PROFILE_ENDPOINT = requiredEnv('VITE_AUTH_PROFILE_ENDPOINT')
+
 export interface ContactPreference {
   method: 'email' | 'sms' | 'whatsapp' | 'slack'
   value: string
@@ -47,22 +60,26 @@ export interface SignInResponse {
 }
 
 export function login(payload: LoginPayload) {
-  return api<LoginResponse>('/auth/login', {
+  return api<LoginResponse>(LOGIN_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
 }
 
 export function loginWithSSO(payload: SSOLoginPayload) {
-  return api<LoginResponse>('/auth/login/sso', {
+  return api<LoginResponse>(LOGIN_SSO_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
 }
 
 export function signIn(payload: SignInPayload) {
-  return api<SignInResponse>('/auth/sign-in', {
+  return api<SignInResponse>(SIGN_IN_ENDPOINT, {
     method: 'POST',
     body: JSON.stringify(payload)
   })
+}
+
+export function fetchCurrentUser() {
+  return api<User>(PROFILE_ENDPOINT)
 }

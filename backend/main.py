@@ -1,9 +1,14 @@
+import os
 import secrets
 from collections import defaultdict
-from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError, jwt
 
 from backend.schemas import (
     AISystem,
@@ -39,7 +44,48 @@ from backend.schemas import (
     User,
 )
 
+load_dotenv()
+
 app = FastAPI(title="AI Act Compliance Manager API", version="0.1.0")
+
+JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-key")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def _create_access_token(user: User, expires_delta: Optional[timedelta] = None) -> str:
+    expire_delta = expires_delta or timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire_at = datetime.utcnow() + expire_delta
+    payload = {"sub": user.id, "email": user.email, "exp": expire_at}
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def _decode_token(token: str) -> Dict[str, Any]:
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except JWTError as exc:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials") from exc
+
+
+def get_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> User:
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    payload = _decode_token(credentials.credentials)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    user = users.get(user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +178,7 @@ def login(payload: LoginPayload):
     if stored_password != payload.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = f"token-{user.id}"
+    token = _create_access_token(user)
     return LoginResult(token=token, user=user)
 
 
@@ -155,8 +201,13 @@ def login_sso(payload: SSOLoginPayload):
         _register_user(user)
 
     user.company = payload.company or user.company
-    token = f"sso-token-{payload.provider}-{user.id}"
+    token = _create_access_token(user)
     return LoginResult(token=token, user=user)
+
+
+@app.get("/auth/me", response_model=User)
+def get_current_user_profile(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @app.post("/auth/sign-in", response_model=SignInResponse)
@@ -188,7 +239,13 @@ def sign_in(payload: SignInPayload):
 
 
 @app.get("/systems", response_model=List[AISystem])
-def list_systems(role: Optional[str] = None, risk: Optional[str] = None, doc: Optional[str] = None, q: Optional[str] = None):
+def list_systems(
+    current_user: User = Depends(get_current_user),
+    role: Optional[str] = None,
+    risk: Optional[str] = None,
+    doc: Optional[str] = None,
+    q: Optional[str] = None,
+):
     data = list(systems.values())
     if role:
         data = [sys for sys in data if sys.role == role]
@@ -202,13 +259,13 @@ def list_systems(role: Optional[str] = None, risk: Optional[str] = None, doc: Op
 
 
 @app.post("/systems", response_model=AISystem)
-def create_system(payload: AISystem):
+def create_system(payload: AISystem, current_user: User = Depends(get_current_user)):
     systems[payload.id] = payload
     return payload
 
 
 @app.get("/systems/{system_id}", response_model=AISystem)
-def get_system(system_id: str):
+def get_system(system_id: str, current_user: User = Depends(get_current_user)):
     system = systems.get(system_id)
     if not system:
         raise HTTPException(status_code=404, detail="System not found")
@@ -216,7 +273,7 @@ def get_system(system_id: str):
 
 
 @app.patch("/systems/{system_id}", response_model=AISystem)
-def update_system(system_id: str, payload: AISystemUpdate):
+def update_system(system_id: str, payload: AISystemUpdate, current_user: User = Depends(get_current_user)):
     system = systems.get(system_id)
     if not system:
         raise HTTPException(status_code=404, detail="System not found")
@@ -232,17 +289,21 @@ def update_system(system_id: str, payload: AISystemUpdate):
 
 
 @app.get("/configs/risk-wizard", response_model=RiskWizardConfig)
-def get_risk_wizard_config():
+def get_risk_wizard_config(current_user: User = Depends(get_current_user)):
     return RiskWizardConfig()
 
 
 @app.get("/systems/{system_id}/risk", response_model=List[RiskAssessment])
-def list_risk_assessments(system_id: str):
+def list_risk_assessments(system_id: str, current_user: User = Depends(get_current_user)):
     return risk_assessments[system_id]
 
 
 @app.post("/systems/{system_id}/risk", response_model=RiskAssessment)
-def create_risk_assessment(system_id: str, payload: RiskAssessment):
+def create_risk_assessment(
+    system_id: str,
+    payload: RiskAssessment,
+    current_user: User = Depends(get_current_user),
+):
     if payload.system_id != system_id:
         raise HTTPException(status_code=400, detail="system_id mismatch")
     risk_assessments[system_id].append(payload)
@@ -255,17 +316,21 @@ def create_risk_assessment(system_id: str, payload: RiskAssessment):
 
 
 @app.get("/deliverables/templates", response_model=List[DeliverableTemplate])
-def list_deliverable_templates():
+def list_deliverable_templates(current_user: User = Depends(get_current_user)):
     return deliverable_templates
 
 
 @app.get("/systems/{system_id}/deliverables", response_model=List[Deliverable])
-def list_deliverables(system_id: str):
+def list_deliverables(system_id: str, current_user: User = Depends(get_current_user)):
     return deliverables[system_id]
 
 
 @app.patch("/deliverables/{deliverable_id}", response_model=Deliverable)
-def update_deliverable(deliverable_id: str, payload: DeliverableUpdate):
+def update_deliverable(
+    deliverable_id: str,
+    payload: DeliverableUpdate,
+    current_user: User = Depends(get_current_user),
+):
     for system_deliverables in deliverables.values():
         for idx, deliverable in enumerate(system_deliverables):
             if deliverable.id == deliverable_id:
@@ -276,7 +341,9 @@ def update_deliverable(deliverable_id: str, payload: DeliverableUpdate):
 
 
 @app.post("/deliverables/{deliverable_id}/versions", response_model=Deliverable)
-def add_deliverable_version(deliverable_id: str):
+def add_deliverable_version(
+    deliverable_id: str, current_user: User = Depends(get_current_user)
+):
     # Placeholder endpoint: in a real implementation, file handling would be added
     for system_deliverables in deliverables.values():
         for deliverable in system_deliverables:
@@ -286,7 +353,12 @@ def add_deliverable_version(deliverable_id: str):
 
 
 @app.post("/systems/{system_id}/deliverables/{deliverable_id}/assign")
-def assign_deliverable(system_id: str, deliverable_id: str, payload: DeliverableAssignment):
+def assign_deliverable(
+    system_id: str,
+    deliverable_id: str,
+    payload: DeliverableAssignment,
+    current_user: User = Depends(get_current_user),
+):
     return {"system_id": system_id, "deliverable_id": deliverable_id, **payload.dict()}
 
 
@@ -296,12 +368,16 @@ def assign_deliverable(system_id: str, deliverable_id: str, payload: Deliverable
 
 
 @app.get("/systems/{system_id}/tasks", response_model=List[Task])
-def list_tasks(system_id: str):
+def list_tasks(system_id: str, current_user: User = Depends(get_current_user)):
     return tasks[system_id]
 
 
 @app.post("/systems/{system_id}/tasks", response_model=Task)
-def create_task(system_id: str, payload: Task):
+def create_task(
+    system_id: str,
+    payload: Task,
+    current_user: User = Depends(get_current_user),
+):
     if payload.system_id != system_id:
         raise HTTPException(status_code=400, detail="system_id mismatch")
     tasks[system_id].append(payload)
@@ -309,7 +385,11 @@ def create_task(system_id: str, payload: Task):
 
 
 @app.patch("/tasks/{task_id}", response_model=Task)
-def update_task(task_id: str, payload: TaskUpdate):
+def update_task(
+    task_id: str,
+    payload: TaskUpdate,
+    current_user: User = Depends(get_current_user),
+):
     for system_tasks in tasks.values():
         for idx, task in enumerate(system_tasks):
             if task.id == task_id:
@@ -325,7 +405,10 @@ def update_task(task_id: str, payload: TaskUpdate):
 
 
 @app.get("/incidents")
-def list_incidents(system_id: Optional[str] = None):
+def list_incidents(
+    system_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+):
     data = list(incidents.values())
     if system_id:
         data = [incident for incident in data if incident.system_id == system_id]
@@ -333,13 +416,17 @@ def list_incidents(system_id: Optional[str] = None):
 
 
 @app.post("/incidents", response_model=Incident)
-def create_incident(payload: Incident):
+def create_incident(payload: Incident, current_user: User = Depends(get_current_user)):
     incidents[payload.id] = payload
     return payload
 
 
 @app.patch("/incidents/{incident_id}", response_model=Incident)
-def update_incident(incident_id: str, payload: IncidentUpdate):
+def update_incident(
+    incident_id: str,
+    payload: IncidentUpdate,
+    current_user: User = Depends(get_current_user),
+):
     incident = incidents.get(incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
@@ -354,17 +441,21 @@ def update_incident(incident_id: str, payload: IncidentUpdate):
 
 
 @app.get("/projects/{project_id}/audits", response_model=List[Audit])
-def list_audits(project_id: str):
+def list_audits(project_id: str, current_user: User = Depends(get_current_user)):
     return audits[project_id]
 
 
 @app.get("/projects/{project_id}/evidences", response_model=List[Evidence])
-def list_evidences(project_id: str):
+def list_evidences(project_id: str, current_user: User = Depends(get_current_user)):
     return evidences[project_id]
 
 
 @app.post("/projects/{project_id}/evidences", response_model=Evidence)
-def create_evidence(project_id: str, payload: Evidence):
+def create_evidence(
+    project_id: str,
+    payload: Evidence,
+    current_user: User = Depends(get_current_user),
+):
     if payload.project_id != project_id:
         raise HTTPException(status_code=400, detail="project_id mismatch")
     evidences[project_id].append(payload)
@@ -377,7 +468,7 @@ def create_evidence(project_id: str, payload: Evidence):
 
 
 @app.get("/projects/{project_id}/org-structure", response_model=OrgStructure)
-def get_org_structure(project_id: str):
+def get_org_structure(project_id: str, current_user: User = Depends(get_current_user)):
     structure = org_structures.get(project_id)
     if not structure:
         structure = OrgStructure(project_id=project_id)
@@ -386,13 +477,21 @@ def get_org_structure(project_id: str):
 
 
 @app.post("/projects/{project_id}/raci")
-def create_raci(project_id: str, payload: List[RACIEntry]):
+def create_raci(
+    project_id: str,
+    payload: List[RACIEntry],
+    current_user: User = Depends(get_current_user),
+):
     raci_matrices[project_id] = payload
     return {"project_id": project_id, "entries": payload}
 
 
 @app.post("/projects/{project_id}/contacts", response_model=Contact)
-def create_contact(project_id: str, payload: Contact):
+def create_contact(
+    project_id: str,
+    payload: Contact,
+    current_user: User = Depends(get_current_user),
+):
     if payload.project_id != project_id:
         raise HTTPException(status_code=400, detail="project_id mismatch")
     contacts[project_id].append(payload)
@@ -405,7 +504,7 @@ def create_contact(project_id: str, payload: Contact):
 
 
 @app.get("/dashboard/overview", response_model=DashboardOverview)
-def get_dashboard_overview():
+def get_dashboard_overview(current_user: User = Depends(get_current_user)):
     return DashboardOverview()
 
 
@@ -415,12 +514,12 @@ def get_dashboard_overview():
 
 
 @app.get("/settings", response_model=Settings)
-def get_settings():
+def get_settings(current_user: User = Depends(get_current_user)):
     return settings_store
 
 
 @app.patch("/settings", response_model=Settings)
-def update_settings(payload: Settings):
+def update_settings(payload: Settings, current_user: User = Depends(get_current_user)):
     global settings_store
     settings_store = settings_store.copy(update=payload.dict(exclude_unset=True))
     return settings_store
@@ -432,12 +531,12 @@ def update_settings(payload: Settings):
 
 
 @app.get("/configs/technical-dossier", response_model=TechnicalDossierTemplate)
-def get_technical_dossier_template():
+def get_technical_dossier_template(current_user: User = Depends(get_current_user)):
     return technical_dossier_templates
 
 
 @app.get("/systems/{system_id}/technical-dossier", response_model=TechnicalDossier)
-def get_technical_dossier(system_id: str):
+def get_technical_dossier(system_id: str, current_user: User = Depends(get_current_user)):
     dossier = technical_dossiers.get(system_id)
     if not dossier:
         dossier = TechnicalDossier(system_id=system_id)
@@ -446,7 +545,11 @@ def get_technical_dossier(system_id: str):
 
 
 @app.put("/systems/{system_id}/technical-dossier", response_model=TechnicalDossier)
-def update_technical_dossier(system_id: str, payload: TechnicalDossier):
+def update_technical_dossier(
+    system_id: str,
+    payload: TechnicalDossier,
+    current_user: User = Depends(get_current_user),
+):
     if payload.system_id != system_id:
         raise HTTPException(status_code=400, detail="system_id mismatch")
     technical_dossiers[system_id] = payload
@@ -459,12 +562,12 @@ def update_technical_dossier(system_id: str, payload: TechnicalDossier):
 
 
 @app.get("/systems/{system_id}/team", response_model=List[TeamMember])
-def list_team_members(system_id: str):
+def list_team_members(system_id: str, current_user: User = Depends(get_current_user)):
     return teams[system_id]
 
 
 @app.get("/activities/pending", response_model=List[PendingActivity])
-def list_pending_activities():
+def list_pending_activities(current_user: User = Depends(get_current_user)):
     return pending_activities
 
 

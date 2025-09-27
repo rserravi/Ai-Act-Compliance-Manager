@@ -9,17 +9,27 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { login, loginWithSSO } from '../../services/auth'
+import { useAuth } from '../../shared/auth-context'
+
+type AuthLocationState = {
+  from?: {
+    pathname?: string
+  }
+}
 
 export default function LoginView() {
   const { t } = useTranslation()
   const [form, setForm] = useState({ company: '', email: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const [ssoLoading, setSsoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [activeMethod, setActiveMethod] = useState<'password' | 'sso' | null>(null)
+  const { loginWithPassword, loginWithSso, isAuthenticating } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const state = (location.state ?? null) as AuthLocationState | null
+  const fromPath = state?.from?.pathname
+  const redirectTo = fromPath && fromPath !== '/login' ? fromPath : '/'
 
   const handleChange = (field: 'company' | 'email' | 'password') =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,51 +38,44 @@ export default function LoginView() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setLoading(true)
-    setSsoLoading(false)
     setError(null)
-    setSuccess(null)
+    setActiveMethod('password')
     try {
-      const response = await login({
+      await loginWithPassword({
         company: form.company.trim(),
         email: form.email.trim(),
         password: form.password
       })
-      setSuccess(t('auth.feedback.loginSuccess', { name: response.user.full_name }))
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       console.error(err)
       setError(t('auth.feedback.loginError'))
     } finally {
-      setLoading(false)
+      setActiveMethod(null)
     }
   }
 
   const handleSSO = async () => {
-    setSsoLoading(true)
-    setLoading(false)
     setError(null)
-    setSuccess(null)
+    setActiveMethod('sso')
     try {
-      const response = await loginWithSSO({
+      await loginWithSso({
         company: form.company.trim(),
         email: form.email.trim(),
         provider: 'sso'
       })
-      setSuccess(
-        t('auth.feedback.ssoSuccess', {
-          name: response.user.full_name,
-          provider: t('auth.login.ssoLabel')
-        })
-      )
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       console.error(err)
       setError(t('auth.feedback.ssoError'))
     } finally {
-      setSsoLoading(false)
+      setActiveMethod(null)
     }
   }
 
   const isSSOEnabled = form.company.trim().length > 0 && form.email.trim().length > 0
+  const passwordLoading = isAuthenticating && activeMethod === 'password'
+  const ssoLoading = isAuthenticating && activeMethod === 'sso'
 
   return (
     <Paper elevation={4} sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
@@ -87,8 +90,6 @@ export default function LoginView() {
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
-
         <Stack spacing={2}>
           <TextField
             label={t('auth.fields.company')}
@@ -118,7 +119,7 @@ export default function LoginView() {
           />
         </Stack>
 
-        <Button type="submit" variant="contained" size="large" disabled={loading}>
+        <Button type="submit" variant="contained" size="large" disabled={passwordLoading}>
           {t('auth.login.submit')}
         </Button>
 
