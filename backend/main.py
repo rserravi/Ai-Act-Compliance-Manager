@@ -8,7 +8,8 @@ from uuid import uuid4
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+import jwt
+from jwt import PyJWTError
 
 from backend.schemas import (
     AISystem,
@@ -66,7 +67,7 @@ def _decode_token(token: str) -> Dict[str, Any]:
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload
-    except JWTError as exc:
+    except PyJWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials") from exc
 
 
