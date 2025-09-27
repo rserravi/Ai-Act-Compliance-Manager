@@ -11,7 +11,7 @@ import {
   Stack,
   Typography
 } from '@mui/material'
-import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetter } from '@mui/x-data-grid'
+import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetterParams } from '@mui/x-data-grid'
 import { useTranslation } from 'react-i18next'
 import { useProjectsViewModel } from './Projects.viewmodel'
 import { useNavigate } from 'react-router-dom'
@@ -78,7 +78,7 @@ export default function ProjectsView() {
       field: 'role',
       headerName: t('projects.columns.role'),
       width: 180,
-      valueGetter: ((value, row) => row.roleLabel) as GridValueGetter<ProjectRow>,
+      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.roleLabel,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.roleLabel}
@@ -107,7 +107,7 @@ export default function ProjectsView() {
       field: 'risk',
       headerName: t('projects.columns.risk'),
       width: 160,
-      valueGetter: ((value, row) => row.riskLabel) as GridValueGetter<ProjectRow>,
+      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.riskLabel,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.riskLabel}
@@ -121,7 +121,7 @@ export default function ProjectsView() {
       field: 'docStatus',
       headerName: t('projects.columns.docStatus'),
       width: 160,
-      valueGetter: ((value, row) => row.docLabel) as GridValueGetter<ProjectRow>,
+      valueGetter: (params: GridValueGetterParams<ProjectRow>) => params.row.docLabel,
       renderCell: (params: GridRenderCellParams<ProjectRow>) => (
         <Chip
           label={params.row.docLabel}
