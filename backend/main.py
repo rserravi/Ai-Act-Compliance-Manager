@@ -9,6 +9,17 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
+from backend.database import SessionLocal, get_db, init_db
+from backend.repositories.user_repository import (
+    create_user,
+    get_user_by_id,
+    get_user_model_by_email,
+    model_to_schema,
+    update_user_company,
+)
+from backend.security import verify_password
 
 from backend.schemas import (
     AISystem,
@@ -54,6 +65,8 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
+init_db()
+
 
 def _create_access_token(user: User, expires_delta: Optional[timedelta] = None) -> str:
     expire_delta = expires_delta or timedelta(minutes=JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -72,6 +85,7 @@ def _decode_token(token: str) -> Dict[str, Any]:
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
 ) -> User:
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -81,7 +95,7 @@ def get_current_user(
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
-    user = users.get(user_id)
+    user = get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
@@ -108,9 +122,6 @@ technical_dossier_templates = TechnicalDossierTemplate()
 technical_dossiers: Dict[str, TechnicalDossier] = {}
 teams = defaultdict(list)
 pending_activities: List[PendingActivity] = []
-users: Dict[str, User] = {}
-user_index_by_email: Dict[str, str] = {}
-user_credentials: Dict[str, str] = {}
 
 
 def _infer_company_from_email(email: str) -> Optional[str]:
@@ -126,22 +137,30 @@ def _infer_company_from_email(email: str) -> Optional[str]:
     return cleaned.title()
 
 
-def _register_user(user: User, password: Optional[str] = None) -> None:
-    users[user.id] = user
-    user_index_by_email[user.email.lower()] = user.id
-    if password:
-        user_credentials[user.email.lower()] = password
+def _ensure_default_user() -> None:
+    with SessionLocal() as db:
+        existing = get_user_model_by_email(db, "rocio.serrano@acme.ai")
+        if existing:
+            return
+
+        contact_pref = ContactPreference(
+            method=ContactMethod.email,
+            value="rocio.serrano@acme.ai",
+        )
+
+        create_user(
+            db,
+            user_id=str(uuid4()),
+            company="Acme Corp",
+            full_name="Rocío Serrano",
+            email="rocio.serrano@acme.ai",
+            avatar=None,
+            contact=contact_pref,
+            password="demo123",
+        )
 
 
-default_user = User(
-    id=str(uuid4()),
-    company="Acme Corp",
-    full_name="Rocío Serrano",
-    email="rocio.serrano@acme.ai",
-    contact=ContactPreference(method=ContactMethod.email, value="rocio.serrano@acme.ai"),
-    avatar=None,
-)
-_register_user(default_user, password="demo123")
+_ensure_default_user()
 
 
 # ---------------------------------------------------------------------------
@@ -160,47 +179,55 @@ def health():
 
 
 @app.post("/auth/login", response_model=LoginResult)
-def login(payload: LoginPayload):
+def login(payload: LoginPayload, db: Session = Depends(get_db)):
     email = payload.email.lower()
-    user_id = user_index_by_email.get(email)
-    if not user_id:
+    user_model = get_user_model_by_email(db, email)
+    if not user_model:
         raise HTTPException(status_code=404, detail="User not found")
-    user = users[user_id]
-    if user.company:
-        if payload.company.lower().strip() != user.company.lower().strip():
+
+    if user_model.company:
+        if payload.company.lower().strip() != (user_model.company or "").lower().strip():
             raise HTTPException(status_code=403, detail="Company mismatch")
     else:
-        user.company = payload.company
+        update_user_company(db, user_model, payload.company)
 
-    stored_password = user_credentials.get(email)
-    if stored_password is None:
+    if not user_model.password_hash:
         raise HTTPException(status_code=403, detail="Password login unavailable for this user")
-    if stored_password != payload.password:
+
+    if not verify_password(payload.password, user_model.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+    user = model_to_schema(user_model)
     token = _create_access_token(user)
     return LoginResult(token=token, user=user)
 
 
 @app.post("/auth/login/sso", response_model=LoginResult)
-def login_sso(payload: SSOLoginPayload):
+def login_sso(payload: SSOLoginPayload, db: Session = Depends(get_db)):
     email = payload.email.lower()
-    user_id = user_index_by_email.get(email)
-    if user_id:
-        user = users[user_id]
-    else:
+    user_model = get_user_model_by_email(db, email)
+    if user_model is None:
         inferred_company = _infer_company_from_email(payload.email)
-        user = User(
-            id=str(uuid4()),
+        contact_pref = ContactPreference(method=ContactMethod.email, value=payload.email)
+        user_model = create_user(
+            db,
+            user_id=str(uuid4()),
             company=inferred_company,
             full_name=payload.email.split("@", 1)[0].replace(".", " ").title(),
             email=payload.email,
-            contact=ContactPreference(method=ContactMethod.email, value=payload.email),
             avatar=None,
+            contact=contact_pref,
+            password=None,
         )
-        _register_user(user)
 
-    user.company = payload.company or user.company
+    if payload.company and payload.company.strip():
+        update_user_company(db, user_model, payload.company)
+    elif not user_model.company:
+        inferred_company = _infer_company_from_email(payload.email)
+        if inferred_company:
+            update_user_company(db, user_model, inferred_company)
+
+    user = model_to_schema(user_model)
     token = _create_access_token(user)
     return LoginResult(token=token, user=user)
 
@@ -211,24 +238,28 @@ def get_current_user_profile(current_user: User = Depends(get_current_user)):
 
 
 @app.post("/auth/sign-in", response_model=SignInResponse)
-def sign_in(payload: SignInPayload):
+def sign_in(payload: SignInPayload, db: Session = Depends(get_db)):
     email = payload.email.lower()
-    if email in user_index_by_email:
+    existing = get_user_model_by_email(db, email)
+    if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
     company = _infer_company_from_email(payload.email)
-    user = User(
-        id=str(uuid4()),
+    user_id = str(uuid4())
+    temporary_password = secrets.token_urlsafe(8)
+
+    user_model = create_user(
+        db,
+        user_id=user_id,
         company=company,
         full_name=payload.full_name,
         email=payload.email,
-        contact=payload.contact,
         avatar=payload.avatar,
+        contact=payload.contact,
+        password=temporary_password,
     )
 
-    temporary_password = secrets.token_urlsafe(8)
-    _register_user(user, password=temporary_password)
-
+    user = model_to_schema(user_model)
     message = "User registered successfully. Use the temporary password to log in."
     return SignInResponse(user=user, temporary_password=temporary_password, message=message)
 
