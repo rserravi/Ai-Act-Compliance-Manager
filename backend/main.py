@@ -1,236 +1,45 @@
 import secrets
 from collections import defaultdict
-from enum import Enum
 from typing import Dict, List, Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+
+from backend.schemas import (
+    AISystem,
+    AISystemUpdate,
+    Audit,
+    Contact,
+    ContactMethod,
+    ContactPreference,
+    DashboardOverview,
+    Deliverable,
+    DeliverableAssignment,
+    DeliverableTemplate,
+    DeliverableUpdate,
+    Evidence,
+    Incident,
+    IncidentUpdate,
+    LoginPayload,
+    LoginResult,
+    OrgStructure,
+    PendingActivity,
+    RACIEntry,
+    RiskAssessment,
+    RiskWizardConfig,
+    Settings,
+    SignInPayload,
+    SignInResponse,
+    SSOLoginPayload,
+    Task,
+    TaskUpdate,
+    TeamMember,
+    TechnicalDossier,
+    TechnicalDossierTemplate,
+    User,
+)
 
 app = FastAPI(title="AI Act Compliance Manager API", version="0.1.0")
-
-
-# ---------------------------------------------------------------------------
-# Data models
-# ---------------------------------------------------------------------------
-
-
-class AISystem(BaseModel):
-    id: str
-    name: str
-    role: str  # provider/importer/distributor/user
-    risk: Optional[str] = None
-    documentation_status: Optional[str] = None
-    business_units: Optional[List[str]] = None
-    team: Optional[List[str]] = None
-
-
-class AISystemUpdate(BaseModel):
-    name: Optional[str] = None
-    role: Optional[str] = None
-    risk: Optional[str] = None
-    documentation_status: Optional[str] = None
-    business_units: Optional[List[str]] = None
-    team: Optional[List[str]] = None
-
-
-class RiskWizardConfig(BaseModel):
-    steps: List[Dict[str, str]] = []
-
-
-class RiskAssessment(BaseModel):
-    id: str
-    system_id: str
-    date: str
-    classification: str
-    justification: Optional[str] = None
-
-
-class DeliverableTemplate(BaseModel):
-    id: str
-    name: str
-    type: str
-
-
-class Deliverable(BaseModel):
-    id: str
-    system_id: str
-    name: str
-    version: Optional[str] = None
-    status: Optional[str] = None
-    link: Optional[str] = None
-
-
-class DeliverableUpdate(BaseModel):
-    version: Optional[str] = None
-    status: Optional[str] = None
-    link: Optional[str] = None
-
-
-class DeliverableAssignment(BaseModel):
-    assignee: str
-    due_date: Optional[str] = None
-
-
-class Task(BaseModel):
-    id: str
-    system_id: str
-    title: str
-    status: str
-    assignee: Optional[str] = None
-    due_date: Optional[str] = None
-
-
-class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    status: Optional[str] = None
-    assignee: Optional[str] = None
-    due_date: Optional[str] = None
-
-
-class Incident(BaseModel):
-    id: str
-    system_id: Optional[str] = None
-    severity: str
-    status: str
-    title: str
-    description: str
-
-
-class IncidentUpdate(BaseModel):
-    severity: Optional[str] = None
-    status: Optional[str] = None
-    title: Optional[str] = None
-    description: Optional[str] = None
-
-
-class Audit(BaseModel):
-    id: str
-    project_id: str
-    name: str
-    scope: str
-    date: str
-    status: str
-
-
-class Evidence(BaseModel):
-    id: str
-    project_id: str
-    type: str
-    system_id: Optional[str] = None
-    date: str
-    owner: Optional[str] = None
-
-
-class OrgStructure(BaseModel):
-    project_id: str
-    business_units: List[str] = []
-    contacts: List[str] = []
-
-
-class RACIEntry(BaseModel):
-    role: str
-    responsible: List[str]
-    accountable: List[str]
-    consulted: List[str]
-    informed: List[str]
-
-
-class Contact(BaseModel):
-    id: str
-    project_id: str
-    name: str
-    role: str
-    email: Optional[str] = None
-
-
-class DashboardOverview(BaseModel):
-    kpis: Dict[str, str] = {}
-    compliance_distribution: Dict[str, float] = {}
-    timeline: List[Dict[str, str]] = []
-    pending_actions: List[str] = []
-
-
-class Settings(BaseModel):
-    language: Optional[str] = None
-    theme: Optional[str] = None
-    notifications: Optional[List[str]] = None
-    api_key: Optional[str] = None
-
-
-class TechnicalDossierTemplate(BaseModel):
-    sections: List[Dict[str, str]] = []
-
-
-class TechnicalDossier(BaseModel):
-    system_id: str
-    fields: Dict[str, str] = {}
-
-
-class TeamMember(BaseModel):
-    id: str
-    system_id: str
-    name: str
-    role: str
-
-
-class PendingActivity(BaseModel):
-    id: str
-    description: str
-    due_date: Optional[str] = None
-
-
-class ContactMethod(str, Enum):
-    email = "email"
-    sms = "sms"
-    whatsapp = "whatsapp"
-    slack = "slack"
-
-
-class ContactPreference(BaseModel):
-    method: ContactMethod
-    value: str
-    workspace: Optional[str] = None
-    channel: Optional[str] = None
-
-
-class User(BaseModel):
-    id: str
-    company: Optional[str] = None
-    full_name: str
-    email: str
-    contact: ContactPreference
-    avatar: Optional[str] = None
-
-
-class LoginPayload(BaseModel):
-    company: str
-    email: str
-    password: str
-
-
-class SSOLoginPayload(BaseModel):
-    company: str
-    email: str
-    provider: str
-
-
-class LoginResult(BaseModel):
-    token: str
-    user: User
-
-
-class SignInPayload(BaseModel):
-    full_name: str
-    email: str
-    contact: ContactPreference
-    avatar: Optional[str] = None
-
-
-class SignInResponse(BaseModel):
-    user: User
-    temporary_password: str
-    message: str
 
 
 # ---------------------------------------------------------------------------
