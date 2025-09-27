@@ -166,6 +166,40 @@ flowchart LR
 
 ---
 
+## 🛠️ Puesta en marcha del backend (FastAPI)
+
+Sigue estos pasos para levantar el servidor de desarrollo y acceder a la documentación interactiva de la API:
+
+1. **Crea y activa un entorno virtual de Python 3.11+**
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # En Windows: .venv\Scripts\activate
+   ```
+
+2. **Instala las dependencias del backend**
+
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+3. **Arranca el servidor FastAPI con Uvicorn**
+
+   Ejecuta el comando desde la raíz del repositorio para que se resuelvan correctamente los imports relativos:
+
+   ```bash
+   uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+4. **Abre la documentación interactiva**
+
+   - Documentación Swagger UI: <http://localhost:8000/docs>
+   - Documentación alternativa ReDoc: <http://localhost:8000/redoc>
+
+Con `--reload` el servidor se reiniciará automáticamente al detectar cambios en el código.
+
+---
+
 ## 📚 Referencias
 
 - [Texto completo del AI Act (2024)](https://artificialintelligenceact.eu/)
