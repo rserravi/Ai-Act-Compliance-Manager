@@ -1,5 +1,4 @@
 import os
-import secrets
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
@@ -53,6 +52,7 @@ from backend.schemas import (
     TechnicalDossier,
     TechnicalDossierTemplate,
     User,
+    UserPreferences,
 )
 
 load_dotenv()
@@ -157,6 +157,7 @@ def _ensure_default_user() -> None:
             avatar=None,
             contact=contact_pref,
             password="demo123",
+            preferences=UserPreferences(language="es"),
         )
 
 
@@ -244,9 +245,10 @@ def sign_in(payload: SignInPayload, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    company = _infer_company_from_email(payload.email)
+    company = payload.company.strip() if payload.company.strip() else None
+    if company is None:
+        company = _infer_company_from_email(payload.email)
     user_id = str(uuid4())
-    temporary_password = secrets.token_urlsafe(8)
 
     user_model = create_user(
         db,
@@ -256,12 +258,13 @@ def sign_in(payload: SignInPayload, db: Session = Depends(get_db)):
         email=payload.email,
         avatar=payload.avatar,
         contact=payload.contact,
-        password=temporary_password,
+        password=payload.password,
+        preferences=payload.preferences,
     )
 
     user = model_to_schema(user_model)
-    message = "User registered successfully. Use the temporary password to log in."
-    return SignInResponse(user=user, temporary_password=temporary_password, message=message)
+    message = "User registered successfully."
+    return SignInResponse(user=user, message=message)
 
 
 # ---------------------------------------------------------------------------

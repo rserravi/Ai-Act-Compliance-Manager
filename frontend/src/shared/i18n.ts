@@ -54,7 +54,10 @@ const resources = {
           title: "Crea tu cuenta",
           subtitle: "Registra tu equipo para comenzar a gestionar el cumplimiento.",
           fullName: "Nombre completo",
+          company: "Empresa",
           email: "Correo electrónico",
+          password: "Contraseña",
+          passwordHelper: "Al menos 6 caracteres, una mayúscula y un carácter especial.",
           contactLabel: "Preferencia de contacto principal",
           contactEmail: "Correo de contacto",
           contactPhoneSms: "Número de móvil (SMS)",
@@ -82,7 +85,6 @@ const resources = {
           ssoError: "El inicio de sesión SSO ha fallado.",
           signUpSuccess: "Registro completado para {{name}}.",
           signUpError: "No se pudo completar el registro.",
-          temporaryPassword: "Tu contraseña temporal es: {{password}}",
           avatarError: "No se pudo cargar la imagen seleccionada."
         }
       },
@@ -723,7 +725,10 @@ const resources = {
           title: "Create your account",
           subtitle: "Register your team to start managing AI Act compliance.",
           fullName: "Full name",
+          company: "Company",
           email: "Work email",
+          password: "Password",
+          passwordHelper: "At least 6 characters, one uppercase letter and one special character.",
           contactLabel: "Preferred contact method",
           contactEmail: "Contact email",
           contactPhoneSms: "Mobile number (SMS)",
@@ -751,7 +756,6 @@ const resources = {
           ssoError: "SSO sign-in failed.",
           signUpSuccess: "Registration completed for {{name}}.",
           signUpError: "We couldn't finish the registration.",
-          temporaryPassword: "Your temporary password is: {{password}}",
           avatarError: "We couldn't process the selected image."
         }
       },
@@ -1241,7 +1245,10 @@ const resources = {
           title: "Crea el teu compte",
           subtitle: "Registra el teu equip per començar a gestionar el compliment de l'AI Act.",
           fullName: "Nom complet",
+          company: "Empresa",
           email: "Correu electrònic",
+          password: "Contrasenya",
+          passwordHelper: "Mínim 6 caràcters, una majúscula i un caràcter especial.",
           contactLabel: "Mètode de contacte preferit",
           contactEmail: "Correu de contacte",
           contactPhoneSms: "Número mòbil (SMS)",
@@ -1269,7 +1276,6 @@ const resources = {
           ssoError: "Error en l'inici de sessió SSO.",
           signUpSuccess: "Registre completat per {{name}}.",
           signUpError: "No s'ha pogut completar el registre.",
-          temporaryPassword: "La teva contrasenya temporal és: {{password}}",
           avatarError: "No s'ha pogut carregar la imatge seleccionada."
         }
       },
@@ -1759,7 +1765,10 @@ const resources = {
           title: "Créer votre compte",
           subtitle: "Inscrivez votre équipe pour gérer la conformité à l'AI Act.",
           fullName: "Nom complet",
+          company: "Entreprise",
           email: "E-mail professionnel",
+          password: "Mot de passe",
+          passwordHelper: "Au moins 6 caractères, une majuscule et un caractère spécial.",
           contactLabel: "Méthode de contact préférée",
           contactEmail: "E-mail de contact",
           contactPhoneSms: "Numéro de mobile (SMS)",
@@ -1787,7 +1796,6 @@ const resources = {
           ssoError: "La connexion SSO a échoué.",
           signUpSuccess: "Inscription terminée pour {{name}}.",
           signUpError: "Impossible de finaliser l'inscription.",
-          temporaryPassword: "Votre mot de passe temporaire est : {{password}}",
           avatarError: "Impossible de traiter l'image sélectionnée."
         }
       },

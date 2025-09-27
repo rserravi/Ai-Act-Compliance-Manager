@@ -29,6 +29,7 @@ from .team_member import TeamMember
 from .technical_dossier import TechnicalDossier
 from .technical_dossier_template import TechnicalDossierTemplate
 from .user import User
+from .user_preferences import UserPreferences
 
 __all__ = [
     "AISystem",
@@ -62,4 +63,5 @@ __all__ = [
     "TechnicalDossier",
     "TechnicalDossierTemplate",
     "User",
+    "UserPreferences",
 ]

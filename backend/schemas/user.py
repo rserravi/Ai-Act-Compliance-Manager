@@ -3,6 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .contact_preference import ContactPreference
+from .user_preferences import UserPreferences
 
 
 class User(BaseModel):
@@ -12,3 +13,4 @@ class User(BaseModel):
     email: str
     contact: ContactPreference
     avatar: Optional[str] = None
+    preferences: UserPreferences
