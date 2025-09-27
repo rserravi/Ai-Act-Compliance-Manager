@@ -1,0 +1,2041 @@
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+export const supportedLanguages = ['es', 'en', 'ca', 'fr'] as const
+export type SupportedLanguage = typeof supportedLanguages[number]
+
+const resources = {
+  es: {
+    translation: {
+      app: {
+        title: "Gestor de Cumplimiento del AI Act",
+        shortTitle: "AI Act CM",
+        searchPlaceholder: "Buscar…",
+        searchAria: "Buscar en la aplicación",
+        greeting: "Hola",
+        languageLabel: "Idioma",
+        languageSelectAria: "Seleccionar idioma"
+      },
+      nav: {
+        dashboard: "Dashboard",
+        projects: "Proyectos",
+        risk: "Riesgo",
+        incidents: "Incidentes",
+        calendar: "Calendario",
+        org: "Org & Roles",
+        audit: "Auditoría",
+        settings: "Ajustes",
+        projectGroup: "Proyecto: {{name}}",
+        project: {
+          deliverables: "Entregables",
+          calendar: "Calendario",
+          org: "Org y Roles",
+          audit: "Auditoría"
+        }
+      },
+      deliverables: {
+        title: "Entregables del Proyecto",
+        columns: {
+          name: "Entregable",
+          status: "Estado",
+          version: "Versión",
+          actions: "Acciones"
+        },
+        actions: {
+          upload: "Subir",
+          assign: "Asignar"
+        },
+        assignModal: {
+          title: "Asignar Entregable",
+          assignee: "Asignar a",
+          dueDate: "Fecha de entrega"
+        }
+      },
+      languages: {
+        es: { short: "ES", full: "Español" },
+        en: { short: "EN", full: "English" },
+        ca: { short: "CA", full: "Català" },
+        fr: { short: "FR", full: "Français" }
+      },
+      common: {
+        cancel: "Cancelar",
+        send: "Enviar",
+        back: "Atrás",
+        next: "Siguiente",
+        finish: "Finalizar",
+        view: "Ver",
+        loading: "Cargando…",
+        notFound: "No encontrado",
+        notAvailable: "N/D"
+      },
+      dashboard: {
+        metrics: {
+          docValid: "DoC vigente",
+          highRisk: "Sistemas alto riesgo",
+          totalSystems: "Total sistemas",
+          tasksToday: "Tareas hoy",
+          tasksPending_one: "{{count}} pendiente",
+          tasksPending_other: "{{count}} pendientes"
+        },
+        compliance: {
+          title: "Semáforo de cumplimiento",
+          subtitle: "Estado de la documentación por unidad de negocio",
+          legendTitle: "Leyenda",
+          units: {
+            noData: "Sin datos de cumplimiento disponibles"
+          },
+          totalLabel_one: "1 sistema",
+          totalLabel_other: "{{count}} sistemas"
+        },
+        timeline: {
+          title: "Eventos recientes",
+          subtitle: "Últimas actividades registradas",
+          empty: "Sin eventos recientes",
+          types: {
+            riskAssessment: "Riesgo",
+            incidentClosed: "Incidente",
+            documentUpdated: "Documentación",
+            taskCreated: "Workflow"
+          },
+          items: {
+            riskAssessment: {
+              title: "Evaluación de riesgo actualizada",
+              description: "El sistema {{system}} se clasificó como {{risk}}"
+            },
+            incidentClosed: {
+              title: "Incidente cerrado",
+              description: "Caso {{incident}} resuelto por {{owner}}"
+            },
+            documentUpdated: {
+              title: "Documentación actualizada",
+              description: "Se publicó {{document}} para {{system}}"
+            },
+            taskCreated: {
+              title: "Nueva tarea de cumplimiento",
+              description: "{{task}} asignado al equipo de {{system}}"
+            }
+          }
+        },
+        actions: {
+          title: "Acciones pendientes",
+          subtitle: "Seguimiento de tareas clave",
+          empty: "Sin acciones pendientes",
+          columns: {
+            task: "Acción",
+            system: "Sistema",
+            due: "Fecha",
+            owner: "Responsable",
+            status: "Estado",
+            priority: "Prioridad"
+          },
+          status: {
+            todo: "Pendiente",
+            in_review: "En revisión",
+            approved: "Aprobado"
+          },
+          priority: {
+            high: "Alta",
+            medium: "Media",
+            low: "Baja"
+          },
+          items: {
+            reviewRisk: "Revisar plan de mitigación para {{system}}",
+            updateDossier: "Actualizar expediente técnico de {{system}}",
+            scheduleAudit: "Programar auditoría interna de {{system}}",
+            validateIncident: "Validar seguimiento del incidente en {{system}}"
+          }
+        }
+      },
+
+      calendarWorkflows: {
+        title: "Calendario & Workflows",
+        calendar: {
+          title: "Próximos hitos",
+          subtitle: "Eventos de cumplimiento para la semana en curso",
+          legendTitle: "Tipos de evento",
+          weekdays: {
+            mon: "Lun",
+            tue: "Mar",
+            wed: "Mié",
+            thu: "Jue",
+            fri: "Vie"
+          },
+          eventTypes: {
+            docRenewal: "DoC",
+            auditPrep: "Auditoría",
+            retrain: "Reentrenamiento"
+          },
+          events: {
+            docRenewal: {
+              title: "Renovación de DoC",
+              description: "Actualizar documentación de {{system}}"
+            },
+            auditPrep: {
+              title: "Preparación de auditoría",
+              description: "Revisión de evidencias para {{system}}"
+            },
+            retrain: {
+              title: "Reentrenamiento planificado",
+              description: "Validar dataset de {{system}}"
+            }
+          }
+        },
+        workflows: {
+          title: "Workflows activos",
+          subtitle: "Tablero kanban de cumplimiento",
+          columns: {
+            backlog: "Backlog",
+            inProgress: "En curso",
+            review: "Revisión",
+            done: "Completado"
+          },
+          priority: {
+            high: "Alta",
+            medium: "Media",
+            low: "Baja"
+          },
+          items: {
+            updateDataset: "Actualizar dataset de entrenamiento",
+            incidentResponse: "Respuesta a incidente de {{system}}",
+            legalReview: "Revisión legal de obligaciones",
+            publishReport: "Publicar informe de cumplimiento"
+          }
+        }
+      },
+      orgRoles: {
+        title: "Organización & roles",
+        units: {
+          title: "Unidades de negocio",
+          description: "Responsables principales de cada ámbito regulatorio"
+        },
+        matrix: {
+          title: "Matriz RACI por sistema",
+          columns: {
+            system: "Sistema",
+            responsible: "R",
+            accountable: "A",
+            consulted: "C",
+            informed: "I"
+          }
+        },
+        contacts: {
+          title: "Contactos clave",
+          columns: {
+            name: "Nombre",
+            role: "Rol",
+            email: "Correo",
+            phone: "Teléfono"
+          }
+        },
+        roles: {
+          complianceLead: "Líder de cumplimiento",
+          riskOwner: "Responsable de riesgos",
+          legalAdvisor: "Asesor legal",
+          dataSteward: "Data steward"
+        }
+      },
+      auditEvidences: {
+        title: "Auditorías & evidencias",
+        tabs: {
+          audits: "Auditorías",
+          evidences: "Evidencias"
+        },
+        audits: {
+          upcomingTitle: "Próximas auditorías",
+          columns: {
+            name: "Auditoría",
+            scope: "Ámbito",
+            date: "Fecha",
+            owner: "Responsable",
+            status: "Estado"
+          },
+          status: {
+            scheduled: "Programada",
+            in_progress: "En curso",
+            completed: "Completada"
+          }
+        },
+        evidences: {
+          tableTitle: "Repositorio de evidencias",
+          columns: {
+            id: "ID",
+            type: "Tipo",
+            system: "Sistema",
+            updated: "Actualizado",
+            owner: "Propietario"
+          },
+          types: {
+            dataset: "Dataset",
+            audit: "Auditoría",
+            security: "Seguridad"
+          }
+        }
+      },
+      settings: {
+        title: "Ajustes de la aplicación",
+        preferences: {
+          title: "Preferencias",
+          language: "Idioma de la interfaz",
+          theme: "Tema",
+          themeOptions: {
+            light: "Claro",
+            dark: "Oscuro"
+          }
+        },
+        notifications: {
+          title: "Notificaciones",
+          channels: {
+            email: "Correo electrónico",
+            slack: "Slack",
+            sms: "SMS"
+          }
+        },
+        integrations: {
+          title: "Integraciones",
+          apiKey: "Clave API",
+          regenerate: "Regenerar"
+        }
+      },
+
+      projects: {
+        actions: {
+          newProject: "Nuevo proyecto"
+        },
+        filters: {
+          role: {
+            label: "Rol",
+            all: "Todos"
+          },
+          risk: {
+            label: "Riesgo",
+            all: "Todos"
+          },
+          doc: {
+            label: "Documentación",
+            all: "Todas"
+          },
+          search: {
+            label: "Buscar proyectos…"
+          }
+        },
+        columns: {
+          name: "Proyecto",
+          role: "Rol",
+          state: "Estado",
+          risk: "Riesgo",
+          docStatus: "DoC",
+          lastAssessment: "Últ. evaluación",
+          actions: "Acciones"
+        },
+        state: {
+          labels: {
+            initial: "Inicio",
+            in_progress: "En curso",
+            maintenance: "Mantenimiento"
+          }
+        },
+        wizard: {
+          title: "Asistente de Nuevo Proyecto",
+          addContact: "Añadir Contacto",
+          steps: {
+            details: "Detalles",
+            team: "Equipo",
+            riskAssessment: "Evaluación de Riesgo",
+            summary: "Resumen"
+          },
+          fields: {
+            name: "Nombre del proyecto",
+            role: "Rol en la cadena de valor",
+            businessUnit: "Unidad de negocio (opcional)",
+            team: "Miembros del equipo",
+            risk: "Riesgo identificado",
+            notes: "Notas adicionales"
+          },
+          contact: {
+            name: "Nombre",
+            role: "Rol",
+            email: "Email",
+            phone: "Teléfono",
+            notification: "Método de aviso"
+          },
+          descriptions: {
+            team: "Añade los contactos clave para este proyecto."
+          },
+          placeholders: {
+            team: "p.ej. ada.lovelace@example.com, grace.hopper@example.com",
+            notes: "Anotaciones sobre el alcance, el contexto o los próximos pasos..."
+          },
+          summary: {
+            title: "Resumen del Proyecto"
+          },
+          finish: "Crear Proyecto"
+        }
+      },
+      incidents: {
+        columns: {
+          id: "ID",
+          system: "Sistema",
+          severity: "Severidad",
+          status: "Estado",
+          date: "Fecha"
+        }
+      },
+      roles: {
+        provider: "Proveedor",
+        importer: "Importador",
+        distributor: "Distribuidor",
+        user: "Usuario"
+      },
+      riskLevels: {
+        inaceptable: "Inaceptable",
+        alto: "Alto",
+        limitado: "Limitado",
+        minimo: "Mínimo"
+      },
+      docStatus: {
+        vigente: "Vigente",
+        obsoleta: "Obsoleta",
+        borrador: "Borrador",
+        na: "N/A"
+      },
+      incident: {
+        severity: {
+          alta: "Alta",
+          media: "Media",
+          baja: "Baja"
+        },
+        status: {
+          abierto: "Abierto",
+          en_revision: "En revisión",
+          cerrado: "Cerrado"
+        }
+      },
+      systemDetail: {
+        loading: "Cargando…",
+        notFound: "No encontrado",
+        chips: {
+          role: "Rol: {{role}}",
+          risk: "Riesgo: {{risk}}",
+          doc: "DoC: {{doc}}"
+        },
+        actions: {
+          reportIncident: "Reportar incidente"
+        },
+        alerts: {
+          incidentReported: "Incidente reportado ({{id}})"
+        },
+        tabs: {
+          overview: "Resumen",
+          risk: "Riesgo",
+          documentation: "Documentación",
+          workflows: "Workflows",
+          evidences: "Evidencias",
+          history: "Historial"
+        },
+        content: {
+          overview: "Metadatos y últimos cambios…",
+          riskTitle: "Evaluaciones de riesgo",
+          riskEmpty: "Sin evaluaciones aún.",
+          documentation: "Expediente Técnico (secciones)…",
+          workflows: "Kanban de cumplimiento…",
+          evidences: "Evidencias adjuntas…",
+          history: "Timeline de cambios…"
+        },
+        dialog: {
+          title: "Reportar incidente",
+          fields: {
+            title: "Título",
+            severity: "Severidad",
+            description: "Descripción"
+          },
+          actions: {
+            cancel: "Cancelar",
+            submit: "Enviar"
+          }
+        }
+      },
+      technicalDossier: {
+        title: "Expediente Técnico (AI Act - Anexo IV)",
+        actions: {
+          sync: "Sincronizar con backend",
+          syncSuccess: "Expediente sincronizado con backend (mock)"
+        },
+        sections: {
+          general_info: {
+            title: "Información general",
+            fields: {
+              system_name: "Nombre del sistema",
+              provider: "Proveedor",
+              contact: "Contacto responsable"
+            }
+          },
+          description: {
+            title: "Descripción del sistema",
+            fields: {
+              purpose: "Finalidad prevista",
+              architecture: "Arquitectura técnica",
+              lifecycle: "Ciclo de vida del desarrollo"
+            }
+          }
+        }
+      },
+      riskWizard: {
+        steps: {
+          context: "Contexto",
+          rights: "Derechos",
+          biometric: "Biométrico",
+          damage: "Daño",
+          annexIII: "Anexo III",
+          transparency: "Transparencia",
+          result: "Resultado"
+        },
+        form: {
+          yes: "Sí",
+          no: "No",
+          selectPlaceholder: "Selecciona una opción..."
+        },
+        result: {
+          title: "Resultado de la Evaluación de Riesgo",
+          classificationLabel: "Clasificación Sugerida",
+          justification: "Justificación",
+          implications: "Implicaciones",
+          nextSteps: "Próximos Pasos"
+        },
+        results: {
+          alto: {
+            title: "Riesgo Alto",
+            implications: "El sistema de IA se clasifica como de alto riesgo según el AI Act. Esto implica que está sujeto a requisitos legales estrictos antes y después de su puesta en el mercado, incluyendo evaluaciones de conformidad, registro en bases de datos de la UE y un sistema robusto de gestión de riesgos.",
+            next_steps: [
+              "Realizar una evaluación de conformidad completa según el Anexo VI.",
+              "Registrar el sistema en la base de datos de la UE antes de su comercialización.",
+              "Establecer un sistema de gestión de riesgos continuo.",
+              "Garantizar una alta calidad y gobernanza de los datos de entrenamiento y prueba.",
+              "Asegurar un nivel apropiado de supervisión humana y ciberseguridad."
+            ]
+          },
+          limitado: {
+            title: "Riesgo Limitado",
+            implications: "El sistema presenta un riesgo limitado, principalmente relacionado con la transparencia. No se aplican los requisitos de los sistemas de alto riesgo, pero se deben cumplir obligaciones específicas para asegurar que los usuarios finales estén informados.",
+            next_steps: [
+              "Asegurar que los usuarios sean informados de que están interactuando con un sistema de IA (p.ej. en chatbots).",
+              "Etiquetar de forma clara y visible el contenido generado o manipulado por la IA (p.ej. 'deep fakes').",
+              "Evaluar periódicamente si los casos de uso del sistema podrían evolucionar hacia un riesgo mayor."
+            ]
+          },
+          minimo: {
+            title: "Riesgo Mínimo",
+            implications: "El sistema se considera de riesgo mínimo o nulo. El AI Act no impone obligaciones legales para esta categoría, permitiendo su libre uso.",
+            next_steps: [
+              "Se recomienda la adhesión voluntaria a códigos de conducta para fomentar la confianza.",
+              "Monitorizar el uso del sistema para detectar posibles nuevos riesgos no contemplados en la evaluación inicial.",
+              "No se requieren acciones de cumplimiento obligatorias."
+            ]
+          }
+        }
+      },
+      riskWizardDynamic: {
+        steps: {
+          context: "Contexto",
+          biometric: "Identificación Biométrica",
+          damage: "Posible daño",
+          annexIII: "Anexo III",
+          transparency: "Transparencia",
+          result: "Resultado"
+        },
+        questions: {
+          fundamental_rights: {
+            text: "¿Sobre qué derechos fundamentales podría incidir el sistema?",
+            options: {
+              dignidad: "Dignidad",
+              libertades: "Libertades",
+              igualdad: "Igualdad",
+              solidaridad: "Solidaridad",
+              derechos_de_los_ciudadanos: "Derechos de los ciudadanos",
+              justicia: "Justicia",
+              ninguno_de_los_anteriores: "Ninguno de los anteriores"
+            }
+          },
+          sector: {
+            text: "Sector principal de uso",
+            options: {
+              salud: "Salud",
+              educacion: "Educación",
+              seguridad: "Seguridad",
+              finanzas: "Finanzas",
+              otros: "Otros"
+            }
+          },
+          biometric_use: {
+            text: "¿Qué tipo de sistema de identificación biométrica utiliza?",
+            options: {
+              identificación_biométrica_remota_en_tiempo_real: "Identificación biométrica remota 'en tiempo real'",
+              identificación_biométrica_remota_a_posteriori: "Identificación biométrica remota 'a posteriori'",
+              categorización_biométrica_basada_en_atributos_sensibles: "Categorización biométrica basada en atributos sensibles",
+              reconocimiento_de_emociones: "Reconocimiento de emociones",
+              extracción_no_selectiva_de_imágenes_faciales: "Extracción no selectiva de imágenes faciales",
+              no_se_utiliza_ninguno_de_estos_sistemas: "No se utiliza ninguno de estos sistemas"
+            }
+          },
+          harm_level: {
+            text: "¿Qué tipos de daño podría causar el sistema?",
+            options: {
+              daño_grave_a_la_salud_o_integridad_física: "Daño grave a la salud o integridad física",
+              daño_psicológico_significativo: "Daño psicológico significativo",
+              perjuicio_económico_sustancial: "Perjuicio económico sustancial",
+              daño_grave_al_medio_ambiente: "Daño grave al medio ambiente",
+              interrupción_de_infraestructuras_críticas: "Interrupción de infraestructuras críticas",
+              ninguno: "Ninguno"
+            }
+          },
+          annex_sector: {
+            text: "¿Se encuadra en alguno de los sectores del Anexo III?",
+            options: {
+              empleo: "Empleo",
+              credito: "Crédito",
+              educacion: "Educación",
+              sanidad: "Sanidad",
+              policia_judicial: "Policía/Judicial",
+              no_aplica_a_ninguno_de_estos_sectores: "No aplica a ninguno de estos sectores"
+            }
+          },
+          human_disclosure: {
+            text: "¿El sistema informa claramente cuando interactúa una IA?"
+          },
+          human_disclosure_method: {
+            text: "Por favor, describe el método utilizado para informar:"
+          }
+        },
+        rules: {
+          biometric_use: "Uso de un sistema de identificación biométrica considerado de alto riesgo.",
+          annex_sector: "Ámbito regulado por Anexo III",
+          harm_level_high: "El sistema puede causar un tipo de daño considerado de alto riesgo.",
+          fundamental_rights: "El sistema puede afectar a derechos fundamentales.",
+          default: "No se identificaron factores de alto riesgo"
+        }
+      },
+      placeholders: {
+        auditEvidences: "Vista Auditoría & Evidencias (placeholder)",
+        calendarWorkflows: "Vista Calendario & Workflows (placeholder)",
+        orgRoles: "Vista Org & Roles (placeholder)",
+        settings: "Vista Ajustes (placeholder)"
+      }
+    }
+  },
+  en: {
+    translation: {
+      app: {
+        title: "AI Act Compliance Manager",
+        shortTitle: "AI Act CM",
+        searchPlaceholder: "Search…",
+        searchAria: "Search across the application",
+        greeting: "Hello",
+        languageLabel: "Language",
+        languageSelectAria: "Select language"
+      },
+      nav: {
+        dashboard: "Dashboard",
+        projects: "Projects",
+        risk: "Risk",
+        incidents: "Incidents",
+        calendar: "Calendar",
+        org: "Org & Roles",
+        audit: "Audit",
+        settings: "Settings",
+        projectGroup: "Project: {{name}}",
+        project: {
+          deliverables: "Deliverables",
+          calendar: "Calendar",
+          org: "Org & Roles",
+          audit: "Audit"
+        }
+      },
+      deliverables: {
+        title: "Project Deliverables",
+        columns: {
+          name: "Deliverable",
+          status: "Status",
+          version: "Version",
+          actions: "Actions"
+        },
+        actions: {
+          upload: "Upload",
+          assign: "Assign"
+        },
+        assignModal: {
+          title: "Assign Deliverable",
+          assignee: "Assign to",
+          dueDate: "Due Date"
+        }
+      },
+      languages: {
+        es: { short: "ES", full: "Spanish" },
+        en: { short: "EN", full: "English" },
+        ca: { short: "CA", full: "Catalan" },
+        fr: { short: "FR", full: "French" }
+      },
+      common: {
+        cancel: "Cancel",
+        send: "Send",
+        back: "Back",
+        next: "Next",
+        finish: "Finish",
+        view: "View",
+        loading: "Loading…",
+        notFound: "Not found",
+        notAvailable: "N/A"
+      },
+      dashboard: {
+        metrics: {
+          docValid: "Valid DoC",
+          highRisk: "High-risk systems",
+          totalSystems: "Total systems",
+          tasksToday: "Tasks today",
+          tasksPending_one: "{{count}} pending task",
+          tasksPending_other: "{{count}} pending tasks"
+        },
+        compliance: {
+          title: "Compliance traffic light",
+          subtitle: "Documentation status by business unit",
+          legendTitle: "Legend",
+          units: {
+            noData: "No compliance data available"
+          },
+          totalLabel_one: "1 system",
+          totalLabel_other: "{{count}} systems"
+        },
+        timeline: {
+          title: "Recent activity",
+          subtitle: "Latest recorded updates",
+          empty: "No recent events",
+          types: {
+            riskAssessment: "Risk",
+            incidentClosed: "Incident",
+            documentUpdated: "Documentation",
+            taskCreated: "Workflow"
+          },
+          items: {
+            riskAssessment: {
+              title: "Risk assessment updated",
+              description: "System {{system}} classified as {{risk}}"
+            },
+            incidentClosed: {
+              title: "Incident closed",
+              description: "Case {{incident}} resolved by {{owner}}"
+            },
+            documentUpdated: {
+              title: "Documentation updated",
+              description: "{{document}} published for {{system}}"
+            },
+            taskCreated: {
+              title: "New compliance task",
+              description: "{{task}} assigned to the {{system}} team"
+            }
+          }
+        },
+        actions: {
+          title: "Pending actions",
+          subtitle: "Key follow-up items",
+          empty: "No pending actions",
+          columns: {
+            task: "Action",
+            system: "System",
+            due: "Due date",
+            owner: "Owner",
+            status: "Status",
+            priority: "Priority"
+          },
+          status: {
+            todo: "To do",
+            in_review: "In review",
+            approved: "Approved"
+          },
+          priority: {
+            high: "High",
+            medium: "Medium",
+            low: "Low"
+          },
+          items: {
+            reviewRisk: "Review mitigation plan for {{system}}",
+            updateDossier: "Update technical dossier for {{system}}",
+            scheduleAudit: "Schedule internal audit for {{system}}",
+            validateIncident: "Validate incident follow-up in {{system}}"
+          }
+        }
+      },
+      projects: {
+        actions: {
+          newProject: "New project"
+        },
+        filters: {
+          role: {
+            label: "Role",
+            all: "All"
+          },
+          risk: {
+            label: "Risk",
+            all: "All"
+          },
+          doc: {
+            label: "Documentation",
+            all: "All"
+          },
+          search: {
+            label: "Search projects…"
+          }
+        },
+        columns: {
+          name: "Project",
+          role: "Role",
+          state: "Status",
+          risk: "Risk",
+          docStatus: "DoC",
+          lastAssessment: "Last assessment",
+          actions: "Actions"
+        },
+        state: {
+          labels: {
+            initial: "Kick-off",
+            in_progress: "In progress",
+            maintenance: "Maintenance"
+          }
+        },
+        wizard: {
+          title: "New Project Wizard",
+          addContact: "Add Contact",
+          steps: {
+            details: "Details",
+            team: "Team",
+            riskAssessment: "Risk Assessment",
+            summary: "Summary"
+          },
+          fields: {
+            name: "Project name",
+            role: "Role in the value chain",
+            businessUnit: "Business unit (optional)",
+            team: "Team members",
+            risk: "Identified risk",
+            notes: "Additional notes"
+          },
+          contact: {
+            name: "Name",
+            role: "Role",
+            email: "Email",
+            phone: "Phone",
+            notification: "Notification method"
+          },
+          descriptions: {
+            team: "Add the key contacts for this project."
+          },
+          placeholders: {
+            team: "e.g. ada.lovelace@example.com, grace.hopper@example.com",
+            notes: "Notes about scope, context, or next steps..."
+          },
+          summary: {
+            title: "Project Summary"
+          },
+          finish: "Create Project"
+        }
+      },
+      incidents: {
+        columns: {
+          id: "ID",
+          system: "System",
+          severity: "Severity",
+          status: "Status",
+          date: "Date"
+        }
+      },
+      roles: {
+        provider: "Provider",
+        importer: "Importer",
+        distributor: "Distributor",
+        user: "User"
+      },
+      riskLevels: {
+        inaceptable: "Unacceptable",
+        alto: "High",
+        limitado: "Limited",
+        minimo: "Minimal"
+      },
+      docStatus: {
+        vigente: "Current",
+        obsoleta: "Obsolete",
+        borrador: "Draft",
+        na: "N/A"
+      },
+      incident: {
+        severity: {
+          alta: "High",
+          media: "Medium",
+          baja: "Low"
+        },
+        status: {
+          abierto: "Open",
+          en_revision: "In review",
+          cerrado: "Closed"
+        }
+      },
+      systemDetail: {
+        loading: "Loading…",
+        notFound: "Not found",
+        chips: {
+          role: "Role: {{role}}",
+          risk: "Risk: {{risk}}",
+          doc: "DoC: {{doc}}"
+        },
+        actions: {
+          reportIncident: "Report incident"
+        },
+        alerts: {
+          incidentReported: "Incident reported ({{id}})"
+        },
+        tabs: {
+          overview: "Overview",
+          risk: "Risk",
+          documentation: "Documentation",
+          workflows: "Workflows",
+          evidences: "Evidence",
+          history: "History"
+        },
+        content: {
+          overview: "Metadata and latest updates…",
+          riskTitle: "Risk assessments",
+          riskEmpty: "No assessments yet.",
+          documentation: "Technical dossier sections…",
+          workflows: "Compliance kanban…",
+          evidences: "Attached evidence…",
+          history: "Change timeline…"
+        },
+        dialog: {
+          title: "Report incident",
+          fields: {
+            title: "Title",
+            severity: "Severity",
+            description: "Description"
+          },
+          actions: {
+            cancel: "Cancel",
+            submit: "Send"
+          }
+        }
+      },
+      technicalDossier: {
+        title: "Technical Dossier (AI Act - Annex IV)",
+        actions: {
+          sync: "Sync with backend",
+          syncSuccess: "Technical dossier synced with backend (mock)"
+        },
+        sections: {
+          general_info: {
+            title: "General information",
+            fields: {
+              system_name: "System name",
+              provider: "Provider",
+              contact: "Responsible contact"
+            }
+          },
+          description: {
+            title: "System description",
+            fields: {
+              purpose: "Intended purpose",
+              architecture: "Technical architecture",
+              lifecycle: "Development lifecycle"
+            }
+          }
+        }
+      },
+      riskWizard: {
+        steps: {
+          context: "Context",
+          rights: "Rights",
+          biometric: "Biometric",
+          damage: "Harm",
+          annexIII: "Annex III",
+          transparency: "Transparency",
+          result: "Result"
+        },
+        form: {
+          yes: "Yes",
+          no: "No",
+          selectPlaceholder: "Select an option..."
+        },
+        result: {
+          title: "Risk Assessment Result",
+          classificationLabel: "Suggested Classification",
+          justification: "Justification",
+          implications: "Implications",
+          nextSteps: "Next Steps"
+        },
+        results: {
+          alto: {
+            title: "High Risk",
+            implications: "The AI system is classified as high-risk under the AI Act. This means it is subject to strict legal requirements before and after being placed on the market, including conformity assessments, EU database registration, and a robust risk management system.",
+            next_steps: [
+              "Conduct a full conformity assessment as per Annex VI.",
+              "Register the system in the EU database before market entry.",
+              "Establish a continuous risk management system.",
+              "Ensure high-quality data governance for training and testing data.",
+              "Ensure appropriate levels of human oversight and cybersecurity."
+            ]
+          },
+          limitado: {
+            title: "Limited Risk",
+            implications: "The system presents a limited risk, primarily related to transparency. The requirements for high-risk systems do not apply, but specific obligations must be met to ensure end-users are informed.",
+            next_steps: [
+              "Ensure users are informed they are interacting with an AI system (e.g., in chatbots).",
+              "Clearly and visibly label AI-generated or manipulated content (e.g., 'deep fakes').",
+              "Periodically assess whether the system's use cases could evolve into a higher risk category."
+            ]
+          },
+          minimo: {
+            title: "Minimal Risk",
+            implications: "The system is considered to have minimal or no risk. The AI Act does not impose legal obligations for this category, allowing for its free use.",
+            next_steps: [
+              "Voluntary adherence to codes of conduct is recommended to foster trust.",
+              "Monitor the system's use to detect potential new risks not covered in the initial assessment.",
+              "No mandatory compliance actions are required."
+            ]
+          }
+        }
+      },
+      riskWizardDynamic: {
+        steps: {
+          context: "Context",
+          biometric: "Biometric identification",
+          damage: "Potential harm",
+          annexIII: "Annex III",
+          transparency: "Transparency",
+          result: "Result"
+        },
+        questions: {
+          fundamental_rights: {
+            text: "Which fundamental rights could the system impact?",
+            options: {
+              dignidad: "Dignity",
+              libertades: "Freedoms",
+              igualdad: "Equality",
+              solidaridad: "Solidarity",
+              derechos_de_los_ciudadanos: "Citizens' Rights",
+              justicia: "Justice",
+              ninguno_de_los_anteriores: "None of the above"
+            }
+          },
+          sector: {
+            text: "Primary sector of use",
+            options: {
+              salud: "Health",
+              educacion: "Education",
+              seguridad: "Security",
+              finanzas: "Finance",
+              otros: "Others"
+            }
+          },
+          biometric_use: {
+            text: "What type of biometric identification system does it use?",
+            options: {
+              identificación_biométrica_remota_en_tiempo_real: "'Real-time' remote biometric identification",
+              identificación_biométrica_remota_a_posteriori: "'Post' remote biometric identification",
+              categorización_biométrica_basada_en_atributos_sensibles: "Biometric categorization based on sensitive attributes",
+              reconocimiento_de_emociones: "Emotion recognition",
+              extracción_no_selectiva_de_imágenes_faciales: "Untargeted scraping of facial images",
+              no_se_utiliza_ninguno_de_estos_sistemas: "None of these systems are used"
+            }
+          },
+          harm_level: {
+            text: "What types of harm could the system cause?",
+            options: {
+              daño_grave_a_la_salud_o_integridad_física: "Serious harm to health or physical integrity",
+              daño_psicológico_significativo: "Significant psychological harm",
+              perjuicio_económico_sustancial: "Substantial economic loss",
+              daño_grave_al_medio_ambiente: "Serious harm to the environment",
+              interrupción_de_infraestructuras_críticas: "Disruption of critical infrastructure",
+              ninguno: "None"
+            }
+          },
+          annex_sector: {
+            text: "Does it fall under any Annex III sectors?",
+            options: {
+              empleo: "Employment",
+              credito: "Credit",
+              educacion: "Education",
+              sanidad: "Healthcare",
+              policia_judicial: "Law enforcement / judicial",
+              no_aplica_a_ninguno_de_estos_sectores: "Does not apply to any of these sectors"
+            }
+          },
+          human_disclosure: {
+            text: "Does the system clearly disclose AI interactions?"
+          },
+          human_disclosure_method: {
+            text: "Please describe the method used for disclosure:"
+          }
+        },
+        rules: {
+          biometric_use: "Use of a biometric identification system considered high-risk.",
+          annex_sector: "Area regulated by Annex III",
+          harm_level_high: "The system may cause a type of harm considered high-risk.",
+          fundamental_rights: "The system may affect fundamental rights.",
+          default: "No high-risk factors detected"
+        }
+      },
+      placeholders: {
+        auditEvidences: "Audit & Evidence view (placeholder)",
+        calendarWorkflows: "Calendar & Workflows view (placeholder)",
+        orgRoles: "Org & Roles view (placeholder)",
+        settings: "Settings view (placeholder)"
+      }
+    }
+  },
+  ca: {
+    translation: {
+      app: {
+        title: "Gestor de compliment de l'AI Act",
+        shortTitle: "AI Act CM",
+        searchPlaceholder: "Cerca…",
+        searchAria: "Cerca a l'aplicació",
+        greeting: "Hola",
+        languageLabel: "Llengua",
+        languageSelectAria: "Selecciona llengua"
+      },
+      nav: {
+        dashboard: "Panell",
+        projects: "Projectes",
+        risk: "Risc",
+        incidents: "Incidents",
+        calendar: "Calendari",
+        org: "Org. i rols",
+        audit: "Auditoria",
+        settings: "Configuració",
+        projectGroup: "Projecte: {{name}}",
+        project: {
+          deliverables: "Lliurables",
+          calendar: "Calendari",
+          org: "Org i Rols",
+          audit: "Auditoria"
+        }
+      },
+      deliverables: {
+        title: "Lliurables del Projecte",
+        columns: {
+          name: "Lliurable",
+          status: "Estat",
+          version: "Versió",
+          actions: "Accions"
+        },
+        actions: {
+          upload: "Puja",
+          assign: "Assigna"
+        },
+        assignModal: {
+          title: "Assignar Lliurable",
+          assignee: "Assignar a",
+          dueDate: "Data de lliurament"
+        }
+      },
+      languages: {
+        es: { short: "ES", full: "Espanyol" },
+        en: { short: "EN", full: "Anglès" },
+        ca: { short: "CA", full: "Català" },
+        fr: { short: "FR", full: "Francès" }
+      },
+      common: {
+        cancel: "Cancel·la",
+        send: "Envia",
+        back: "Enrere",
+        next: "Següent",
+        finish: "Finalitza",
+        view: "Veure",
+        loading: "Carregant…",
+        notFound: "No s'ha trobat",
+        notAvailable: "N/D"
+      },
+      dashboard: {
+        metrics: {
+          docValid: "DoC vigent",
+          highRisk: "Sistemes d'alt risc",
+          totalSystems: "Total de sistemes",
+          tasksToday: "Tasques d'avui",
+          tasksPending_one: "{{count}} tasca pendent",
+          tasksPending_other: "{{count}} tasques pendents"
+        },
+        compliance: {
+          title: "Semàfor de compliment",
+          subtitle: "Estat de la documentació per unitat de negoci",
+          legendTitle: "Llegenda",
+          units: {
+            noData: "Sense dades de compliment disponibles"
+          },
+          totalLabel_one: "1 sistema",
+          totalLabel_other: "{{count}} sistemes"
+        },
+        timeline: {
+          title: "Activitat recent",
+          subtitle: "Darreres actualitzacions registrades",
+          empty: "Sense esdeveniments recents",
+          types: {
+            riskAssessment: "Risc",
+            incidentClosed: "Incident",
+            documentUpdated: "Documentació",
+            taskCreated: "Workflow"
+          },
+          items: {
+            riskAssessment: {
+              title: "Avaluació de risc actualitzada",
+              description: "El sistema {{system}} s'ha classificat com {{risk}}"
+            },
+            incidentClosed: {
+              title: "Incident tancat",
+              description: "Cas {{incident}} resolt per {{owner}}"
+            },
+            documentUpdated: {
+              title: "Documentació actualitzada",
+              description: "S'ha publicat {{document}} per a {{system}}"
+            },
+            taskCreated: {
+              title: "Nova tasca de compliment",
+              description: "{{task}} assignada a l'equip de {{system}}"
+            }
+          }
+        },
+        actions: {
+          title: "Accions pendents",
+          subtitle: "Seguiment de tasques clau",
+          empty: "Sense accions pendents",
+          columns: {
+            task: "Acció",
+            system: "Sistema",
+            due: "Data",
+            owner: "Responsable",
+            status: "Estat",
+            priority: "Prioritat"
+          },
+          status: {
+            todo: "Pendent",
+            in_review: "En revisió",
+            approved: "Aprovat"
+          },
+          priority: {
+            high: "Alta",
+            medium: "Mitjana",
+            low: "Baixa"
+          },
+          items: {
+            reviewRisk: "Revisar el pla de mitigació de {{system}}",
+            updateDossier: "Actualitzar l'expedient tècnic de {{system}}",
+            scheduleAudit: "Programar l'auditoria interna de {{system}}",
+            validateIncident: "Validar el seguiment de l'incident a {{system}}"
+          }
+        }
+      },
+      projects: {
+        actions: {
+          newProject: "Nou projecte"
+        },
+        filters: {
+          role: {
+            label: "Rol",
+            all: "Tots"
+          },
+          risk: {
+            label: "Risc",
+            all: "Tots"
+          },
+          doc: {
+            label: "Documentació",
+            all: "Totes"
+          },
+          search: {
+            label: "Cerca projectes…"
+          }
+        },
+        columns: {
+          name: "Projecte",
+          role: "Rol",
+          state: "Estat",
+          risk: "Risc",
+          docStatus: "DoC",
+          lastAssessment: "Darrera avaluació",
+          actions: "Accions"
+        },
+        state: {
+          labels: {
+            initial: "Inici",
+            in_progress: "En curs",
+            maintenance: "Manteniment"
+          }
+        },
+        wizard: {
+          title: "Assistent de Nou Projecte",
+          addContact: "Afegeix Contacte",
+          steps: {
+            details: "Detalls",
+            team: "Equip",
+            riskAssessment: "Avaluació de Risc",
+            summary: "Resum"
+          },
+          fields: {
+            name: "Nom del projecte",
+            role: "Rol a la cadena de valor",
+            businessUnit: "Unitat de negoci (opcional)",
+            team: "Membres de l'equip",
+            risk: "Risc identificat",
+            notes: "Notes addicionals"
+          },
+          contact: {
+            name: "Nom",
+            role: "Rol",
+            email: "Email",
+            phone: "Telèfon",
+            notification: "Mètode d'avís"
+          },
+          descriptions: {
+            team: "Afegeix els contactes clau per a aquest projecte."
+          },
+          placeholders: {
+            team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
+            notes: "Anotacions sobre l'abast, el context o els propers passos..."
+          },
+          summary: {
+            title: "Resum del Projecte"
+          },
+          finish: "Crea Projecte"
+        }
+      },
+      incidents: {
+        columns: {
+          id: "ID",
+          system: "Sistema",
+          severity: "Severitat",
+          status: "Estat",
+          date: "Data"
+        }
+      },
+      roles: {
+        provider: "Proveïdor",
+        importer: "Importador",
+        distributor: "Distribuïdor",
+        user: "Usuari"
+      },
+      riskLevels: {
+        inaceptable: "Inacceptable",
+        alto: "Alt",
+        limitado: "Limitat",
+        minimo: "Mínim"
+      },
+      docStatus: {
+        vigente: "Vigent",
+        obsoleta: "Obsoleta",
+        borrador: "Esborrany",
+        na: "N/D"
+      },
+      incident: {
+        severity: {
+          alta: "Alta",
+          media: "Mitjana",
+          baja: "Baixa"
+        },
+        status: {
+          abierto: "Obert",
+          en_revision: "En revisió",
+          cerrado: "Tancat"
+        }
+      },
+      systemDetail: {
+        loading: "Carregant…",
+        notFound: "No s'ha trobat",
+        chips: {
+          role: "Rol: {{role}}",
+          risk: "Risc: {{risk}}",
+          doc: "DoC: {{doc}}"
+        },
+        actions: {
+          reportIncident: "Reporta incident"
+        },
+        alerts: {
+          incidentReported: "Incident reportat ({{id}})"
+        },
+        tabs: {
+          overview: "Resum",
+          risk: "Risc",
+          documentation: "Documentació",
+          workflows: "Workflows",
+          evidences: "Evidències",
+          history: "Historial"
+        },
+        content: {
+          overview: "Metadades i darrers canvis…",
+          riskTitle: "Avaluacions de risc",
+          riskEmpty: "Encara no hi ha avaluacions.",
+          documentation: "Seccions de l'expedient tècnic…",
+          workflows: "Kanban de compliment…",
+          evidences: "Evidències adjuntes…",
+          history: "Cronologia de canvis…"
+        },
+        dialog: {
+          title: "Reporta incident",
+          fields: {
+            title: "Títol",
+            severity: "Severitat",
+            description: "Descripció"
+          },
+          actions: {
+            cancel: "Cancel·la",
+            submit: "Envia"
+          }
+        }
+      },
+      technicalDossier: {
+        title: "Expedient tècnic (AI Act - Annex IV)",
+        actions: {
+          sync: "Sincronitza amb el backend",
+          syncSuccess: "Expedient sincronitzat amb el backend (mock)"
+        },
+        sections: {
+          general_info: {
+            title: "Informació general",
+            fields: {
+              system_name: "Nom del sistema",
+              provider: "Proveïdor",
+              contact: "Contacte responsable"
+            }
+          },
+          description: {
+            title: "Descripció del sistema",
+            fields: {
+              purpose: "Finalitat prevista",
+              architecture: "Arquitectura tècnica",
+              lifecycle: "Cicle de vida del desenvolupament"
+            }
+          }
+        }
+      },
+      riskWizard: {
+        steps: {
+          context: "Context",
+          rights: "Drets",
+          biometric: "Biomètric",
+          damage: "Dany",
+          annexIII: "Annex III",
+          transparency: "Transparència",
+          result: "Resultat"
+        },
+        form: {
+          yes: "Sí",
+          no: "No",
+          selectPlaceholder: "Selecciona una opció..."
+        },
+        result: {
+          title: "Resultat de l'Avaluació de Risc",
+          classificationLabel: "Classificació Suggerida",
+          justification: "Justificació",
+          implications: "Implicacions",
+          nextSteps: "Propers Passos"
+        },
+        results: {
+          alto: {
+            title: "Risc Alt",
+            implications: "El sistema d'IA es classifica com d'alt risc segons l'AI Act. Això implica que està subjecte a requisits legals estrictes abans i després de la seva posada al mercat, incloent avaluacions de conformitat, registre a bases de dades de la UE i un sistema robust de gestió de riscos.",
+            next_steps: [
+              "Realitzar una avaluació de conformitat completa segons l'Annex VI.",
+              "Registrar el sistema a la base de dades de la UE abans de la seva comercialització.",
+              "Establir un sistema de gestió de riscos continu.",
+              "Garantir una alta qualitat i governança de les dades d'entrenament i prova.",
+              "Assegurar un nivell apropiat de supervisió humana i ciberseguretat."
+            ]
+          },
+          limitado: {
+            title: "Risc Limitat",
+            implications: "El sistema presenta un risc limitat, principalment relacionat amb la transparència. No s'apliquen els requisits dels sistemes d'alt risc, però s'han de complir obligacions específiques per assegurar que els usuaris finals estiguin informats.",
+            next_steps: [
+              "Assegurar que els usuaris siguin informats que estan interactuant amb un sistema d'IA (p. ex. en chatbots).",
+              "Etiquetar de forma clara i visible el contingut generat o manipulat per la IA (p. ex. 'deep fakes').",
+              "Avaluar periòdicament si els casos d'ús del sistema podrien evolucionar cap a un risc més gran."
+            ]
+          },
+          minimo: {
+            title: "Risc Mínim",
+            implications: "El sistema es considera de risc mínim o nul. L'AI Act no imposa obligacions legals per a aquesta categoria, permetent el seu lliure ús.",
+            next_steps: [
+              "Es recomana l'adhesió voluntària a codis de conducta per fomentar la confiança.",
+              "Monitorar l'ús del sistema per detectar possibles nous riscos no contemplats en l'avaluació inicial.",
+              "No es requereixen accions de compliment obligatòries."
+            ]
+          }
+        }
+      },
+      riskWizardDynamic: {
+        steps: {
+          context: "Context",
+          biometric: "Identificació biomètrica",
+          damage: "Possible dany",
+          annexIII: "Annex III",
+          transparency: "Transparència",
+          result: "Resultat"
+        },
+        questions: {
+          fundamental_rights: {
+            text: "Sobre quins drets fonamentals podria incidir el sistema?",
+            options: {
+              dignidad: "Dignitat",
+              libertades: "Llibertats",
+              igualdad: "Igualtat",
+              solidaridad: "Solidaritat",
+              derechos_de_los_ciudadanos: "Drets dels ciutadans",
+              justicia: "Justícia",
+              ninguno_de_los_anteriores: "Cap dels anteriors"
+            }
+          },
+          sector: {
+            text: "Sector principal d'ús",
+            options: {
+              salud: "Salut",
+              educacion: "Educació",
+              seguridad: "Seguretat",
+              finanzas: "Finances",
+              otros: "Altres"
+            }
+          },
+          biometric_use: {
+            text: "Quin tipus de sistema d'identificació biomètrica utilitza?",
+            options: {
+              identificación_biométrica_remota_en_tiempo_real: "Identificació biomètrica remota 'en temps real'",
+              identificación_biométrica_remota_a_posteriori: "Identificació biomètrica remota 'a posteriori'",
+              categorización_biométrica_basada_en_atributos_sensibles: "Categorització biomètrica basada en atributs sensibles",
+              reconocimiento_de_emociones: "Reconeixement d'emocions",
+              extracción_no_selectiva_de_imágenes_faciales: "Extracció no selectiva d'imatges facials",
+              no_se_utiliza_ninguno_de_estos_sistemas: "No s'utilitza cap d'aquests sistemes"
+            }
+          },
+          harm_level: {
+            text: "Quins tipus de dany podria causar el sistema?",
+            options: {
+              daño_grave_a_la_salud_o_integridad_física: "Dany greu a la salut o integritat física",
+              daño_psicológico_significativo: "Dany psicològic significatiu",
+              perjuicio_económico_sustancial: "Perjudici econòmic substancial",
+              daño_grave_al_medio_ambiente: "Dany greu al medi ambient",
+              interrupción_de_infraestructuras_críticas: "Interrupció d'infraestructures crítiques",
+              ninguno: "Cap"
+            }
+          },
+          annex_sector: {
+            text: "S'inclou en algun sector de l'Annex III?",
+            options: {
+              empleo: "Ocupació",
+              credito: "Crèdit",
+              educacion: "Educació",
+              sanidad: "Sanitat",
+              policia_judicial: "Policia/Judicial",
+              no_aplica_a_ninguno_de_estos_sectores: "No aplica a cap d'aquests sectors"
+            }
+          },
+          human_disclosure: {
+            text: "El sistema informa clarament quan hi ha interacció amb IA?"
+          },
+          human_disclosure_method: {
+            text: "Si us plau, descriu el mètode utilitzat per informar:"
+          }
+        },
+        rules: {
+          biometric_use: "Ús d'un sistema d'identificació biomètrica considerat d'alt risc.",
+          annex_sector: "Àmbit regulat per l'Annex III",
+          harm_level_high: "El sistema pot causar un tipus de dany considerat d'alt risc.",
+          fundamental_rights: "El sistema pot afectar drets fonamentals.",
+          default: "No s'han identificat factors d'alt risc"
+        }
+      },
+      placeholders: {
+        auditEvidences: "Vista d'auditoria i evidències (placeholder)",
+        calendarWorkflows: "Vista de calendari i workflows (placeholder)",
+        orgRoles: "Vista d'organització i rols (placeholder)",
+        settings: "Vista de configuració (placeholder)"
+      }
+    }
+  },
+  fr: {
+    translation: {
+      app: {
+        title: "Gestionnaire de conformité à l'IA Act",
+        shortTitle: "AI Act CM",
+        searchPlaceholder: "Rechercher…",
+        searchAria: "Rechercher dans l'application",
+        greeting: "Bonjour",
+        languageLabel: "Langue",
+        languageSelectAria: "Sélectionner la langue"
+      },
+      nav: {
+        dashboard: "Tableau de bord",
+        projects: "Projets",
+        risk: "Risque",
+        incidents: "Incidents",
+        calendar: "Calendrier",
+        org: "Organisation & rôles",
+        audit: "Audit",
+        settings: "Paramètres",
+        projectGroup: "Projet: {{name}}",
+        project: {
+          deliverables: "Livrables",
+          calendar: "Calendrier",
+          org: "Org & Rôles",
+          audit: "Audit"
+        }
+      },
+      deliverables: {
+        title: "Livrables du Projet",
+        columns: {
+          name: "Livrable",
+          status: "Statut",
+          version: "Version",
+          actions: "Actions"
+        },
+        actions: {
+          upload: "Télécharger",
+          assign: "Assigner"
+        },
+        assignModal: {
+          title: "Assigner le Livrable",
+          assignee: "Assigner à",
+          dueDate: "Date d'échéance"
+        }
+      },
+      languages: {
+        es: { short: "ES", full: "Espagnol" },
+        en: { short: "EN", full: "Anglais" },
+        ca: { short: "CA", full: "Catalan" },
+        fr: { short: "FR", full: "Français" }
+      },
+      common: {
+        cancel: "Annuler",
+        send: "Envoyer",
+        back: "Retour",
+        next: "Suivant",
+        finish: "Terminer",
+        view: "Voir",
+        loading: "Chargement…",
+        notFound: "Introuvable",
+        notAvailable: "N/D"
+      },
+      dashboard: {
+        metrics: {
+          docValid: "DoC en vigueur",
+          highRisk: "Systèmes à haut risque",
+          totalSystems: "Total des systèmes",
+          tasksToday: "Tâches du jour",
+          tasksPending_one: "{{count}} tâche en attente",
+          tasksPending_other: "{{count}} tâches en attente"
+        },
+        compliance: {
+          title: "Feu de conformité",
+          subtitle: "Statut de la documentation par unité",
+          legendTitle: "Légende",
+          units: {
+            noData: "Aucune donnée de conformité disponible"
+          },
+          totalLabel_one: "1 système",
+          totalLabel_other: "{{count}} systèmes"
+        },
+        timeline: {
+          title: "Activité récente",
+          subtitle: "Dernières mises à jour enregistrées",
+          empty: "Aucun événement récent",
+          types: {
+            riskAssessment: "Risque",
+            incidentClosed: "Incident",
+            documentUpdated: "Documentation",
+            taskCreated: "Workflow"
+          },
+          items: {
+            riskAssessment: {
+              title: "Évaluation des risques mise à jour",
+              description: "Le système {{system}} a été classé {{risk}}"
+            },
+            incidentClosed: {
+              title: "Incident clôturé",
+              description: "Cas {{incident}} résolu par {{owner}}"
+            },
+            documentUpdated: {
+              title: "Documentation mise à jour",
+              description: "{{document}} publié pour {{system}}"
+            },
+            taskCreated: {
+              title: "Nouvelle tâche de conformité",
+              description: "{{task}} assignée à l'équipe {{system}}"
+            }
+          }
+        },
+        actions: {
+          title: "Actions en attente",
+          subtitle: "Suivi des tâches clés",
+          empty: "Aucune action en attente",
+          columns: {
+            task: "Action",
+            system: "Système",
+            due: "Échéance",
+            owner: "Responsable",
+            status: "Statut",
+            priority: "Priorité"
+          },
+          status: {
+            todo: "À faire",
+            in_review: "En revue",
+            approved: "Approuvé"
+          },
+          priority: {
+            high: "Élevée",
+            medium: "Moyenne",
+            low: "Faible"
+          },
+          items: {
+            reviewRisk: "Revoir le plan de mitigation pour {{system}}",
+            updateDossier: "Mettre à jour le dossier technique de {{system}}",
+            scheduleAudit: "Planifier l'audit interne de {{system}}",
+            validateIncident: "Valider le suivi de l'incident dans {{system}}"
+          }
+        }
+      },
+      projects: {
+        actions: {
+          newProject: "Nouveau projet"
+        },
+        filters: {
+          role: {
+            label: "Rôle",
+            all: "Tous"
+          },
+          risk: {
+            label: "Risque",
+            all: "Tous"
+          },
+          doc: {
+            label: "Documentation",
+            all: "Toutes"
+          },
+          search: {
+            label: "Rechercher des projets…"
+          }
+        },
+        columns: {
+          name: "Projet",
+          role: "Rôle",
+          state: "Statut",
+          risk: "Risque",
+          docStatus: "DoC",
+          lastAssessment: "Dernière évaluation",
+          actions: "Actions"
+        },
+        state: {
+          labels: {
+            initial: "Lancement",
+            in_progress: "En cours",
+            maintenance: "Maintenance"
+          }
+        },
+        wizard: {
+          title: "Assistant de Nouveau Projet",
+          addContact: "Ajouter un contact",
+          steps: {
+            details: "Détails",
+            team: "Équipe",
+            riskAssessment: "Évaluation des Risques",
+            summary: "Résumé"
+          },
+          fields: {
+            name: "Nom du projet",
+            role: "Rôle dans la chaîne de valeur",
+            businessUnit: "Unité commerciale (optionnel)",
+            team: "Membres de l'équipe",
+            risk: "Risque identifié",
+            notes: "Notes supplémentaires"
+          },
+          contact: {
+            name: "Nom",
+            role: "Rôle",
+            email: "Email",
+            phone: "Téléphone",
+            notification: "Méthode de notification"
+          },
+          descriptions: {
+            team: "Ajoutez les contacts clés pour ce projet."
+          },
+          placeholders: {
+            team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
+            notes: "Notes sur le périmètre, le contexte ou les prochaines étapes..."
+          },
+          summary: {
+            title: "Résumé du Projet"
+          },
+          finish: "Créer le Projet"
+        }
+      },
+      incidents: {
+        columns: {
+          id: "ID",
+          system: "Système",
+          severity: "Gravité",
+          status: "Statut",
+          date: "Date"
+        }
+      },
+      roles: {
+        provider: "Fournisseur",
+        importer: "Importateur",
+        distributor: "Distributeur",
+        user: "Utilisateur"
+      },
+      riskLevels: {
+        inaceptable: "Inacceptable",
+        alto: "Élevé",
+        limitado: "Limité",
+        minimo: "Minimal"
+      },
+      docStatus: {
+        vigente: "En vigueur",
+        obsoleta: "Obsolète",
+        borrador: "Brouillon",
+        na: "N/D"
+      },
+      incident: {
+        severity: {
+          alta: "Élevée",
+          media: "Moyenne",
+          baja: "Faible"
+        },
+        status: {
+          abierto: "Ouvert",
+          en_revision: "En révision",
+          cerrado: "Fermé"
+        }
+      },
+      systemDetail: {
+        loading: "Chargement…",
+        notFound: "Introuvable",
+        chips: {
+          role: "Rôle : {{role}}",
+          risk: "Risque : {{risk}}",
+          doc: "DoC : {{doc}}"
+        },
+        actions: {
+          reportIncident: "Déclarer un incident"
+        },
+        alerts: {
+          incidentReported: "Incident déclaré ({{id}})"
+        },
+        tabs: {
+          overview: "Vue d'ensemble",
+          risk: "Risque",
+          documentation: "Documentation",
+          workflows: "Workflows",
+          evidences: "Preuves",
+          history: "Historique"
+        },
+        content: {
+          overview: "Métadonnées et dernières mises à jour…",
+          riskTitle: "Évaluations de risque",
+          riskEmpty: "Aucune évaluation pour le moment.",
+          documentation: "Sections du dossier technique…",
+          workflows: "Kanban de conformité…",
+          evidences: "Preuves jointes…",
+          history: "Chronologie des changements…"
+        },
+        dialog: {
+          title: "Déclarer un incident",
+          fields: {
+            title: "Titre",
+            severity: "Gravité",
+            description: "Description"
+          },
+          actions: {
+            cancel: "Annuler",
+            submit: "Envoyer"
+          }
+        }
+      },
+      technicalDossier: {
+        title: "Dossier technique (AI Act - Annexe IV)",
+        actions: {
+          sync: "Synchroniser avec le backend",
+          syncSuccess: "Dossier technique synchronisé avec le backend (mock)"
+        },
+        sections: {
+          general_info: {
+            title: "Informations générales",
+            fields: {
+              system_name: "Nom du système",
+              provider: "Fournisseur",
+              contact: "Contact responsable"
+            }
+          },
+          description: {
+            title: "Description du système",
+            fields: {
+              purpose: "Finalité prévue",
+              architecture: "Architecture technique",
+              lifecycle: "Cycle de vie du développement"
+            }
+          }
+        }
+      },
+      riskWizard: {
+        steps: {
+          context: "Contexte",
+          rights: "Droits",
+          biometric: "Biométrique",
+          damage: "Dommage",
+          annexIII: "Annexe III",
+          transparency: "Transparence",
+          result: "Résultat"
+        },
+        form: {
+          yes: "Oui",
+          no: "Non",
+          selectPlaceholder: "Sélectionnez une option..."
+        },
+        result: {
+          title: "Résultat de l'Évaluation des Risques",
+          classificationLabel: "Classification Suggérée",
+          justification: "Justification",
+          implications: "Implications",
+          nextSteps: "Prochaines Étapes"
+        },
+        results: {
+          alto: {
+            title: "Risque Élevé",
+            implications: "Le système d'IA est classé à haut risque en vertu de l'AI Act. Cela signifie qu'il est soumis à des exigences légales strictes avant et après sa mise sur le marché, y compris des évaluations de conformité, un enregistrement dans la base de données de l'UE et un système de gestion des risques robuste.",
+            next_steps: [
+              "Mener une évaluation de conformité complète conformément à l'annexe VI.",
+              "Enregistrer le système dans la base de données de l'UE avant son entrée sur le marché.",
+              "Établir un système de gestion des risques continu.",
+              "Garantir une gouvernance et une qualité élevées des données d'entraînement et de test.",
+              "Assurer des niveaux appropriés de surveillance humaine et de cybersécurité."
+            ]
+          },
+          limitado: {
+            title: "Risque Limité",
+            implications: "Le système présente un risque limité, principalement lié à la transparence. Les exigences pour les systèmes à haut risque ne s'appliquent pas, mais des obligations spécifiques doivent être respectées pour garantir que les utilisateurs finaux sont informés.",
+            next_steps: [
+              "S'assurer que les utilisateurs sont informés qu'ils interagissent avec un système d'IA (par exemple, dans les chatbots).",
+              "Étiqueter de manière claire et visible le contenu généré ou manipulé par l'IA (par exemple, les 'deep fakes').",
+              "Évaluer périodiquement si les cas d'utilisation du système pourraient évoluer vers une catégorie de risque plus élevée."
+            ]
+          },
+          minimo: {
+            title: "Risque Minimal",
+            implications: "Le système est considéré comme présentant un risque minimal ou nul. L'AI Act n'impose pas d'obligations légales pour cette catégorie, autorisant son libre usage.",
+            next_steps: [
+              "L'adhésion volontaire à des codes de conduite est recommandée pour favoriser la confiance.",
+              "Surveiller l'utilisation du système pour détecter d'éventuels nouveaux risques non couverts par l'évaluation initiale.",
+              "Aucune action de conformité obligatoire n'est requise."
+            ]
+          }
+        }
+      },
+      riskWizardDynamic: {
+        steps: {
+          context: "Contexte",
+          biometric: "Identification biométrique",
+          damage: "Dommage potentiel",
+          annexIII: "Annexe III",
+          transparency: "Transparence",
+          result: "Résultat"
+        },
+        questions: {
+          fundamental_rights: {
+            text: "Quels droits fondamentaux le système pourrait-il affecter ?",
+            options: {
+              dignidad: "Dignité",
+              libertades: "Libertés",
+              igualdad: "Égalité",
+              solidaridad: "Solidarité",
+              derechos_de_los_ciudadanos: "Droits des citoyens",
+              justicia: "Justice",
+              ninguno_de_los_anteriores: "Aucun des précédents"
+            }
+          },
+          sector: {
+            text: "Secteur principal d'utilisation",
+            options: {
+              salud: "Santé",
+              educacion: "Éducation",
+              seguridad: "Sécurité",
+              finanzas: "Finance",
+              autres: "Autres"
+            }
+          },
+          biometric_use: {
+            text: "Quel type de système d'identification biométrique utilise-t-il ?",
+            options: {
+              identificación_biométrica_remota_en_tiempo_real: "Identification biométrique à distance 'en temps réel'",
+              identificación_biométrica_remota_a_posteriori: "Identification biométrique à distance 'a posteriori'",
+              categorización_biométrica_basada_en_atributos_sensibles: "Catégorisation biométrique basée sur des attributs sensibles",
+              reconocimiento_de_emociones: "Reconnaissance des émotions",
+              extracción_no_selectiva_de_imágenes_faciales: "Extraction non ciblée d'images faciales",
+              no_se_utiliza_ninguno_de_estos_sistemas: "Aucun de ces systèmes n'est utilisé"
+            }
+          },
+          harm_level: {
+            text: "Quels types de dommages le système pourrait-il causer ?",
+            options: {
+              daño_grave_a_la_salud_o_integridad_física: "Dommages graves à la santé ou à l'intégrité physique",
+              daño_psicológico_significativo: "Dommages psychologiques importants",
+              perjuicio_económico_sustancial: "Pertes économiques substantielles",
+              daño_grave_al_medio_ambiente: "Dommages graves à l'environnement",
+              interrupción_de_infraestructuras_críticas: "Interruption des infrastructures critiques",
+              ninguno: "Aucun"
+            }
+          },
+          annex_sector: {
+            text: "Relève-t-il d'un des secteurs de l'annexe III ?",
+            options: {
+              empleo: "Emploi",
+              credito: "Crédit",
+              educacion: "Éducation",
+              sanidad: "Santé",
+              policia_judicial: "Police/Judiciaire",
+              no_aplica_a_ninguno_de_estos_sectores: "Ne s'applique à aucun de ces secteurs"
+            }
+          },
+          human_disclosure: {
+            text: "Le système informe-t-il clairement lors d'interactions IA ?"
+          },
+          human_disclosure_method: {
+            text: "Veuillez décrire la méthode utilisée pour informer :"
+          }
+        },
+        rules: {
+          biometric_use: "Utilisation d'un système d'identification biométrique considéré à haut risque.",
+          annex_sector: "Domaine réglementé par l'annexe III",
+          harm_level_high: "Le système peut causer un type de dommage considéré à haut risque.",
+          fundamental_rights: "Le système peut affecter des droits fondamentaux.",
+          default: "Aucun facteur de haut risque détecté"
+        }
+      },
+      placeholders: {
+        auditEvidences: "Vue Audit & preuves (placeholder)",
+        calendarWorkflows: "Vue Calendrier & workflows (placeholder)",
+        orgRoles: "Vue Organisation & rôles (placeholder)",
+        settings: "Vue Paramètres (placeholder)"
+      }
+    }
+  }
+} as const
+
+const fallbackLanguage: SupportedLanguage = 'es'
+const storedLanguage = typeof window !== 'undefined' ? (localStorage.getItem('app.language') as SupportedLanguage | null) : null
+const initialLanguage: SupportedLanguage = storedLanguage && (supportedLanguages as readonly string[]).includes(storedLanguage) ? storedLanguage : fallbackLanguage
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources,
+    lng: initialLanguage,
+    fallbackLng: fallbackLanguage,
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false }
+  })
+
+i18n.on('languageChanged', (lang) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('app.language', lang)
+  }
+})
+
+export default i18n

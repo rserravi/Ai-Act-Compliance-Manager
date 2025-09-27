@@ -1,0 +1,53 @@
+{
+  "technical_dossier": {
+    "id": "tech-dossier-v1",
+    "title": "Expediente Técnico (AI Act - Anexo IV)",
+    "sections": [
+      {
+        "id": "general_info",
+        "title": "Información general",
+        "fields": [
+          {
+            "id": "system_name",
+            "label": "Nombre del sistema",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "provider",
+            "label": "Proveedor",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "contact",
+            "label": "Contacto responsable",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "id": "description",
+        "title": "Descripción del sistema",
+        "fields": [
+          {
+            "id": "purpose",
+            "label": "Finalidad prevista",
+            "type": "textarea",
+            "required": true
+          },
+          {
+            "id": "architecture",
+            "label": "Arquitectura técnica",
+            "type": "textarea"
+          },
+          {
+            "id": "lifecycle",
+            "label": "Ciclo de vida del desarrollo",
+            "type": "textarea"
+          }
+        ]
+      }
+    ]
+  }
+}

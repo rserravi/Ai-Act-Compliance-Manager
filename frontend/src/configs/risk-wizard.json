@@ -1,0 +1,206 @@
+{
+  "wizard": {
+    "id": "risk-assessment-v1",
+    "title": "Evaluación de Riesgo AI Act",
+    "steps": [
+      {
+        "id": "context",
+        "title": "Contexto",
+        "help": {
+          "text": "El AI Act se centra en la protección de los derechos fundamentales. Es crucial determinar si el sistema de IA puede incidir en estos derechos, como la privacidad, la no discriminación, o la libertad de expresión, tal y como se recogen en la Carta de los Derechos Fundamentales de la Unión Europea.",
+          "links": [
+            {
+              "title": "Reglamento (UE) 2024/1689 (Artículo 5)",
+              "url": "https://eur-lex.europa.eu/legal-content/ES/TXT/HTML/?uri=OJ:L_202401689#d_d1e32-27-1"
+            },
+            {
+              "title": "Charter of Fundamental Rights of the European Union",
+              "url": "https://fra.europa.eu/en/eu-charter"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "fundamental_rights",
+            "text": "¿Sobre qué derechos fundamentales podría incidir el sistema?",
+            "type": "multiselect",
+            "options": [
+              "Dignidad",
+              "Libertades",
+              "Igualdad",
+              "Solidaridad",
+              "Derechos de los ciudadanos",
+              "Justicia",
+              "Ninguno de los anteriores"
+            ]
+          },
+          {
+            "id": "sector",
+            "text": "Sector principal de uso",
+            "type": "select",
+            "options": [
+              "Salud",
+              "Educación",
+              "Seguridad",
+              "Finanzas",
+              "Otros"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "biometric",
+        "title": "Identificación Biométrica",
+        "help": {
+          "text": "El uso de sistemas de identificación biométrica remota 'en tiempo real' en espacios públicos para fines policiales está prohibido, salvo excepciones muy limitadas. Otros usos, como la categorización biométrica basada en atributos sensibles, también están prohibidos. El resto de sistemas de identificación biométrica se consideran de alto riesgo.",
+          "links": [
+            {
+              "title": "Prohibited AI Practices (Article 5)",
+              "url": "https://artificialintelligenceact.eu/article/5/"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "biometric_use",
+            "text": "¿Qué tipo de sistema de identificación biométrica utiliza?",
+            "type": "multiselect",
+            "options": [
+              "Identificación biométrica remota 'en tiempo real'",
+              "Identificación biométrica remota 'a posteriori'",
+              "Categorización biométrica basada en atributos sensibles",
+              "Reconocimiento de emociones",
+              "Extracción no selectiva de imágenes faciales",
+              "No se utiliza ninguno de estos sistemas"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "damage",
+        "title": "Posible daño",
+        "help": {
+          "text": "El reglamento define el 'riesgo' como la combinación de la probabilidad de que se produzca un daño y la gravedad de dicho daño. Un 'incidente grave' puede causar daños serios a la salud, la propiedad, el medio ambiente, o infringir los derechos fundamentales.",
+          "links": [
+            {
+              "title": "Definitions (Article 3)",
+              "url": "https://artificialintelligenceact.eu/article/3/"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "harm_level",
+            "text": "¿Qué tipos de daño podría causar el sistema?",
+            "type": "multiselect",
+            "options": [
+              "Daño grave a la salud o integridad física",
+              "Daño psicológico significativo",
+              "Perjuicio económico sustancial",
+              "Daño grave al medio ambiente",
+              "Interrupción de infraestructuras críticas",
+              "Ninguno"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "annexIII",
+        "title": "Anexo III",
+        "help": {
+          "text": "El Anexo III lista las áreas y casos de uso específicos que clasifican un sistema de IA como de 'alto riesgo'. Incluye sistemas utilizados en infraestructuras críticas, educación, empleo, servicios esenciales, justicia y migración, entre otros.",
+          "links": [
+            {
+              "title": "High-Risk AI Systems (Annex III)",
+              "url": "https://artificialintelligenceact.eu/annex/3/"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "annex_sector",
+            "text": "¿Se encuadra en alguno de los sectores del Anexo III?",
+            "type": "multiselect",
+            "options": [
+              "Empleo",
+              "Crédito",
+              "Educación",
+              "Sanidad",
+              "Policía/Judicial",
+              "No aplica a ninguno de estos sectores"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "transparency",
+        "title": "Transparencia",
+        "help": {
+          "text": "Existen obligaciones de transparencia para asegurar que los humanos sepan cuándo están interactuando con una IA (p.ej. chatbots) o consumiendo contenido generado artificialmente (p.ej. 'deep fakes'). Los sistemas de alto riesgo tienen requisitos de transparencia aún más estrictos hacia sus usuarios.",
+          "links": [
+            {
+              "title": "Transparency Obligations (Article 52)",
+              "url": "https://artificialintelligenceact.eu/article/52/"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "human_disclosure",
+            "text": "¿El sistema informa claramente cuando interactúa una IA?",
+            "type": "boolean",
+            "conditional": {
+              "on": true,
+              "question": {
+                "id": "human_disclosure_method",
+                "text": "Por favor, describe el método utilizado para informar:",
+                "type": "text"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "result",
+        "title": "Resultado",
+        "rules": [
+          {
+            "if": {
+              "fundamental_rights": "not_empty"
+            },
+            "classification": "alto",
+            "justification": "El sistema puede afectar a derechos fundamentales."
+          },
+          {
+            "if": {
+              "biometric_use": "not_empty"
+            },
+            "classification": "alto",
+            "justification": "Uso de un sistema de identificación biométrica considerado de alto riesgo."
+          },
+          {
+            "if": {
+              "annex_sector": [
+                "Empleo",
+                "Crédito"
+              ]
+            },
+            "classification": "alto",
+            "justification": "Ámbito regulado por Anexo III"
+          },
+          {
+            "if": {
+              "harm_level": "not_empty"
+            },
+            "classification": "alto",
+            "justification": "El sistema puede causar un tipo de daño considerado de alto riesgo."
+          }
+        ],
+        "default": {
+          "classification": "limitado",
+          "justification": "No se identificaron factores de alto riesgo"
+        }
+      }
+    ]
+  }
+}

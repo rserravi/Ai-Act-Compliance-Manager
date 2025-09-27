@@ -1,0 +1,11 @@
+Tipo de Documento,Quién lo prepara,Quién lo recibe / dónde se guarda,Cuándo se actualiza
+Expediente técnico (alto riesgo),Equipo técnico + compliance,Interno; disponible para autoridades,Con cada cambio relevante
+Gestión de riesgos y pruebas,Risk manager / QA / Data science,Interno; parte del expediente,Toda iteración y antes de lanzamiento
+Documentación de datos,Equipo de datos + compliance,Interno / auditores externos,Con cada actualización significativa de datasets
+Registro de trazabilidad,DevOps + DataOps,Interno (auditable),Continuo
+Supervisión humana,Equipo de diseño + negocio,Interno (auditable),Con cambios funcionales
+Plan de ciberseguridad,CISO / Seguridad,Interno (auditable),Tras parches/incidentes
+Declaración de conformidad,Legal / compliance,Adjunta al producto + web,Tras cambios relevantes
+Registro UE (alto riesgo),Proveedor,Base de datos UE (online),Antes de comercializar/usar
+Resumen datasets (GPAI),Equipo de datos,Público/Docs de modelo,Tras reentrenos
+Etiquetado/transparencia,UX / Producto,Visible al usuario,Por release
