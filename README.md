@@ -166,6 +166,44 @@ flowchart LR
 
 ---
 
+## 🛠️ Base de datos PostgreSQL con Docker
+
+Si prefieres usar PostgreSQL en lugar del fichero SQLite incluido por defecto, puedes levantar la base de datos con Docker Compose:
+
+1. **Arranca el contenedor**
+
+   ```bash
+   docker compose up -d postgres
+   ```
+
+   El servicio expone PostgreSQL en `localhost:5432` con la base `ai_act_compliance` y las credenciales `ai_act` / `ai_act`.
+
+2. **Configura la URL de conexión**
+
+   Crea (o actualiza) tu archivo `.env` tomando como referencia `.env.example` e incluye:
+
+   ```env
+   DATABASE_URL=postgresql+psycopg://ai_act:ai_act@localhost:5432/ai_act_compliance
+   ```
+
+   El backend detectará automáticamente esta variable y usará PostgreSQL en lugar de SQLite.
+
+3. **Instala el driver de PostgreSQL**
+
+   Tras actualizar las dependencias, asegúrate de instalar `psycopg[binary]` incluido en `backend/requirements.txt`:
+
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+4. **Verifica la conexión**
+
+   Una vez arranque el backend, las tablas se crearán automáticamente. Puedes conectarte desde tu host con:
+
+   ```bash
+   psql postgresql://ai_act:ai_act@localhost:5432/ai_act_compliance
+   ```
+
 ## 🛠️ Puesta en marcha del backend (FastAPI)
 
 Sigue estos pasos para levantar el servidor de desarrollo y acceder a la documentación interactiva de la API:
