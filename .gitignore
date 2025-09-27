@@ -39,6 +39,7 @@ build/Release
 
 # Dependency directories
 node_modules/
+
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -146,3 +147,9 @@ share/python-wheels/
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+
+# Allow committed environment configuration defaults
+!/.env
+!/.env.example
+!/frontend/.env
+!/frontend/.env.example

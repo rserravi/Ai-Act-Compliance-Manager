@@ -14,6 +14,7 @@ import SettingsView from './pages/Settings/Settings.view'
 import AuthLayout from './pages/Auth/AuthLayout.view'
 import LoginView from './pages/Auth/Login.view'
 import SignInView from './pages/Auth/SignIn.view'
+import RequireAuth from './shared/RequireAuth'
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
         <Route path="/login" element={<LoginView />} />
         <Route path="/sign-in" element={<SignInView />} />
       </Route>
-      <Route element={<AppShell />}>
+      <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route path="/" element={<DashboardView />} />
         <Route path="/projects" element={<ProjectsView />} />
         <Route path="/projects/new" element={<ProjectsWizardView />} />

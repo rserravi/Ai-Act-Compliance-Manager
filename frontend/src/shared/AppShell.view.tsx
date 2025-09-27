@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { supportedLanguages, type SupportedLanguage } from './i18n'
 import { useProjectContext } from './project-context'
+import { useAuth } from './auth-context'
 
 const drawerWidth = 240
 
@@ -39,20 +40,29 @@ const programNavigation = [
 
 const languageOptions = supportedLanguages
 
-const userProfile = {
-  name: 'Rocío Serrano',
-  initials: 'RS'
-}
-
 export default function AppShell() {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const location = useLocation()
   const { t, i18n } = useTranslation()
   const { activeProject } = useProjectContext()
+  const { user, logout } = useAuth()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const toggle = () => setMobileOpen(v => !v)
+
+  const displayName = user?.full_name ?? user?.email ?? ''
+  const initials = React.useMemo(() => {
+    if (user?.full_name) {
+      return user.full_name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0]?.toUpperCase() ?? '')
+        .join('') || (user.email?.[0]?.toUpperCase() ?? '')
+    }
+    return user?.email?.slice(0, 2).toUpperCase() ?? 'US'
+  }, [user])
 
   const projectNavigation = activeProject
     ? [
@@ -170,12 +180,15 @@ export default function AppShell() {
             <Box sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', alignItems: 'flex-end' }}>
               <Typography variant="caption" sx={{ lineHeight: 1, opacity: 0.72 }}>{t('app.greeting')}</Typography>
               <Typography variant="body2" sx={{ lineHeight: 1 }}>
-                {userProfile.name}
+                {displayName}
               </Typography>
             </Box>
-            <Tooltip title={userProfile.name}>
-              <Avatar sx={{ bgcolor: 'secondary.main', width: 36, height: 36 }}>
-                {userProfile.initials}
+            <Tooltip title={displayName || t('app.greeting')}>
+              <Avatar
+                sx={{ bgcolor: 'secondary.main', width: 36, height: 36, cursor: 'pointer' }}
+                onClick={logout}
+              >
+                {initials}
               </Avatar>
             </Tooltip>
           </Box>
