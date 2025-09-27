@@ -279,6 +279,7 @@ def _initiate_registration(
 
     payload.email = email
     code = _generate_verification_code()
+    print("Código de verificación generado:", code)
     expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
     pending = upsert_pending_registration(db, payload, code, expires_at)
 

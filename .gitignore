@@ -153,3 +153,7 @@ share/python-wheels/
 !/.env.example
 !/frontend/.env
 !/frontend/.env.example
+
+# Database
+*.sqlite3
+*.db
