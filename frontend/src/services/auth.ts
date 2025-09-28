@@ -120,13 +120,5 @@ export function resendSignInCode(payload: SignInVerificationResendPayload) {
 }
 
 export function fetchCurrentUser(token?: string) {
-  const init = token
-    ? {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    : undefined
-
-  return api<User>(PROFILE_ENDPOINT, init)
+  return api<User>(PROFILE_ENDPOINT, undefined, token)
 }

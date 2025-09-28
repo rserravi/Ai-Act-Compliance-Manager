@@ -55,7 +55,9 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
       setIsRestoringSession(true)
     }
 
-    fetchCurrentUser(token)
+    const activeToken = token
+
+    fetchCurrentUser(activeToken)
       .then(profile => {
         if (cancelled) return
         setUser(profile)

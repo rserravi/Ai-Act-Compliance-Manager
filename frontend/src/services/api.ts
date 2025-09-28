@@ -16,14 +16,16 @@ function resolveUrl(path: string) {
   return `${BASE_URL}${normalizedPath}`
 }
 
-export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getStoredToken()
+export async function api<T>(path: string, init?: RequestInit, authToken?: string): Promise<T> {
+  const storedToken = getStoredToken()
   const headers = new Headers(init?.headers ?? {})
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`)
+  if (authToken) {
+    headers.set('Authorization', `Bearer ${authToken}`)
+  } else if (storedToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${storedToken}`)
   }
 
   const response = await fetch(resolveUrl(path), {
