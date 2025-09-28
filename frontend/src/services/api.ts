@@ -8,6 +8,10 @@ if (!baseUrl) {
 
 const BASE_URL = baseUrl.replace(/\/+$/, '')
 
+function formatAuthorization(token: string): string {
+  return /^Bearer\s+/i.test(token) ? token : `Bearer ${token}`
+}
+
 function resolveUrl(path: string) {
   if (/^https?:/i.test(path)) {
     return path
@@ -23,9 +27,9 @@ export async function api<T>(path: string, init?: RequestInit, authToken?: strin
     headers.set('Content-Type', 'application/json')
   }
   if (authToken) {
-    headers.set('Authorization', `Bearer ${authToken}`)
+    headers.set('Authorization', formatAuthorization(authToken))
   } else if (storedToken && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${storedToken}`)
+    headers.set('Authorization', formatAuthorization(storedToken))
   }
 
   const response = await fetch(resolveUrl(path), {

@@ -98,4 +98,28 @@ describe('auth storage helpers', () => {
     const headers = init?.headers as Headers
     expect(headers.get('Authorization')).toBe('Bearer fresh-token')
   })
+
+  it('avoids double-prefixing Bearer tokens for API requests', async () => {
+    vi.stubEnv('VITE_API_BASE', 'https://example.test')
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      headers: new Headers()
+    })
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { api } = await import('../services/api')
+
+    storeAuthState({ token: 'Bearer existing-token', user: null })
+
+    await api('/auth/me')
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const [, init] = fetchMock.mock.calls[0]
+
+    const headers = init?.headers as Headers
+    expect(headers.get('Authorization')).toBe('Bearer existing-token')
+  })
 })
