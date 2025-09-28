@@ -119,7 +119,7 @@ export class AppShell extends LitElement {
             </div>
             <div class="flex-none pr-4 flex items-center gap-3">
               <div class="text-right">
-                <p class="text-sm font-semibold">${user?.name ?? 'Invitado'}</p>
+                <p class="text-sm font-semibold">${user?.full_name ?? 'Invitado'}</p>
                 <p class="text-xs text-base-content/60">${user?.email ?? 'Sin sesión'}</p>
               </div>
               <button class="btn btn-sm" @click=${this.logout}>Cerrar sesión</button>

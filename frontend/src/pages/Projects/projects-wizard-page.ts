@@ -11,13 +11,13 @@ export class ProjectsWizardPage extends LitElement {
 
   @state() private step = 0;
   @state() private name = '';
-  @state() private role: AISystem['role'] = 'provider';
+  @state() private projectRole: AISystem['role'] = 'provider';
   @state() private businessUnit = '';
   @state() private team: Contact[] = [];
   @state() private risk: AISystem['risk'] | undefined;
   @state() private notes = '';
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 
@@ -30,7 +30,14 @@ export class ProjectsWizardPage extends LitElement {
     if (!name) return;
     const role = prompt('Rol en el proyecto') ?? '';
     const email = prompt('Correo de contacto') ?? '';
-    const member: Contact = { id: `contact-${Date.now()}`, name, role, email };
+    const member: Contact = {
+      id: `contact-${Date.now()}`,
+      name,
+      role,
+      email,
+      phone: '',
+      notification: 'email'
+    };
     this.team = [...this.team, member];
   }
 
@@ -44,7 +51,7 @@ export class ProjectsWizardPage extends LitElement {
     } else {
       const project = this.projects.value.createProject({
         name: this.name,
-        role: this.role,
+        role: this.projectRole,
         risk: this.risk,
         team: this.team,
         businessUnit: this.businessUnit
@@ -80,9 +87,9 @@ export class ProjectsWizardPage extends LitElement {
         </label>
         <label class="form-control">
           <span class="label"><span class="label-text">Rol</span></span>
-          <select class="select select-bordered" .value=${this.role} @change=${(event: Event) => {
+          <select class="select select-bordered" .value=${this.projectRole} @change=${(event: Event) => {
             const select = event.currentTarget as HTMLSelectElement;
-            this.role = select.value as AISystem['role'];
+            this.projectRole = select.value as AISystem['role'];
           }}>
             <option value="provider">Proveedor</option>
             <option value="importer">Importador</option>
@@ -172,7 +179,7 @@ export class ProjectsWizardPage extends LitElement {
         <article class="prose">
           <h2>Resumen</h2>
           <p><strong>Nombre:</strong> ${this.name}</p>
-          <p><strong>Rol:</strong> ${this.role}</p>
+          <p><strong>Rol:</strong> ${this.projectRole}</p>
           <p><strong>Unidad:</strong> ${this.businessUnit || 'No definida'}</p>
           <p><strong>Riesgo:</strong> ${this.risk ?? 'Sin clasificar'}</p>
           <p><strong>Contactos:</strong> ${this.team.length}</p>

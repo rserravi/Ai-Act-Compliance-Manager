@@ -1,6 +1,4 @@
-import { createTheme } from '@mui/material/styles'
-
-export const appTheme = createTheme({
+export const appTheme = {
   shape: { borderRadius: 12 },
   spacing: 8,
   palette: {
@@ -11,4 +9,4 @@ export const appTheme = createTheme({
   typography: {
     fontFamily: ['Inter', 'system-ui', 'Segoe UI', 'Roboto', 'Arial'].join(',')
   }
-})
+} as const

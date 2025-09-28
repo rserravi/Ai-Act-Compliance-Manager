@@ -1,5 +1,4 @@
 import i18next from 'i18next'
-import { useEffect, useMemo, useReducer } from 'react'
 
 export const supportedLanguages = ['es', 'en', 'ca', 'fr'] as const
 export type SupportedLanguage = typeof supportedLanguages[number]
@@ -2325,22 +2324,4 @@ export function onLanguageChanged(listener: (language: SupportedLanguage) => voi
     i18n.off('languageChanged', handler)
   }
 }
-
-export function useI18n() {
-  const [, forceUpdate] = useReducer((count: number) => count + 1, 0)
-
-  useEffect(() => {
-    const unsubscribe = onLanguageChanged(() => forceUpdate())
-    return unsubscribe
-  }, [])
-
-  const language = getCurrentLanguage()
-  const translator = useMemo(() => i18n.t.bind(i18n) as typeof i18n.t, [language])
-
-  return {
-    t: translator,
-    i18n
-  }
-}
-
 export default i18n
