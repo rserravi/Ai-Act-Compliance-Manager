@@ -1,6 +1,5 @@
 import { ContextConsumer, ContextProvider, type Context } from '@lit-labs/context';
-import type { ReactiveController } from 'lit';
-import type { ReactiveElement } from '@lit/reactive-element';
+import type { ReactiveController, ReactiveElement } from 'lit';
 import { authStore, type AuthStore } from './auth-store';
 import { projectStore, type ProjectStore } from './project-store';
 import { authStoreContext, projectStoreContext } from './context';
@@ -18,7 +17,7 @@ class BaseStoreController<TStore> implements ReactiveController {
   protected readonly host: ReactiveElement;
   protected store: TStore;
   private unsubscribe: () => void = () => {};
-  private readonly contextConsumer?: ContextConsumer<unknown, ReactiveElement>;
+  private readonly contextConsumer?: ContextConsumer<Context<ReactiveElement, TStore>, ReactiveElement>;
 
   constructor(host: ReactiveElement, options: { store: TStore; context?: Context<ReactiveElement, TStore> }) {
     this.host = host;

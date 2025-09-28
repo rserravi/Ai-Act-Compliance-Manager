@@ -1,5 +1,5 @@
 import { Router } from '@lit-labs/router';
-import type { ReactiveElement } from '@lit/reactive-element';
+import type { ReactiveElement } from 'lit';
 import { html } from 'lit';
 import { authStore } from './state/auth-store';
 import { registerRouter } from './navigation';
@@ -21,8 +21,6 @@ import './pages/Auth/sign-in-page';
 function renderWithShell(content: unknown) {
   return html`<app-shell>${content}</app-shell>`;
 }
-
-type RouteParams = Record<string, string>;
 
 export function createAppRouter(host: ReactiveElement): Router {
   let router: Router;
@@ -68,37 +66,37 @@ export function createAppRouter(host: ReactiveElement): Router {
     {
       path: '/projects/:id/incidents',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<incidents-page project-id=${params.id}></incidents-page>`)
     },
     {
       path: '/projects/:id/deliverables',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<deliverables-page project-id=${params.id}></deliverables-page>`)
     },
     {
       path: '/projects/:id/calendar',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<calendar-workflows-page project-id=${params.id}></calendar-workflows-page>`)
     },
     {
       path: '/projects/:id/org',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<org-roles-page project-id=${params.id}></org-roles-page>`)
     },
     {
       path: '/projects/:id/audit',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<audit-evidences-page project-id=${params.id}></audit-evidences-page>`)
     },
     {
       path: '/systems/:id',
       enter: ensureAuthenticated,
-      render: (params: RouteParams) =>
+      render: (params) =>
         renderWithShell(html`<system-detail-page system-id=${params.id}></system-detail-page>`)
     },
     {
