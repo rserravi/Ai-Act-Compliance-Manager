@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import type { AISystem } from '../../domain/models'
 import { ProjectFilter } from './Model'
-import { useProjectContext } from '../../shared/project-context'
+import { projectStore } from '../../state/project-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 
 type FilteredProject = AISystem
 
 export function useProjectsViewModel() {
-  const { projects } = useProjectContext()
+  const projects = useObservableValue(projectStore.projects)
   const [filter, setFilter] = useState<ProjectFilter>({})
 
   const items = useMemo<FilteredProject[]>(() => {

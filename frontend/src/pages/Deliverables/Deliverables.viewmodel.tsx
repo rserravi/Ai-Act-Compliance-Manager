@@ -1,28 +1,30 @@
 import { useParams } from 'react-router-dom'
-import { useProjectContext } from '../../shared/project-context'
 import { useMemo, useState } from 'react'
+import { projectStore } from '../../state/project-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 import { DocumentRef, Task } from '../../domain/models'
 
 export function useDeliverablesViewModel() {
   const { id: projectId } = useParams<{ id: string }>()
-  const { getDocumentsByProjectId, updateDocument, getProjectById, createTask } = useProjectContext()
+  const documentsState = useObservableValue(projectStore.documents)
+  const projectsState = useObservableValue(projectStore.projects)
 
   const [assignModalOpen, setAssignModalOpen] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DocumentRef | null>(null)
 
   const project = useMemo(() => {
     if (!projectId) return undefined
-    return getProjectById(projectId)
-  }, [projectId, getProjectById])
+    return projectStore.getProjectById(projectId)
+  }, [projectId, projectsState])
 
   const documents = useMemo(() => {
     if (!projectId) return []
-    return getDocumentsByProjectId(projectId)
-  }, [projectId, getDocumentsByProjectId])
+    return documentsState.filter(doc => doc.systemId === projectId)
+  }, [projectId, documentsState])
 
   const handleUpload = (docId: string, currentVersion: number) => {
     const newVersion = currentVersion + 1
-    updateDocument(docId, newVersion, 'En Revisión')
+    projectStore.updateDocument(docId, newVersion, 'En Revisión')
   }
 
   const openAssignModal = (doc: DocumentRef) => {
@@ -45,7 +47,7 @@ export function useDeliverablesViewModel() {
       due: dueDate,
       status: 'todo'
     }
-    createTask(taskInput)
+    projectStore.createTask(taskInput)
     closeAssignModal()
   }
 

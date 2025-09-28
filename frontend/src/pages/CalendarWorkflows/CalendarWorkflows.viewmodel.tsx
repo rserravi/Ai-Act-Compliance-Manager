@@ -1,15 +1,16 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
-import { useProjectContext } from '../../shared/project-context'
+import { projectStore } from '../../state/project-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 
 export function useCalendarWorkflowsViewModel() {
   const { id: projectId } = useParams<{ id: string }>()
-  const { getTasksByProjectId } = useProjectContext()
+  const tasksState = useObservableValue(projectStore.tasks)
 
   const tasks = useMemo(() => {
     if (!projectId) return []
-    return getTasksByProjectId(projectId)
-  }, [projectId, getTasksByProjectId])
+    return tasksState.filter(task => task.systemId === projectId)
+  }, [projectId, tasksState])
 
   return {
     tasks

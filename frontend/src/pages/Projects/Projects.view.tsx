@@ -12,11 +12,11 @@ import {
   Typography
 } from '@mui/material'
 import { DataGrid, GridColDef, GridRenderCellParams, GridValueGetter } from '@mui/x-data-grid'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { useProjectsViewModel } from './Projects.viewmodel'
 import { useNavigate } from 'react-router-dom'
 import type { AISystem } from '../../domain/models'
-import { useProjectContext } from '../../shared/project-context'
+import { projectStore } from '../../state/project-store'
 
 const roleFilterValues = ['', 'provider', 'importer', 'distributor', 'user'] as const
 const riskFilterValues = ['', 'alto', 'limitado', 'minimo'] as const
@@ -43,9 +43,11 @@ function resolveProjectState(system: AISystem): ProjectState {
 
 export default function ProjectsView() {
   const navigate = useNavigate()
-  const { setActiveProjectId } = useProjectContext()
+  const setActiveProjectId = React.useCallback((id: string | null) => {
+    projectStore.setActiveProjectId(id)
+  }, [])
   const { items, loading, setFilter } = useProjectsViewModel()
-  const { t, i18n } = useTranslation()
+  const { t } = useI18n()
 
   const rows = React.useMemo<ProjectRow[]>(() =>
     items.map((item) => ({
@@ -55,7 +57,7 @@ export default function ProjectsView() {
       riskLabel: item.risk ? t(`riskLevels.${item.risk}`) : t('common.notAvailable'),
       docLabel: item.docStatus ? t(`docStatus.${item.docStatus}`) : t('common.notAvailable')
     }))
-  , [items, t, i18n.resolvedLanguage])
+  , [items, t])
 
   const stateColors: Record<ProjectState, 'default' | 'warning' | 'success'> = {
     initial: 'default',

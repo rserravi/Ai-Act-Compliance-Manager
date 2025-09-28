@@ -15,9 +15,10 @@ import {
   Typography
 } from '@mui/material'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { useAuth } from '../../shared/auth-context'
+import { authStore } from '../../state/auth-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 
 type ContactMethod = 'email' | 'sms' | 'whatsapp' | 'slack'
 
@@ -33,9 +34,9 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 export default function SignInView() {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const navigate = useNavigate()
-  const { register: registerUser, verifyRegistration, resendRegistrationCode, isAuthenticating } = useAuth()
+  const isAuthenticating = useObservableValue(authStore.isAuthenticating)
   const [fullName, setFullName] = useState('')
   const [company, setCompany] = useState('')
   const [email, setEmail] = useState('')
@@ -126,7 +127,7 @@ export default function SignInView() {
 
       const trimmedEmail = email.trim()
 
-      const response = await registerUser({
+      const response = await authStore.register({
         full_name: fullName.trim(),
         company: company.trim(),
         email: trimmedEmail,
@@ -156,7 +157,7 @@ export default function SignInView() {
     setActiveAction('verify')
 
     try {
-      const response = await verifyRegistration({
+      const response = await authStore.verifyRegistration({
         registration_id: registration.id,
         code: verificationCode.trim()
       })
@@ -181,7 +182,7 @@ export default function SignInView() {
     setActiveAction('resend')
 
     try {
-      const response = await resendRegistrationCode({ registration_id: registration.id })
+      const response = await authStore.resendRegistrationCode({ registration_id: registration.id })
       setRegistration(prev => (prev ? { ...prev, expiresAt: response.expires_at } : prev))
       setVerificationCode('')
       setSuccess(t('auth.feedback.signUpVerificationResent', { email: registration.email }))

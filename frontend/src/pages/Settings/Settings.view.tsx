@@ -1,9 +1,9 @@
 import React from 'react'
 import { Grid, Card, CardHeader, CardContent, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Switch, TextField, Button, Stack } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 
 export default function SettingsView() {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [themeMode, setThemeMode] = React.useState<'light' | 'dark'>('light')
   const [language, setLanguage] = React.useState('es')
   const [notifications, setNotifications] = React.useState({ email: true, slack: false, sms: false })

@@ -10,8 +10,9 @@ import {
   Typography
 } from '@mui/material'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useAuth } from '../../shared/auth-context'
+import { useI18n } from '../../shared/i18n'
+import { authStore } from '../../state/auth-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 
 type AuthLocationState = {
   from?: {
@@ -20,11 +21,11 @@ type AuthLocationState = {
 }
 
 export default function LoginView() {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [form, setForm] = useState({ company: '', email: '', password: '' })
   const [error, setError] = useState<string | null>(null)
   const [activeMethod, setActiveMethod] = useState<'password' | 'sso' | null>(null)
-  const { loginWithPassword, loginWithSso, isAuthenticating } = useAuth()
+  const isAuthenticating = useObservableValue(authStore.isAuthenticating)
   const navigate = useNavigate()
   const location = useLocation()
   const state = (location.state ?? null) as AuthLocationState | null
@@ -41,7 +42,7 @@ export default function LoginView() {
     setError(null)
     setActiveMethod('password')
     try {
-      await loginWithPassword({
+      await authStore.login({
         company: form.company.trim(),
         email: form.email.trim(),
         password: form.password
@@ -59,7 +60,7 @@ export default function LoginView() {
     setError(null)
     setActiveMethod('sso')
     try {
-      await loginWithSso({
+      await authStore.loginWithSSO({
         company: form.company.trim(),
         email: form.email.trim(),
         provider: 'sso'

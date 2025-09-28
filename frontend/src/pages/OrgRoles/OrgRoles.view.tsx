@@ -1,6 +1,6 @@
 import React from 'react'
 import { Grid, Card, CardHeader, CardContent, Typography, Table, TableBody, TableCell, TableHead, TableRow, List, ListItem, ListItemText, Stack, Chip } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 
 const businessUnits = [
   { id: 'bu-1', name: 'People & Culture', lead: 'Laura Pérez' },
@@ -22,7 +22,7 @@ const keyContacts = [
 ]
 
 export default function OrgRolesView() {
-  const { t } = useTranslation()
+  const { t } = useI18n()
 
   return (
     <Grid container spacing={2}>

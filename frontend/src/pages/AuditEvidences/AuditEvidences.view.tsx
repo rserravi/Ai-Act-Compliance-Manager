@@ -1,6 +1,6 @@
 import React from 'react'
 import { Card, CardHeader, CardContent, Tabs, Tab, Box, Table, TableHead, TableRow, TableCell, TableBody, Chip, Typography } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 
 const audits = [
   { id: 'au-1', name: 'AI Act readiness', scope: 'Motor RRHH', date: '2025-09-20', owner: 'Laura Pérez', status: 'scheduled' },
@@ -15,7 +15,7 @@ const evidences = [
 ]
 
 export default function AuditEvidencesView() {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useI18n()
   const [tab, setTab] = React.useState(0)
   const dateFormatter = React.useMemo(() => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }), [i18n.language])
 

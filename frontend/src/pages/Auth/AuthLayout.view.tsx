@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, CircularProgress, Container } from '@mui/material'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '../../shared/auth-context'
+import { authStore } from '../../state/auth-store'
+import { useObservableValue } from '../../shared/hooks/useObservable'
 
 type AuthLocationState = {
   from?: {
@@ -10,11 +11,18 @@ type AuthLocationState = {
 }
 
 export default function AuthLayout() {
-  const { user, isRestoringSession } = useAuth()
+  const user = useObservableValue(authStore.user)
+  const isRestoringSession = useObservableValue(authStore.isRestoringSession)
   const location = useLocation()
   const state = (location.state ?? null) as AuthLocationState | null
   const fromPath = state?.from?.pathname
   const redirectTo = fromPath && fromPath !== '/login' ? fromPath : '/'
+
+  useEffect(() => {
+    authStore.ensureSessionRestored().catch((error) => {
+      console.error('Failed to restore session', error)
+    })
+  }, [])
 
   if (isRestoringSession) {
     return (
