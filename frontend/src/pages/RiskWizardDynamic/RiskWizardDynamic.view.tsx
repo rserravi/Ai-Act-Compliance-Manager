@@ -22,7 +22,7 @@ import {
   ListItemIcon,
   ListItem
 } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import wizardData from '../../configs/risk-wizard.json'
 import type { RiskLevel } from '../../domain/models'
 import InfoIcon from '@mui/icons-material/InfoOutlined'
@@ -89,7 +89,7 @@ export default function RiskWizardDynamic({ onFinish, isEmbedded }: { onFinish?:
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [result, setResult] = useState<RuleResult | null>(null)
   const [helpAnchorEl, setHelpAnchorEl] = useState<HTMLButtonElement | null>(null)
-  const { t, i18n } = useTranslation()
+  const { t } = useI18n()
 
   const current = steps[step]
 
@@ -186,9 +186,9 @@ export default function RiskWizardDynamic({ onFinish, isEmbedded }: { onFinish?:
     })
   }, [answers, current])
 
-  const stepLabels = useMemo(() =>
-    steps.map((s) => t(`riskWizardDynamic.steps.${s.id}`, { defaultValue: s.title })),
-    [steps, t, i18n.resolvedLanguage]
+  const stepLabels = useMemo(
+    () => steps.map((s) => t(`riskWizardDynamic.steps.${s.id}`, { defaultValue: s.title })),
+    [steps, t]
   )
 
   function translateQuestionText(question: Question) {

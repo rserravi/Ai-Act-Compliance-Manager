@@ -1,12 +1,12 @@
 import React from 'react'
 import { Paper } from '@mui/material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { useIncidentsViewModel } from './Incidents.viewmodel'
 
 export default function IncidentsView() {
   const { items } = useIncidentsViewModel()
-  const { t } = useTranslation()
+  const { t } = useI18n()
 
   const columns: GridColDef[] = [
     { field: 'id', headerName: t('incidents.columns.id'), width: 120 },

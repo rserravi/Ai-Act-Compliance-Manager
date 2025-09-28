@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Paper, Typography, TextField, Button } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import dossierData from '../../configs/technical-dossier.json'
 
 const STORAGE_KEY = 'technical-dossier-draft'
@@ -21,7 +21,7 @@ type Section = {
 export default function TechnicalDossierEditor() {
   const sections: Section[] = dossierData.technical_dossier.sections as Section[]
   const [values, setValues] = useState<Record<string, any>>({})
-  const { t } = useTranslation()
+  const { t } = useI18n()
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)

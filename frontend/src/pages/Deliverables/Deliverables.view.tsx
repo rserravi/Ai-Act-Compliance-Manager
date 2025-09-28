@@ -21,7 +21,7 @@ import {
   TextField,
   MenuItem
 } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 
 export default function DeliverablesView() {
   const {
@@ -34,7 +34,7 @@ export default function DeliverablesView() {
     closeAssignModal,
     handleAssign
   } = useDeliverablesViewModel()
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [assignee, setAssignee] = useState('')
   const [dueDate, setDueDate] = useState('')
 

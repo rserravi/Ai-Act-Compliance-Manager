@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { AISystem, type Contact } from '../../domain/models'
 import RiskWizardDynamic, { type RuleResult } from '../RiskWizardDynamic/RiskWizardDynamic.view'
 import { useNavigate } from 'react-router-dom'
-import { useProjectContext } from '../../shared/project-context'
+import { projectStore } from '../../state/project-store'
 import React from 'react'
 import {
   Box,
@@ -46,9 +46,8 @@ type RaciRow = {
 }
 
 export default function ProjectsWizardView() {
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const navigate = useNavigate()
-  const { createProject } = useProjectContext()
 
   const [activeStep, setActiveStep] = React.useState(0)
   // Step 0
@@ -76,7 +75,7 @@ export default function ProjectsWizardView() {
 
   function handleNext() {
     if (activeStep === steps.length - 1) {
-      const project = createProject({
+      const project = projectStore.createProject({
         name,
         role,
         risk,

@@ -23,11 +23,11 @@ import MenuIcon from '@mui/icons-material/Menu'
 import SearchIcon from '@mui/icons-material/Search'
 import { alpha, useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { supportedLanguages, type SupportedLanguage } from './i18n'
-import { useProjectContext } from './project-context'
-import { useAuth } from './auth-context'
+import { changeLanguage, getCurrentLanguage, supportedLanguages, type SupportedLanguage, useI18n } from './i18n'
+import { authStore } from '../state/auth-store'
+import { projectStore } from '../state/project-store'
+import { useObservableValue } from './hooks/useObservable'
 
 const drawerWidth = 240
 
@@ -44,9 +44,11 @@ export default function AppShell() {
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [search, setSearch] = React.useState('')
   const location = useLocation()
-  const { t, i18n } = useTranslation()
-  const { activeProject } = useProjectContext()
-  const { user, logout } = useAuth()
+  const { t } = useI18n()
+  const user = useObservableValue(authStore.user)
+  const activeProject = useObservableValue(projectStore.activeProject)
+  const logout = React.useCallback(() => authStore.logout(), [])
+  const currentLanguage = getCurrentLanguage()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const toggle = () => setMobileOpen(v => !v)
@@ -156,8 +158,8 @@ export default function AppShell() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Select
-              value={i18n.resolvedLanguage ?? i18n.language}
-              onChange={(event) => i18n.changeLanguage(event.target.value as SupportedLanguage)}
+              value={currentLanguage}
+              onChange={(event) => changeLanguage(event.target.value as SupportedLanguage)}
               size="small"
               variant="outlined"
               sx={{

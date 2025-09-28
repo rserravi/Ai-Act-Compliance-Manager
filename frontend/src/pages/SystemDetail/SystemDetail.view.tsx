@@ -4,7 +4,7 @@ import { useSystemDetailViewModel } from './SystemDetail.viewmodel'
 import type { IncidentSeverity, IncidentStatus } from '../../domain/models'
 import { reportIncident } from '../Incidents/Service/incidents.service'
 import { eventBus } from '../../shared/events/bus'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 
 function TabPanel({ index, value, children }: any) {
   return value === index ? <Box sx={{ py: 2 }}>{children}</Box> : null
@@ -12,7 +12,7 @@ function TabPanel({ index, value, children }: any) {
 
 export default function SystemDetailView() {
   const { sys, tab, setTab, assessments, loading } = useSystemDetailViewModel()
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [open, setOpen] = React.useState(false)
   const [title, setTitle] = React.useState('')
   const [severity, setSeverity] = React.useState<IncidentSeverity>('media')

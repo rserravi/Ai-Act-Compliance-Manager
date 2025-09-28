@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { Grid, Card, CardContent, CardHeader, Typography, LinearProgress, Stack, Chip, Box, Divider, List, ListItem, ListItemText, Table, TableHead, TableRow, TableCell, TableBody, TableContainer } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { useDashboardViewModel } from './Dashboard.viewmodel'
 
 type TimelineType = 'riskAssessment' | 'incidentClosed' | 'documentUpdated' | 'taskCreated'
@@ -10,7 +10,7 @@ type Status = 'todo' | 'in_review' | 'approved'
 
 export default function DashboardView() {
   const { kpis, complianceByBusinessUnit, timeline, pendingActions, docStatusOrder } = useDashboardViewModel()
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useI18n()
   const theme = useTheme()
 
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.language, { dateStyle: 'short', timeStyle: 'short' }), [i18n.language])

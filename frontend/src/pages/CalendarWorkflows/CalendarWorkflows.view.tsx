@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useCalendarWorkflowsViewModel } from './CalendarWorkflows.viewmodel'
 import { Box, Typography, Paper, Grid, Card, CardContent, Popover, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { Task } from '../../domain/models'
 
 const KanbanCard = ({ task, onOpenPopover }: { task: Task, onOpenPopover: (event: React.MouseEvent<HTMLElement>, task: Task) => void }) => {
@@ -20,7 +20,7 @@ const KanbanCard = ({ task, onOpenPopover }: { task: Task, onOpenPopover: (event
 
 export default function CalendarWorkflowsView() {
   const { tasks } = useCalendarWorkflowsViewModel()
-  const { t } = useTranslation()
+  const { t } = useI18n()
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
 

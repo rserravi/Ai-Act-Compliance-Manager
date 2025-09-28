@@ -1,8 +1,17 @@
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
+import i18next from 'i18next'
+import { useEffect, useMemo, useReducer } from 'react'
 
 export const supportedLanguages = ['es', 'en', 'ca', 'fr'] as const
 export type SupportedLanguage = typeof supportedLanguages[number]
+
+const fallbackLanguage: SupportedLanguage = 'en'
+const defaultLanguage: SupportedLanguage = 'es'
+
+function isSupportedLanguage(language: string | undefined): language is SupportedLanguage {
+  return supportedLanguages.includes(language as SupportedLanguage)
+}
+
+export const i18n = i18next.createInstance()
 
 const resources = {
   es: {
@@ -2278,24 +2287,60 @@ const resources = {
   }
 } as const
 
-const fallbackLanguage: SupportedLanguage = 'es'
-const storedLanguage = typeof window !== 'undefined' ? (localStorage.getItem('app.language') as SupportedLanguage | null) : null
-const initialLanguage: SupportedLanguage = storedLanguage && (supportedLanguages as readonly string[]).includes(storedLanguage) ? storedLanguage : fallbackLanguage
+const languageStorageKey = 'app.language'
+const storedLanguage = typeof window !== 'undefined' ? localStorage.getItem(languageStorageKey) : null
+const initialLanguage = isSupportedLanguage(storedLanguage ?? undefined) ? (storedLanguage as SupportedLanguage) : defaultLanguage
 
-i18n
-  .use(initReactI18next)
-  .init({
-    resources,
-    lng: initialLanguage,
-    fallbackLng: fallbackLanguage,
-    interpolation: { escapeValue: false },
-    react: { useSuspense: false }
-  })
+void i18n.init({
+  resources,
+  lng: initialLanguage,
+  fallbackLng: fallbackLanguage,
+  interpolation: { escapeValue: false },
+  returnNull: false
+})
 
-i18n.on('languageChanged', (lang) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('app.language', lang)
+i18n.on('languageChanged', (language) => {
+  if (typeof window !== 'undefined' && isSupportedLanguage(language)) {
+    localStorage.setItem(languageStorageKey, language)
   }
 })
+
+export const t: typeof i18n.t = (...args) => i18n.t(...args)
+
+export function changeLanguage(language: SupportedLanguage) {
+  return i18n.changeLanguage(language)
+}
+
+export function getCurrentLanguage(): SupportedLanguage {
+  const language = i18n.resolvedLanguage ?? i18n.language
+  return isSupportedLanguage(language) ? language : fallbackLanguage
+}
+
+export function onLanguageChanged(listener: (language: SupportedLanguage) => void) {
+  const handler = (language: string) => {
+    listener(isSupportedLanguage(language) ? language : fallbackLanguage)
+  }
+  i18n.on('languageChanged', handler)
+  return () => {
+    i18n.off('languageChanged', handler)
+  }
+}
+
+export function useI18n() {
+  const [, forceUpdate] = useReducer((count: number) => count + 1, 0)
+
+  useEffect(() => {
+    const unsubscribe = onLanguageChanged(() => forceUpdate())
+    return unsubscribe
+  }, [])
+
+  const language = getCurrentLanguage()
+  const translator = useMemo(() => i18n.t.bind(i18n) as typeof i18n.t, [language])
+
+  return {
+    t: translator,
+    i18n
+  }
+}
 
 export default i18n

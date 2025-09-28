@@ -1,11 +1,11 @@
 import React from 'react'
 import { Box, Button, Step, StepLabel, Stepper, Typography, RadioGroup, FormControlLabel, Radio, Paper } from '@mui/material'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../../shared/i18n'
 import { useRiskWizardViewModel } from './RiskWizard.viewmodel'
 
 export default function RiskWizardView() {
   const { step, next, back, set, result } = useRiskWizardViewModel()
-  const { t, i18n } = useTranslation()
+  const { t } = useI18n()
   const steps = React.useMemo(() => [
     t('riskWizard.steps.context'),
     t('riskWizard.steps.rights'),
@@ -14,7 +14,7 @@ export default function RiskWizardView() {
     t('riskWizard.steps.annexIII'),
     t('riskWizard.steps.transparency'),
     t('riskWizard.steps.result')
-  ], [t, i18n.resolvedLanguage])
+  ], [t])
 
   return (
     <Paper sx={{ p: 2 }}>
