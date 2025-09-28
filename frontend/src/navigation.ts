@@ -6,15 +6,23 @@ export function registerRouter(router: Router): void {
   activeRouter = router;
 }
 
-export function navigateTo(path: string, options?: Parameters<Router['goto']>[1]): void {
+export function navigateTo(path: string, options?: { replace?: boolean }): void {
   if (activeRouter) {
-    activeRouter.goto(path, options);
+    activeRouter.goto(path);
+    if (options?.replace) {
+      window.history.replaceState({}, '', path);
+    }
+    return;
+  }
+
+  if (options?.replace) {
+    window.history.replaceState({}, '', path);
   } else {
     window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
   }
+  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 export function getCurrentPath(): string {
-  return activeRouter?.location?.pathname ?? window.location.pathname;
+  return window.location.pathname;
 }

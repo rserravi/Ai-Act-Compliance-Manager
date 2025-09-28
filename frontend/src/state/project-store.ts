@@ -49,8 +49,8 @@ export class ProjectStore {
     this.#syncActiveProject();
 
     this.projects.subscribe(() => this.#syncActiveProject());
-    this.activeProjectId.subscribe((value) => {
-      storeActiveProject(value);
+    this.activeProjectId.subscribe(() => {
+      storeActiveProject(this.activeProjectId.value);
       this.#syncActiveProject();
     });
   }

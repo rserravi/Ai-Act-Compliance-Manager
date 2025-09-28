@@ -1,6 +1,5 @@
 import { Router } from '@lit-labs/router';
-import { html } from 'lit';
-import type { ReactiveControllerHost } from 'lit';
+import { html, type ReactiveElement } from 'lit';
 import { authStore } from './state/auth-store';
 import { registerRouter } from './navigation';
 
@@ -22,7 +21,9 @@ function renderWithShell(content: unknown) {
   return html`<app-shell>${content}</app-shell>`;
 }
 
-export function createAppRouter(host: ReactiveControllerHost): Router {
+type RouteParams = Record<string, string | undefined>;
+
+export function createAppRouter(host: ReactiveElement): Router {
   let router: Router;
 
   const ensureAuthenticated = async (): Promise<boolean> => {
@@ -31,10 +32,10 @@ export function createAppRouter(host: ReactiveControllerHost): Router {
       return true;
     }
     if (!authStore.isRestoringSession.value) {
-      const current = router.location?.pathname ?? '/';
-      const search = router.location?.search ?? '';
-      const redirect = encodeURIComponent(`${current}${search}`);
-      router.goto(`/login?redirect=${redirect}`, { replace: true });
+      const { pathname, search } = window.location;
+      const redirect = encodeURIComponent(`${pathname}${search}`);
+      router.goto(`/login?redirect=${redirect}`);
+      window.history.replaceState({}, '', `/login?redirect=${redirect}`);
     }
     return false;
   };
@@ -66,37 +67,37 @@ export function createAppRouter(host: ReactiveControllerHost): Router {
     {
       path: '/projects/:id/incidents',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<incidents-page project-id=${params.id ?? ''}></incidents-page>`)
     },
     {
       path: '/projects/:id/deliverables',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<deliverables-page project-id=${params.id ?? ''}></deliverables-page>`)
     },
     {
       path: '/projects/:id/calendar',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<calendar-workflows-page project-id=${params.id ?? ''}></calendar-workflows-page>`)
     },
     {
       path: '/projects/:id/org',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<org-roles-page project-id=${params.id ?? ''}></org-roles-page>`)
     },
     {
       path: '/projects/:id/audit',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<audit-evidences-page project-id=${params.id ?? ''}></audit-evidences-page>`)
     },
     {
       path: '/systems/:id',
       enter: ensureAuthenticated,
-      render: ({ params }) =>
+      render: ({ params }: { params: RouteParams }) =>
         renderWithShell(html`<system-detail-page system-id=${params.id ?? ''}></system-detail-page>`)
     },
     {

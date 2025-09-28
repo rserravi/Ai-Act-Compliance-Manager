@@ -14,6 +14,6 @@ export class AppRoot extends LitElement {
   }
 
   protected render() {
-    return html`${this.router.render()}`;
+    return html`${this.router.outlet()}`;
   }
 }
