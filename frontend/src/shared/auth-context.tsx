@@ -104,6 +104,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         const response = await login(payload)
         setToken(response.token)
         setUser(response.user)
+        storeAuthState({ token: response.token, user: response.user })
         return response
       }),
     [runAuthAction]
@@ -115,6 +116,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         const response = await loginWithSSO(payload)
         setToken(response.token)
         setUser(response.user)
+        storeAuthState({ token: response.token, user: response.user })
         return response
       }),
     [runAuthAction]
@@ -132,6 +134,7 @@ export function AuthProvider({ children }: React.PropsWithChildren) {
         const response = await verifySignIn(payload)
         setToken(response.token)
         setUser(response.user)
+        storeAuthState({ token: response.token, user: response.user })
         return response
       }),
     [runAuthAction]
