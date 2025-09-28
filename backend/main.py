@@ -304,7 +304,11 @@ def _verify_registration(
     if pending is None:
         raise HTTPException(status_code=404, detail="Registration not found")
 
-    if pending.code_expires_at < datetime.now(timezone.utc):
+    expires_at = pending.code_expires_at
+    if expires_at.tzinfo is None or expires_at.tzinfo.utcoffset(expires_at) is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at < datetime.now(timezone.utc):
         delete_pending_registration(db, pending)
         raise HTTPException(status_code=400, detail="Verification code expired")
 
