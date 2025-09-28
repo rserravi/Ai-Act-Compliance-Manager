@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
@@ -34,7 +34,7 @@ def upsert_pending_registration(
     db: Session, payload: SignInPayload, code: str, expires_at: datetime
 ) -> PendingUserRegistrationModel:
     existing = get_pending_registration_by_email(db, payload.email)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     contact = payload.contact
     encrypted_value = encrypt_value(contact.value) or ""
@@ -85,7 +85,7 @@ def refresh_verification_code(
     db: Session, pending: PendingUserRegistrationModel, code: str, expires_at: datetime
 ) -> PendingUserRegistrationModel:
     pending.verification_code = code
-    pending.code_sent_at = datetime.utcnow()
+    pending.code_sent_at = datetime.now(timezone.utc)
     pending.code_expires_at = expires_at
     db.add(pending)
     db.commit()

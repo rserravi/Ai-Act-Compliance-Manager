@@ -2,7 +2,7 @@ import os
 import secrets
 import string
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -280,7 +280,9 @@ def _initiate_registration(
     payload.email = email
     code = _generate_verification_code()
     print("Código de verificación generado:", code)
-    expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=VERIFICATION_CODE_TTL_MINUTES
+    )
     pending = upsert_pending_registration(db, payload, code, expires_at)
 
     background_tasks.add_task(send_registration_code_email, pending.email, code)
@@ -302,7 +304,7 @@ def _verify_registration(
     if pending is None:
         raise HTTPException(status_code=404, detail="Registration not found")
 
-    if pending.code_expires_at < datetime.utcnow():
+    if pending.code_expires_at < datetime.now(timezone.utc):
         delete_pending_registration(db, pending)
         raise HTTPException(status_code=400, detail="Verification code expired")
 
@@ -348,7 +350,9 @@ def _resend_registration_code(
         raise HTTPException(status_code=404, detail="Registration not found")
 
     code = _generate_verification_code()
-    expires_at = datetime.utcnow() + timedelta(minutes=VERIFICATION_CODE_TTL_MINUTES)
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        minutes=VERIFICATION_CODE_TTL_MINUTES
+    )
     pending = refresh_verification_code(db, pending, code, expires_at)
 
     background_tasks.add_task(send_registration_code_email, pending.email, code)
