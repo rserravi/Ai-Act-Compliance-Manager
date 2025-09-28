@@ -1,5 +1,6 @@
 import { Router } from '@lit-labs/router';
-import { html, type ReactiveElement } from 'lit';
+import type { ReactiveElement } from '@lit/reactive-element';
+import { html } from 'lit';
 import { authStore } from './state/auth-store';
 import { registerRouter } from './navigation';
 
@@ -21,7 +22,7 @@ function renderWithShell(content: unknown) {
   return html`<app-shell>${content}</app-shell>`;
 }
 
-type RouteParams = Record<string, string | undefined>;
+type RouteParams = Record<string, string>;
 
 export function createAppRouter(host: ReactiveElement): Router {
   let router: Router;
@@ -67,38 +68,38 @@ export function createAppRouter(host: ReactiveElement): Router {
     {
       path: '/projects/:id/incidents',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<incidents-page project-id=${params.id ?? ''}></incidents-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<incidents-page project-id=${params.id}></incidents-page>`)
     },
     {
       path: '/projects/:id/deliverables',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<deliverables-page project-id=${params.id ?? ''}></deliverables-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<deliverables-page project-id=${params.id}></deliverables-page>`)
     },
     {
       path: '/projects/:id/calendar',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<calendar-workflows-page project-id=${params.id ?? ''}></calendar-workflows-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<calendar-workflows-page project-id=${params.id}></calendar-workflows-page>`)
     },
     {
       path: '/projects/:id/org',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<org-roles-page project-id=${params.id ?? ''}></org-roles-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<org-roles-page project-id=${params.id}></org-roles-page>`)
     },
     {
       path: '/projects/:id/audit',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<audit-evidences-page project-id=${params.id ?? ''}></audit-evidences-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<audit-evidences-page project-id=${params.id}></audit-evidences-page>`)
     },
     {
       path: '/systems/:id',
       enter: ensureAuthenticated,
-      render: ({ params }: { params: RouteParams }) =>
-        renderWithShell(html`<system-detail-page system-id=${params.id ?? ''}></system-detail-page>`)
+      render: (params: RouteParams) =>
+        renderWithShell(html`<system-detail-page system-id=${params.id}></system-detail-page>`)
     },
     {
       path: '/incidents',

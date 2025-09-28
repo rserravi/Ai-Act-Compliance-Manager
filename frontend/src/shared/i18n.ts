@@ -2304,7 +2304,7 @@ i18n.on('languageChanged', (language) => {
   }
 })
 
-export const t: typeof i18n.t = (...args) => i18n.t(...args)
+export const t = i18n.t.bind(i18n) as typeof i18n.t
 
 export function changeLanguage(language: SupportedLanguage) {
   return i18n.changeLanguage(language)
