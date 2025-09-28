@@ -22,9 +22,12 @@ describe('auth storage helpers', () => {
       })
     }
 
-    ;(globalThis as unknown as { window: Window }).window = {
+    const windowStub: Pick<Window, 'localStorage'> & Partial<typeof globalThis> = {
       localStorage
-    } as Window
+    }
+
+    vi.stubGlobal('window', windowStub)
+    vi.stubGlobal('localStorage', localStorage)
 
     clearStoredAuth()
   })
