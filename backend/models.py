@@ -1,7 +1,7 @@
-from datetime import datetime
-from uuid import uuid4
-
+from datetime import datetime, timezone
+from functools import partial
 from typing import Optional
+from uuid import uuid4
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -11,6 +11,9 @@ from .database import Base
 
 def generate_uuid() -> str:
     return str(uuid4())
+
+
+utc_now = partial(datetime.now, timezone.utc)
 
 
 class UserModel(Base):
@@ -23,9 +26,11 @@ class UserModel(Base):
     avatar: Mapped[str | None] = mapped_column(String(512), nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     preferences_language: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
     )
 
     contact: Mapped[Optional["ContactPreferenceModel"]] = relationship(
@@ -47,9 +52,11 @@ class ContactPreferenceModel(Base):
     value_encrypted: Mapped[str] = mapped_column(String(1024), nullable=False)
     workspace_encrypted: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     channel_encrypted: Mapped[str | None] = mapped_column(String(1024), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
     )
 
     user: Mapped[UserModel] = relationship("UserModel", back_populates="contact")
@@ -72,12 +79,12 @@ class PendingUserRegistrationModel(Base):
     preferences_language: Mapped[str | None] = mapped_column(String(50), nullable=True)
     verification_code: Mapped[str] = mapped_column(String(32), nullable=False)
     code_sent_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=utc_now, nullable=False
     )
     code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=utc_now, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False
     )
