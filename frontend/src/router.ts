@@ -17,6 +17,7 @@ import './pages/SystemDetail/system-detail-page';
 import './pages/Settings/settings-page';
 import './pages/Auth/login-page';
 import './pages/Auth/sign-in-page';
+import './pages/Auth/sign-in-verify-page';
 
 function renderWithShell(content: unknown) {
   return html`<app-shell>${content}</app-shell>`;
@@ -47,6 +48,10 @@ export function createAppRouter(host: ReactiveElement): Router {
     {
       path: '/sign-in',
       render: () => html`<sign-in-page></sign-in-page>`
+    },
+    {
+      path: '/sign-in/verify',
+      render: () => html`<sign-in-verify-page></sign-in-verify-page>`
     },
     {
       path: '/',
