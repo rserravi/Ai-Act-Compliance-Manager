@@ -7,6 +7,8 @@ import { navigateTo } from '../../navigation';
 
 @customElement('projects-wizard-page')
 export class ProjectsWizardPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly projects = new ProjectController(this);
 
   @state() private step = 0;

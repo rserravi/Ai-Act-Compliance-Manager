@@ -5,11 +5,13 @@ import { getAuditDocuments, summarizeEvidences } from './AuditEvidences.viewmode
 
 @customElement('audit-evidences-page')
 export class AuditEvidencesPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly projects = new ProjectController(this);
 
   @property({ type: String, attribute: 'project-id' }) projectId = '';
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

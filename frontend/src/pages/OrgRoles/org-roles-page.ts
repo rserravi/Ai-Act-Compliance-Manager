@@ -5,11 +5,13 @@ import { getProjectContacts } from './OrgRoles.viewmodel';
 
 @customElement('org-roles-page')
 export class OrgRolesPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly projects = new ProjectController(this);
 
   @property({ type: String, attribute: 'project-id' }) projectId = '';
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

@@ -5,11 +5,13 @@ import { AuthStoreProvider, ProjectStoreProvider } from './state/controllers';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly authProvider = new AuthStoreProvider(this);
   private readonly projectProvider = new ProjectStoreProvider(this);
   private readonly router = createAppRouter(this);
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

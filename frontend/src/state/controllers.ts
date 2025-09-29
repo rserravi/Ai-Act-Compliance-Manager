@@ -17,7 +17,7 @@ class BaseStoreController<TStore> implements ReactiveController {
   protected readonly host: ReactiveElement;
   protected store: TStore;
   private unsubscribe: () => void = () => {};
-  private readonly contextConsumer?: ContextConsumer<unknown, ReactiveElement>;
+  private readonly contextConsumer?: ContextConsumer<Context<TStore>, ReactiveElement>;
 
   constructor(host: ReactiveElement, options: { store: TStore; context?: Context<TStore> }) {
     this.host = host;

@@ -17,9 +17,11 @@ const STATUS_COLOR_MAP: Record<string, string> = {
 
 @customElement('dashboard-page')
 export class DashboardPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly model = createDashboardViewModel();
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

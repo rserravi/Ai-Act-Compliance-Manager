@@ -5,6 +5,8 @@ import { navigateTo } from '../../navigation';
 
 @customElement('login-page')
 export class LoginPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly auth = new AuthController(this);
 
   @state() private company = '';
@@ -12,7 +14,7 @@ export class LoginPage extends LitElement {
   @state() private password = '';
   @state() private error: string | null = null;
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

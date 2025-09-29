@@ -13,12 +13,14 @@ const NAVIGATION_ITEMS = [
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly auth = new AuthController(this);
   private readonly projects = new ProjectController(this);
 
   @state() private mobileMenuOpen = false;
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

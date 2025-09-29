@@ -6,6 +6,8 @@ type ContactMethod = 'email' | 'sms' | 'whatsapp' | 'slack';
 
 @customElement('sign-in-page')
 export class SignInPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly auth = new AuthController(this);
 
   @state() private fullName = '';
@@ -17,7 +19,7 @@ export class SignInPage extends LitElement {
   @state() private language = 'es';
   @state() private feedback: string | null = null;
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 
