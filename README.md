@@ -201,7 +201,9 @@ Si prefieres usar PostgreSQL en lugar del fichero SQLite incluido por defecto, p
    Una vez arranque el backend, las tablas se crearán automáticamente. Puedes conectarte desde tu host con:
 
    ```bash
-   psql postgresql://ai_act:ai_act@localhost:5432/ai_act_compliance
+   //helpsql postgresql://ai_act:ai_act@localhost:5432/ai_act_compliance
+   docker compose exec postgres psql -U ai_act -d ai_act_compliance
+
    ```
 
 ## 🛠️ Puesta en marcha del backend (FastAPI)

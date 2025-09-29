@@ -1,4 +1,4 @@
-import { createContext } from '@lit-labs/context';
+import { createContext } from '@lit/context';
 import type { AuthStore } from './auth-store';
 import type { ProjectStore } from './project-store';
 

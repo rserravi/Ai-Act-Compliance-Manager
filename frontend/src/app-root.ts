@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, ReactiveElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { createAppRouter } from './router';
 import { AuthStoreProvider, ProjectStoreProvider } from './state/controllers';

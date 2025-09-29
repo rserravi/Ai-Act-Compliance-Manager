@@ -1,5 +1,5 @@
-import { ContextConsumer, ContextProvider, type Context } from '@lit-labs/context';
-import type { ReactiveController, ReactiveElement } from '@lit/reactive-element';
+import { ContextConsumer, ContextProvider, type Context } from '@lit/context';
+import type { ReactiveController, ReactiveElement } from 'lit';
 
 import { authStore, type AuthStore } from './auth-store';
 import { projectStore, type ProjectStore } from './project-store';
@@ -14,13 +14,12 @@ function combineSubscriptions(subscriptions: Array<() => void>): () => void {
   };
 }
 
-class BaseStoreController<TStore> implements ReactiveController {
+class BaseStoreController<TStore, TContext extends { __context__: TStore }> implements ReactiveController {
   protected readonly host: ReactiveElement;
   protected store: TStore;
   private unsubscribe: () => void = () => {};
-  private readonly contextConsumer?: ContextConsumer<Context<unknown, ReactiveElement>, ReactiveElement>;
-
-  constructor(host: ReactiveElement, options: { store: TStore; context?: Context<unknown, ReactiveElement> }) {
+  private readonly contextConsumer?: ContextConsumer<TContext, ReactiveElement>;
+  constructor(host: ReactiveElement, options: { store: TStore; context?: TContext }) {
 
     this.host = host;
     this.store = options.store;
@@ -66,7 +65,7 @@ class BaseStoreController<TStore> implements ReactiveController {
   }
 }
 
-export class AuthController extends BaseStoreController<AuthStore> {
+export class AuthController extends BaseStoreController<AuthStore, typeof authStoreContext> {
   constructor(host: ReactiveElement, store: AuthStore = authStore) {
     super(host, { store, context: authStoreContext });
   }
@@ -107,7 +106,7 @@ export class AuthController extends BaseStoreController<AuthStore> {
   }
 }
 
-export class ProjectController extends BaseStoreController<ProjectStore> {
+export class ProjectController extends BaseStoreController<ProjectStore, typeof projectStoreContext> {
   constructor(host: ReactiveElement, store: ProjectStore = projectStore) {
     super(host, { store, context: projectStoreContext });
   }
