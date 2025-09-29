@@ -2,7 +2,6 @@ import { html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { navigateTo } from '../../navigation';
 import { AuthController } from '../../state/controllers';
-import { navigateTo } from '../../navigation';
 
 type ContactMethod = 'email' | 'sms' | 'whatsapp' | 'slack';
 
@@ -43,8 +42,11 @@ export class SignInPage extends LitElement {
         contact: { method: this.contactMethod, value: this.contactValue },
         preferences: { language: this.language }
       });
-      navigateTo(`/sign-in/verify?registration_id=${encodeURIComponent(response.registration_id)}`);
-
+      if (response.registration_id) {
+        navigateTo(`/sign-in/verify?registration_id=${encodeURIComponent(response.registration_id)}`);
+      } else {
+        this.feedback = 'No se pudo iniciar la verificación. Inténtalo nuevamente.';
+      }
     } catch (error) {
       console.error(error);
       this.feedback = 'No se pudo completar el registro. Inténtalo más tarde.';
