@@ -29,21 +29,20 @@ export class DashboardPage extends LitElement {
       <div class="grid gap-4 md:grid-cols-4">
         <div class="card bg-base-100 shadow">
           <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Documentación vigente</span>
-            <span class="text-3xl font-semibold">${kpis.docVigentePct}%</span>
-            <progress class="progress progress-primary" value=${kpis.docVigentePct} max="100"></progress>
+            <span class="text-xs uppercase text-base-content/60">Sistemas Registrados</span>
+            <span class="text-3xl font-semibold">${kpis.registeredSystems}</span>
           </div>
         </div>
         <div class="card bg-base-100 shadow">
           <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Sistemas de alto riesgo</span>
-            <span class="text-3xl font-semibold">${kpis.highRisk}</span>
+            <span class="text-xs uppercase text-base-content/60">Sistemas de Alto Riesgo</span>
+            <span class="text-3xl font-semibold">${kpis.highRiskSystems}</span>
           </div>
         </div>
         <div class="card bg-base-100 shadow">
           <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Total de sistemas</span>
-            <span class="text-3xl font-semibold">${kpis.totalSystems}</span>
+            <span class="text-xs uppercase text-base-content/60">Evidencias Pendientes (esta semana)</span>
+            <span class="text-3xl font-semibold">${kpis.pendingEvidencesThisWeek}</span>
           </div>
         </div>
         <div class="card bg-base-100 shadow">
