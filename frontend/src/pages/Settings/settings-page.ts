@@ -5,11 +5,13 @@ import { getNotificationSettings, type NotificationSetting } from './Settings.vi
 
 @customElement('settings-page')
 export class SettingsPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly auth = new AuthController(this);
 
   @state() private selected: Set<string> = new Set(['incidents', 'deliverables']);
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

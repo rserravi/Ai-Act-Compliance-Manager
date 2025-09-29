@@ -6,6 +6,8 @@ import { ProjectController } from '../../state/controllers';
 
 @customElement('incidents-page')
 export class IncidentsPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly viewModel = new IncidentsViewModel();
   private readonly projects = new ProjectController(this);
   private unsubscribe: (() => void) | null = null;
@@ -15,7 +17,7 @@ export class IncidentsPage extends LitElement {
   @state() private incidents: IncidentRow[] = [];
   @state() private loading = false;
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

@@ -14,11 +14,13 @@ import {
 
 @customElement('projects-page')
 export class ProjectsPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly projectsStore = new ProjectController(this);
 
   @state() private filter: ProjectFilter = {};
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

@@ -6,6 +6,8 @@ import { DeliverablesViewModel } from './Deliverables.viewmodel';
 
 @customElement('deliverables-page')
 export class DeliverablesPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly projects = new ProjectController(this);
 
   @property({ type: String, attribute: 'project-id' }) projectId = '';
@@ -15,7 +17,7 @@ export class DeliverablesPage extends LitElement {
   @state() private assignee = '';
   @state() private dueDate = '';
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 

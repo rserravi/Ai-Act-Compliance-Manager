@@ -13,14 +13,21 @@ describe('auth storage helpers', () => {
   beforeEach(() => {
     const store = new Map<string, string>()
     const localStorage = {
-      getItem: vi.fn((key: string) => (store.has(key) ? store.get(key)! : null)),
-      setItem: vi.fn((key: string, value: string) => {
-        store.set(key, value)
+      get length() {
+        return store.size
+      },
+      clear: vi.fn(() => {
+        store.clear()
       }),
+      getItem: vi.fn((key: string) => (store.has(key) ? store.get(key)! : null)),
+      key: vi.fn((index: number) => Array.from(store.keys())[index] ?? null),
       removeItem: vi.fn((key: string) => {
         store.delete(key)
+      }),
+      setItem: vi.fn((key: string, value: string) => {
+        store.set(key, value)
       })
-    }
+    } as Storage
 
     const windowStub: Pick<Window, 'localStorage'> & Partial<typeof globalThis> = {
       localStorage

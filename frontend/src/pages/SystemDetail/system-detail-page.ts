@@ -6,6 +6,8 @@ import { SystemDetailViewModel } from './SystemDetail.viewmodel';
 
 @customElement('system-detail-page')
 export class SystemDetailPage extends LitElement {
+  declare renderRoot: HTMLElement;
+
   private readonly viewModel = new SystemDetailViewModel();
   private unsubscribe: (() => void) | null = null;
 
@@ -15,7 +17,7 @@ export class SystemDetailPage extends LitElement {
   @state() private system: AISystem | null = null;
   @state() private assessments: RiskAssessmentRow[] = [];
 
-  protected createRenderRoot() {
+  protected createRenderRoot(): HTMLElement {
     return this;
   }
 
