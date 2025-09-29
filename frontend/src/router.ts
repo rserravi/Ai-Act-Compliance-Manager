@@ -50,8 +50,8 @@ export function createAppRouter(host: ReactiveElement): Router {
       render: () => html`<sign-in-page></sign-in-page>`
     },
     {
-      path: '/sign-in/verify',
-      render: () => html`<sign-in-verify-page></sign-in-verify-page>`
+      path: '/sign-in/verify/:registration_id',
+      render: ({ registration_id }) => html`<sign-in-verify-page .registrationId=${registration_id}></sign-in-verify-page>`
     },
     {
       path: '/',

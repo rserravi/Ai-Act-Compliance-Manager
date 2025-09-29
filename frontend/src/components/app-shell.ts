@@ -1,8 +1,9 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { AuthController, ProjectController } from '../state/controllers';
 import { navigateTo } from '../navigation';
+import styles from '../styles.css?inline';
 
 const NAVIGATION_ITEMS = [
   { label: 'Panel', href: '/' },
@@ -13,16 +14,12 @@ const NAVIGATION_ITEMS = [
 
 @customElement('app-shell')
 export class AppShell extends LitElement {
-  declare renderRoot: HTMLElement;
+  static styles = [css([styles] as any)];
 
   private readonly auth = new AuthController(this);
   private readonly projects = new ProjectController(this);
 
   @state() private mobileMenuOpen = false;
-
-  protected createRenderRoot(): HTMLElement {
-    return this;
-  }
 
   private toggleMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;

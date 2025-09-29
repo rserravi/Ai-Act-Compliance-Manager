@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import {
@@ -7,6 +7,7 @@ import {
   type PendingAction,
   type TimelineEvent
 } from './Dashboard.viewmodel';
+import styles from '../../styles.css?inline';
 
 const STATUS_COLOR_MAP: Record<string, string> = {
   vigente: 'var(--su)',
@@ -17,13 +18,10 @@ const STATUS_COLOR_MAP: Record<string, string> = {
 
 @customElement('dashboard-page')
 export class DashboardPage extends LitElement {
+  static styles = [css([styles] as any)];
   declare renderRoot: HTMLElement;
 
   private readonly model = createDashboardViewModel();
-
-  protected createRenderRoot(): HTMLElement {
-    return this;
-  }
 
   private renderKpis() {
     const { kpis } = this.model;

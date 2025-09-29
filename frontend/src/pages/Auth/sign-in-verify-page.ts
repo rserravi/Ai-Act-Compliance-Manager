@@ -1,5 +1,5 @@
-import { html, LitElement } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { html, LitElement, type PropertyValueMap } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { navigateTo } from '../../navigation';
 import { AuthController } from '../../state/controllers';
 
@@ -9,51 +9,32 @@ export class SignInVerifyPage extends LitElement {
 
   private readonly auth = new AuthController(this);
 
-  @state() private registrationId: string | null = null;
+  @property({ type: String })
+  registrationId: string | null = null;
+
   @state() private verificationCode = '';
   @state() private feedback: string | null = null;
   @state() private verificationError: string | null = null;
   @state() private isVerifying = false;
 
-  private readonly handleLocationChange = () => {
-    this.updateRegistrationIdFromLocation();
-  };
-
-  constructor() {
-    super();
-    this.updateRegistrationIdFromLocation();
-  }
-
   protected createRenderRoot(): HTMLElement {
     return this;
   }
 
-  connectedCallback(): void {
-    super.connectedCallback();
-    window.addEventListener('popstate', this.handleLocationChange);
-  }
-
-  disconnectedCallback(): void {
-    window.removeEventListener('popstate', this.handleLocationChange);
-    super.disconnectedCallback();
-  }
-
-  private updateRegistrationIdFromLocation(): void {
-    const params = new URLSearchParams(window.location.search);
-    const registrationId = params.get('registration_id');
-    this.registrationId = registrationId?.trim() ? registrationId.trim() : null;
-    if (!this.registrationId) {
-      this.feedback = 'No encontramos un registro pendiente. Inicia un nuevo registro para continuar.';
-    } else {
-      this.feedback = null;
+  protected willUpdate(changedProperties: PropertyValueMap<this>): void {
+    if (changedProperties.has('registrationId')) {
+      if (!this.registrationId) {
+        this.feedback = 'No encontramos un registro pendiente. Inicia un nuevo registro para continuar.';
+      } else {
+        this.feedback = null;
+      }
     }
   }
 
   private handleCodeInput(event: Event): void {
     const input = event.currentTarget as HTMLInputElement;
-    const sanitized = input.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
-    this.verificationCode = sanitized;
-    input.value = sanitized;
+    this.verificationCode = input.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
+    this.requestUpdate();
   }
 
   private async handleVerificationSubmit(event: Event): Promise<void> {

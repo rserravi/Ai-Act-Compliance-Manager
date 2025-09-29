@@ -43,7 +43,7 @@ export class SignInPage extends LitElement {
         preferences: { language: this.language }
       });
       if (response.registration_id) {
-        navigateTo(`/sign-in/verify?registration_id=${encodeURIComponent(response.registration_id)}`);
+        navigateTo(`/sign-in/verify/${encodeURIComponent(response.registration_id)}`);
       } else {
         this.feedback = 'No se pudo iniciar la verificación. Inténtalo nuevamente.';
       }
