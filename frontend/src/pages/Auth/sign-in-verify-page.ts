@@ -13,6 +13,7 @@ export class SignInVerifyPage extends LitElement {
   @state() private verificationCode = '';
   @state() private feedback: string | null = null;
   @state() private verificationError: string | null = null;
+  @state() private isVerifying = false;
 
   private readonly handleLocationChange = () => {
     this.updateRegistrationIdFromLocation();
@@ -69,6 +70,7 @@ export class SignInVerifyPage extends LitElement {
 
     this.verificationError = null;
     this.feedback = null;
+    this.isVerifying = true;
     try {
       await this.auth.value.verifyRegistration({
         registration_id: this.registrationId,
@@ -79,6 +81,8 @@ export class SignInVerifyPage extends LitElement {
     } catch (error) {
       console.error(error);
       this.verificationError = 'El código no es válido. Verifica e inténtalo nuevamente.';
+    } finally {
+      this.isVerifying = false;
     }
   }
 
@@ -127,7 +131,7 @@ export class SignInVerifyPage extends LitElement {
           >
         </label>
 
-        <button class="btn btn-primary" type="submit" ?disabled=${this.auth.isAuthenticating || this.verificationCode.length !== 8}>
+        <button class="btn btn-primary" type="submit" ?disabled=${this.isVerifying || this.verificationCode.length !== 8}>
           Verificar y acceder
         </button>
 
