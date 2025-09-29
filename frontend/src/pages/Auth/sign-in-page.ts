@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { navigateTo } from '../../navigation';
 import { AuthController } from '../../state/controllers';
 import { navigateTo } from '../../navigation';
 
@@ -19,6 +20,9 @@ export class SignInPage extends LitElement {
   @state() private contactValue = '';
   @state() private language = 'es';
   @state() private feedback: string | null = null;
+  @state() private registrationId: string | null = null;
+  @state() private verificationCode = '';
+  @state() private verificationError: string | null = null;
 
   protected createRenderRoot(): HTMLElement {
     return this;
@@ -27,6 +31,9 @@ export class SignInPage extends LitElement {
   private async handleSubmit(event: Event) {
     event.preventDefault();
     this.feedback = null;
+    this.registrationId = null;
+    this.verificationCode = '';
+    this.verificationError = null;
     try {
       const response = await this.auth.value.register({
         full_name: this.fullName,
@@ -37,6 +44,7 @@ export class SignInPage extends LitElement {
         preferences: { language: this.language }
       });
       navigateTo(`/sign-in/verify?registration_id=${encodeURIComponent(response.registration_id)}`);
+
     } catch (error) {
       console.error(error);
       this.feedback = 'No se pudo completar el registro. Inténtalo más tarde.';
@@ -132,6 +140,7 @@ export class SignInPage extends LitElement {
       <main class="min-h-screen flex items-center justify-center bg-base-200">
         <section class="card w-full max-w-2xl bg-base-100 shadow-xl">
           ${this.renderRegistrationForm()}
+
         </section>
       </main>
     `;
