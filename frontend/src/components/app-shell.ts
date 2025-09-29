@@ -4,7 +4,14 @@ import { classMap } from 'lit/directives/class-map.js';
 import type { AISystem } from '../domain/models';
 import { AuthController, ProjectController } from '../state/controllers';
 import { navigateTo } from '../navigation';
-import { t } from '../shared/i18n';
+import {
+  t,
+  supportedLanguages,
+  getCurrentLanguage,
+  onLanguageChanged,
+  changeLanguage,
+  type SupportedLanguage
+} from '../shared/i18n';
 import styles from '../styles.css?inline';
 
 const NAVIGATION_ITEMS = [
@@ -37,6 +44,9 @@ export class AppShell extends LitElement {
   private readonly projects = new ProjectController(this);
 
   @state() private mobileMenuOpen = false;
+  @state() private language = getCurrentLanguage();
+
+  private unsubscribeLanguageChange: (() => void) | null = null;
 
   private toggleMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
@@ -55,6 +65,29 @@ export class AppShell extends LitElement {
   private logout() {
     this.auth.value.logout();
     navigateTo('/login', { replace: true });
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.language = getCurrentLanguage();
+    this.unsubscribeLanguageChange = onLanguageChanged((language) => {
+      this.language = language;
+    });
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.unsubscribeLanguageChange?.();
+    this.unsubscribeLanguageChange = null;
+  }
+
+  private handleLanguageChange(event: Event) {
+    const select = event.currentTarget as HTMLSelectElement;
+    const selectedLanguage = select.value as SupportedLanguage;
+    if (supportedLanguages.includes(selectedLanguage)) {
+      this.language = selectedLanguage;
+      changeLanguage(selectedLanguage);
+    }
   }
 
   private renderNavigation(activeProject: AISystem | null) {
@@ -122,6 +155,7 @@ export class AppShell extends LitElement {
   protected render() {
     const user = this.auth.user;
     const activeProject = this.projects.activeProject;
+    const languageSelectId = 'language-select';
 
     return html`
       <div class="min-h-screen flex bg-base-200 text-base-content">
@@ -156,6 +190,28 @@ export class AppShell extends LitElement {
                 : html`<span class="text-sm text-base-content/60">Selecciona un proyecto</span>`}
             </div>
             <div class="flex-none pr-4 flex items-center gap-3">
+              <label class="form-control w-auto min-w-[8rem]">
+                <span class="label py-0">
+                  <span class="label-text text-sm font-medium">
+                    ${t('app.languageLabel')}
+                  </span>
+                </span>
+                <select
+                  id=${languageSelectId}
+                  class="select select-bordered select-sm"
+                  aria-label=${t('app.languageSelectAria')}
+                  .value=${this.language}
+                  @change=${this.handleLanguageChange}
+                >
+                  ${supportedLanguages.map(
+                    (language) => html`
+                      <option value=${language}>
+                        ${t(`languages.${language}.full`)}
+                      </option>
+                    `
+                  )}
+                </select>
+              </label>
               <div class="text-right">
                 <p class="text-sm font-semibold">${user?.full_name ?? 'Invitado'}</p>
                 <p class="text-xs text-base-content/60">${user?.email ?? 'Sin sesión'}</p>
