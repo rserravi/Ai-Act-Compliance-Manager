@@ -141,11 +141,105 @@ function buildPendingActions(): PendingAction[] {
   ];
 }
 
+type EvidenceStatus = 'pending' | 'submitted' | 'approved';
+
+type Evidence = {
+  id: string;
+  systemId: string;
+  due: string;
+  status: EvidenceStatus;
+};
+
+function startOfWeek(date: Date): Date {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const day = start.getDay();
+  const diff = (day + 6) % 7;
+  start.setDate(start.getDate() - diff);
+  return start;
+}
+
+function endOfWeek(date: Date): Date {
+  const end = startOfWeek(date);
+  end.setDate(end.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+function addDays(base: Date, days: number): Date {
+  const result = new Date(base);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatAsISODate(date: Date): string {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseISODate(date: string): Date {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, (month ?? 1) - 1, day ?? 1);
+}
+
+function buildMockEvidences(referenceDate: Date): Evidence[] {
+  const weekStart = startOfWeek(referenceDate);
+
+  return [
+    {
+      id: 'ev-1',
+      systemId: '1',
+      due: formatAsISODate(addDays(weekStart, 1)),
+      status: 'pending'
+    },
+    {
+      id: 'ev-2',
+      systemId: '2',
+      due: formatAsISODate(addDays(weekStart, 3)),
+      status: 'submitted'
+    },
+    {
+      id: 'ev-3',
+      systemId: '3',
+      due: formatAsISODate(addDays(weekStart, 4)),
+      status: 'pending'
+    },
+    {
+      id: 'ev-4',
+      systemId: '4',
+      due: formatAsISODate(addDays(weekStart, -2)),
+      status: 'pending'
+    },
+    {
+      id: 'ev-5',
+      systemId: '5',
+      due: formatAsISODate(addDays(weekStart, 8)),
+      status: 'pending'
+    }
+  ];
+}
+
+function countPendingEvidencesThisWeek(referenceDate = new Date()): number {
+  const evidences = buildMockEvidences(referenceDate);
+  const start = startOfWeek(referenceDate);
+  const end = endOfWeek(referenceDate);
+
+  return evidences.filter((evidence) => {
+    if (evidence.status !== 'pending') {
+      return false;
+    }
+    const dueDate = parseISODate(evidence.due);
+    return dueDate >= start && dueDate <= end;
+  }).length;
+}
+
 export type DashboardViewModel = {
   kpis: {
-    totalSystems: number;
-    highRisk: number;
-    docVigentePct: number;
+    registeredSystems: number;
+    highRiskSystems: number;
+    pendingEvidencesThisWeek: number;
     tasksToday: number;
   };
   complianceByBusinessUnit: ComplianceEntry[];
@@ -158,15 +252,15 @@ export function createDashboardViewModel(): DashboardViewModel {
   const pendingActions = buildPendingActions();
   const tasksToday = pendingActions.filter((action) => isDueToday(action.due)).length;
 
-  const totalSystems = systems.length;
-  const highRisk = systems.filter((system) => system.risk === 'alto').length;
-  const docVigente = systems.filter((system) => system.docStatus === 'vigente').length;
+  const registeredSystems = systems.length;
+  const highRiskSystems = systems.filter((system) => system.risk === 'alto').length;
+  const pendingEvidencesThisWeek = countPendingEvidencesThisWeek();
 
   return {
     kpis: {
-      totalSystems,
-      highRisk,
-      docVigentePct: totalSystems ? Math.round((docVigente / totalSystems) * 100) : 0,
+      registeredSystems,
+      highRiskSystems,
+      pendingEvidencesThisWeek,
       tasksToday
     },
     complianceByBusinessUnit: buildComplianceByBusinessUnit(),

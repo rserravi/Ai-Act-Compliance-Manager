@@ -146,10 +146,10 @@ const resources = {
       },
       dashboard: {
         metrics: {
-          docValid: "DoC vigente",
-          highRisk: "Sistemas alto riesgo",
-          totalSystems: "Total sistemas",
-          tasksToday: "Tareas hoy",
+          registeredSystems: "Sistemas registrados",
+          highRiskSystems: "Sistemas de alto riesgo",
+          pendingEvidencesThisWeek: "Evidencias pendientes (esta semana)",
+          tasksToday: "Tareas para hoy",
           tasksPending_one: "{{count}} pendiente",
           tasksPending_other: "{{count}} pendientes"
         },
@@ -830,10 +830,10 @@ const resources = {
       },
       dashboard: {
         metrics: {
-          docValid: "Valid DoC",
-          highRisk: "High-risk systems",
-          totalSystems: "Total systems",
-          tasksToday: "Tasks today",
+          registeredSystems: "Registered systems",
+          highRiskSystems: "High-risk systems",
+          pendingEvidencesThisWeek: "Pending evidence (this week)",
+          tasksToday: "Tasks for today",
           tasksPending_one: "{{count}} pending task",
           tasksPending_other: "{{count}} pending tasks"
         },
@@ -1363,10 +1363,10 @@ const resources = {
       },
       dashboard: {
         metrics: {
-          docValid: "DoC vigent",
-          highRisk: "Sistemes d'alt risc",
-          totalSystems: "Total de sistemes",
-          tasksToday: "Tasques d'avui",
+          registeredSystems: "Sistemes registrats",
+          highRiskSystems: "Sistemes d'alt risc",
+          pendingEvidencesThisWeek: "Evidències pendents (aquesta setmana)",
+          tasksToday: "Tasques per avui",
           tasksPending_one: "{{count}} tasca pendent",
           tasksPending_other: "{{count}} tasques pendents"
         },
@@ -1896,10 +1896,10 @@ const resources = {
       },
       dashboard: {
         metrics: {
-          docValid: "DoC en vigueur",
-          highRisk: "Systèmes à haut risque",
-          totalSystems: "Total des systèmes",
-          tasksToday: "Tâches du jour",
+          registeredSystems: "Systèmes enregistrés",
+          highRiskSystems: "Systèmes à haut risque",
+          pendingEvidencesThisWeek: "Preuves en attente (cette semaine)",
+          tasksToday: "Tâches pour aujourd'hui",
           tasksPending_one: "{{count}} tâche en attente",
           tasksPending_other: "{{count}} tâches en attente"
         },
