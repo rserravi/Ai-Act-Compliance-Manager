@@ -1,8 +1,10 @@
 import { html, LitElement, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import type { AISystem } from '../domain/models';
 import { AuthController, ProjectController } from '../state/controllers';
 import { navigateTo } from '../navigation';
+import { t } from '../shared/i18n';
 import styles from '../styles.css?inline';
 
 const NAVIGATION_ITEMS = [
@@ -10,6 +12,21 @@ const NAVIGATION_ITEMS = [
   { label: 'Proyectos', href: '/projects' },
   { label: 'Incidentes', href: '/incidents' },
   { label: 'Configuración', href: '/settings' }
+] as const;
+
+const PROJECT_NAV_ITEMS = [
+  {
+    labelKey: 'nav.project.evidences',
+    getHref: (projectId: string) => `/projects/${projectId}/deliverables`
+  },
+  {
+    labelKey: 'nav.project.teams',
+    getHref: (projectId: string) => `/projects/${projectId}/org`
+  },
+  {
+    labelKey: 'nav.project.audits',
+    getHref: (projectId: string) => `/projects/${projectId}/audit`
+  }
 ] as const;
 
 @customElement('app-shell')
@@ -40,7 +57,7 @@ export class AppShell extends LitElement {
     navigateTo('/login', { replace: true });
   }
 
-  private renderNavigation() {
+  private renderNavigation(activeProject: AISystem | null) {
     const active = window.location.pathname;
     return html`
       <nav class="menu px-4 py-6 text-base-content/80">
@@ -48,6 +65,7 @@ export class AppShell extends LitElement {
           <li>
             <a
               class=${classMap({ 'active font-semibold': active === item.href })}
+              aria-current=${active === item.href ? 'page' : undefined}
               @click=${() => this.handleNavigate(item.href)}
             >
               ${item.label}
@@ -55,6 +73,27 @@ export class AppShell extends LitElement {
           </li>
         `)}
       </nav>
+      ${activeProject
+        ? html`
+            <nav class="menu px-4 pb-6 text-base-content/80">
+              ${PROJECT_NAV_ITEMS.map((item) => {
+                const href = item.getHref(activeProject.id);
+                const isActive = active.startsWith(href);
+                return html`
+                  <li>
+                    <a
+                      class=${classMap({ 'active font-semibold': isActive })}
+                      aria-current=${isActive ? 'page' : undefined}
+                      @click=${() => this.handleNavigate(href)}
+                    >
+                      ${t(item.labelKey)}
+                    </a>
+                  </li>
+                `;
+              })}
+            </nav>
+          `
+        : null}
     `;
   }
 
@@ -97,7 +136,7 @@ export class AppShell extends LitElement {
             <span class="text-lg font-semibold">AI Act Compliance</span>
             <p class="text-sm text-base-content/60">Herramienta de seguimiento</p>
           </div>
-          <div class="flex-1 overflow-y-auto">${this.renderNavigation()}</div>
+          <div class="flex-1 overflow-y-auto">${this.renderNavigation(activeProject)}</div>
           <div class="p-6 border-t border-base-300 space-y-2">
             ${this.renderProjectSelector()}
           </div>
