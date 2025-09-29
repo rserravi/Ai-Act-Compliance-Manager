@@ -35,6 +35,9 @@ const resources = {
         settings: "Ajustes",
         projectGroup: "Proyecto: {{name}}",
         project: {
+          evidences: "Evidencias",
+          teams: "Equipos",
+          audits: "Auditorías",
           deliverables: "Entregables",
           calendar: "Calendario",
           org: "Org y Roles",
@@ -716,6 +719,9 @@ const resources = {
         settings: "Settings",
         projectGroup: "Project: {{name}}",
         project: {
+          evidences: "Evidence",
+          teams: "Teams",
+          audits: "Audits",
           deliverables: "Deliverables",
           calendar: "Calendar",
           org: "Org & Roles",
@@ -1246,6 +1252,9 @@ const resources = {
         settings: "Configuració",
         projectGroup: "Projecte: {{name}}",
         project: {
+          evidences: "Evidències",
+          teams: "Equips",
+          audits: "Auditories",
           deliverables: "Lliurables",
           calendar: "Calendari",
           org: "Org i Rols",
@@ -1776,6 +1785,9 @@ const resources = {
         settings: "Paramètres",
         projectGroup: "Projet: {{name}}",
         project: {
+          evidences: "Preuves",
+          teams: "Équipes",
+          audits: "Audits",
           deliverables: "Livrables",
           calendar: "Calendrier",
           org: "Org & Rôles",
