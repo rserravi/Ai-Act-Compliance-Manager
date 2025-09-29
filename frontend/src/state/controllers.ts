@@ -1,5 +1,5 @@
 import { ContextConsumer, ContextProvider, type Context } from '@lit-labs/context';
-import type { ReactiveController, ReactiveElement } from '@lit/reactive-element';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import { authStore, type AuthStore } from './auth-store';
 import { projectStore, type ProjectStore } from './project-store';
 import { authStoreContext, projectStoreContext } from './context';
@@ -14,12 +14,12 @@ function combineSubscriptions(subscriptions: Array<() => void>): () => void {
 }
 
 class BaseStoreController<TStore> implements ReactiveController {
-  protected readonly host: ReactiveElement;
+  protected readonly host: ReactiveControllerHost;
   protected store: TStore;
   private unsubscribe: () => void = () => {};
-  private readonly contextConsumer?: ContextConsumer<Context<TStore>, ReactiveElement>;
+  private readonly contextConsumer?: ContextConsumer<Context<TStore>, ReactiveControllerHost>;
 
-  constructor(host: ReactiveElement, options: { store: TStore; context?: Context<TStore> }) {
+  constructor(host: ReactiveControllerHost, options: { store: TStore; context?: Context<TStore> }) {
     this.host = host;
     this.store = options.store;
 
@@ -65,7 +65,7 @@ class BaseStoreController<TStore> implements ReactiveController {
 }
 
 export class AuthController extends BaseStoreController<AuthStore> {
-  constructor(host: ReactiveElement, store: AuthStore = authStore) {
+  constructor(host: ReactiveControllerHost, store: AuthStore = authStore) {
     super(host, { store, context: authStoreContext });
   }
 
@@ -106,7 +106,7 @@ export class AuthController extends BaseStoreController<AuthStore> {
 }
 
 export class ProjectController extends BaseStoreController<ProjectStore> {
-  constructor(host: ReactiveElement, store: ProjectStore = projectStore) {
+  constructor(host: ReactiveControllerHost, store: ProjectStore = projectStore) {
     super(host, { store, context: projectStoreContext });
   }
 
@@ -147,13 +147,13 @@ export class ProjectController extends BaseStoreController<ProjectStore> {
 }
 
 export class AuthStoreProvider extends ContextProvider<typeof authStoreContext> {
-  constructor(host: ReactiveElement, store: AuthStore = authStore) {
+  constructor(host: ReactiveControllerHost, store: AuthStore = authStore) {
     super(host, { context: authStoreContext, initialValue: store });
   }
 }
 
 export class ProjectStoreProvider extends ContextProvider<typeof projectStoreContext> {
-  constructor(host: ReactiveElement, store: ProjectStore = projectStore) {
+  constructor(host: ReactiveControllerHost, store: ProjectStore = projectStore) {
     super(host, { context: projectStoreContext, initialValue: store });
   }
 }
