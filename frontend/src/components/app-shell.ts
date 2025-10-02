@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import type { AISystem } from '../domain/models';
 import { AuthController, ProjectController } from '../state/controllers';
-import { navigateTo } from '../navigation';
+import { getCurrentPath, navigateTo } from '../navigation';
 import {
   t,
   supportedLanguages,
@@ -175,9 +175,14 @@ export class AppShell extends LocalizedElement {
   @state() private mobileMenuOpen = false;
   @state() private language = getCurrentLanguage();
   @state() private isOnline = navigator.onLine;
+  @state() private activePath = getCurrentPath();
 
   private readonly updateOnlineStatus = () => {
     this.isOnline = navigator.onLine;
+  };
+
+  private readonly syncActivePath = () => {
+    this.activePath = getCurrentPath();
   };
 
   private toggleMenu() {
@@ -187,6 +192,7 @@ export class AppShell extends LocalizedElement {
   private handleNavigate(href: string) {
     navigateTo(href);
     this.mobileMenuOpen = false;
+    this.syncActivePath();
   }
 
   private handleProjectChange(event: Event) {
@@ -202,14 +208,17 @@ export class AppShell extends LocalizedElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.language = getCurrentLanguage();
+    this.syncActivePath();
     window.addEventListener('online', this.updateOnlineStatus);
     window.addEventListener('offline', this.updateOnlineStatus);
+    window.addEventListener('popstate', this.syncActivePath);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('online', this.updateOnlineStatus);
     window.removeEventListener('offline', this.updateOnlineStatus);
+    window.removeEventListener('popstate', this.syncActivePath);
   }
 
   protected override handleLanguageChanged(language: SupportedLanguage): void {
@@ -226,7 +235,7 @@ export class AppShell extends LocalizedElement {
   }
 
   private renderNavigation(activeProject: AISystem | null) {
-    const activePath = window.location.pathname;
+    const activePath = this.activePath;
     return html`
       <nav class="menu px-4 py-6 text-base-content/80">
         ${NAVIGATION_ITEMS.map((item) => html`
