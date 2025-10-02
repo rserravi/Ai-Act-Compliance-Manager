@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import type { AISystem } from '../domain/models';
@@ -8,91 +8,23 @@ import {
   t,
   supportedLanguages,
   getCurrentLanguage,
-  onLanguageChanged,
   changeLanguage,
   type SupportedLanguage
 } from '../shared/i18n';
 import styles from '../styles.css?inline';
+import { LocalizedElement } from '../shared/localized-element';
 
-const NAVIGATION_ITEMS = [
-  {
-    label: 'Panel',
-    href: '/',
-    icon: html`<svg
-      class="w-5 h-5"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-      />
-    </svg>`
-  },
-  {
-    label: 'Proyectos',
-    href: '/projects',
-    icon: html`<svg
-      class="w-5 h-5"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
-      />
-    </svg>`
-  },
-  {
-    label: 'Incidentes',
-    href: '/incidents',
-    icon: html`<svg
-      class="w-5 h-5"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-      />
-    </svg>`
-  },
-  {
-    label: 'Configuración',
-    href: '/settings',
-    icon: html`<svg
-      class="w-5 h-5"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-      />
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-    </svg>`
-  }
-] as const;
+const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '0.1.0';
+
+const NAVIGATION_ITEMS: ReadonlyArray<{
+  labelKey: 'nav.dashboard' | 'nav.projects' | 'nav.incidents' | 'nav.settings';
+  href: string;
+}> = [
+  { labelKey: 'nav.dashboard', href: '/' },
+  { labelKey: 'nav.projects', href: '/projects' },
+  { labelKey: 'nav.incidents', href: '/incidents' },
+  { labelKey: 'nav.settings', href: '/settings' }
+];
 
 const PROJECT_NAV_ITEMS = [
   {
@@ -155,7 +87,7 @@ const PROJECT_NAV_ITEMS = [
 ] as const;
 
 @customElement('app-shell')
-export class AppShell extends LitElement {
+export class AppShell extends LocalizedElement {
   static styles = [css([styles] as any)];
 
   private readonly auth = new AuthController(this);
@@ -163,8 +95,11 @@ export class AppShell extends LitElement {
 
   @state() private mobileMenuOpen = false;
   @state() private language = getCurrentLanguage();
+  @state() private isOnline = navigator.onLine;
 
-  private unsubscribeLanguageChange: (() => void) | null = null;
+  private readonly updateOnlineStatus = () => {
+    this.isOnline = navigator.onLine;
+  };
 
   private toggleMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
@@ -188,15 +123,18 @@ export class AppShell extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.language = getCurrentLanguage();
-    this.unsubscribeLanguageChange = onLanguageChanged((language) => {
-      this.language = language;
-    });
+    window.addEventListener('online', this.updateOnlineStatus);
+    window.addEventListener('offline', this.updateOnlineStatus);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.unsubscribeLanguageChange?.();
-    this.unsubscribeLanguageChange = null;
+    window.removeEventListener('online', this.updateOnlineStatus);
+    window.removeEventListener('offline', this.updateOnlineStatus);
+  }
+
+  protected override handleLanguageChanged(language: SupportedLanguage): void {
+    this.language = language;
   }
 
   private handleLanguageChange(event: Event) {
@@ -212,73 +150,61 @@ export class AppShell extends LitElement {
     const activePath = window.location.pathname;
     return html`
       <nav class="menu px-4 py-6 text-base-content/80">
-        ${NAVIGATION_ITEMS.map((item) => {
-          const isActive =
-            activePath === item.href || activePath.startsWith(`${item.href}/`);
-          return html`
-            <li>
-              <a
-                class=${classMap({ 'active font-semibold': isActive })}
-                aria-current=${isActive ? 'page' : undefined}
-                @click=${() => this.handleNavigate(item.href)}
-              >
-                <span class="flex items-center gap-3">
-                  ${item.icon}
-                  <span>${item.label}</span>
-                </span>
-              </a>
-            </li>
-          `;
-        })}
-        ${this.renderProjectSelectorMenuItems()}
-        ${activeProject
-          ? PROJECT_NAV_ITEMS.map((item) => {
-              const href = item.getHref(activeProject.id);
-              const isActive = activePath.startsWith(href);
-              return html`
-                <li>
-                  <a
-                    class=${classMap({ 'active font-semibold': isActive })}
-                    aria-current=${isActive ? 'page' : undefined}
-                    @click=${() => this.handleNavigate(href)}
-                  >
-                    <span class="flex items-center gap-3">
-                      ${item.icon}
-                      <span>${t(item.labelKey)}</span>
-                    </span>
-                  </a>
-                </li>
-              `;
-            })
-          : null}
+        ${NAVIGATION_ITEMS.map((item) => html`
+          <li>
+            <a
+              class=${classMap({ 'active font-semibold': active === item.href })}
+              aria-current=${active === item.href ? 'page' : undefined}
+              @click=${() => this.handleNavigate(item.href)}
+            >
+              ${t(item.labelKey)}
+            </a>
+          </li>
+        `)}
       </nav>
+      ${activeProject
+        ? html`
+            <nav class="menu px-4 pb-6 text-base-content/80">
+              ${PROJECT_NAV_ITEMS.map((item) => {
+                const href = item.getHref(activeProject.id);
+                const isActive = active.startsWith(href);
+                return html`
+                  <li>
+                    <a
+                      class=${classMap({ 'active font-semibold': isActive })}
+                      aria-current=${isActive ? 'page' : undefined}
+                      @click=${() => this.handleNavigate(href)}
+                    >
+                      ${t(item.labelKey)}
+                    </a>
+                  </li>
+                `;
+              })}
+            </nav>
+          `
+        : null}
     `;
   }
 
   private renderProjectSelectorMenuItems() {
     const projects = this.projects.projects;
-    const activeProjectId = this.projects.activeProjectId ?? '';
+    if (!projects.length) {
+      return html`<span class="text-sm text-base-content/70">${t('app.projectSelector.empty')}</span>`;
+    }
     return html`
-      <li class="menu-title mt-6">
-        <span>Proyecto activo</span>
-      </li>
-      <li class="px-2">
-        ${projects.length
-          ? html`<select
-              class="select select-bordered select-sm w-full"
-              aria-label="Seleccionar proyecto activo"
-              .value=${activeProjectId}
-              @change=${this.handleProjectChange}
-            >
-              <option value="">Todos los proyectos</option>
-              ${projects.map(
-                (project) => html`<option value=${project.id}>${project.name}</option>`
-              )}
-            </select>`
-          : html`<span class="text-sm text-base-content/70 block px-2 py-2"
-              >Sin proyectos activos</span
-            >`}
-      </li>
+      <label class="form-control w-full max-w-xs">
+        <span class="label">
+          <span class="label-text text-sm font-medium">${t('app.projectSelector.title')}</span>
+        </span>
+        <select class="select select-bordered select-sm" @change=${this.handleProjectChange}>
+          <option value="">${t('app.projectSelector.all')}</option>
+          ${projects.map((project) => html`
+            <option value=${project.id} ?selected=${project.id === this.projects.activeProjectId}>
+              ${project.name}
+            </option>
+          `)}
+        </select>
+      </label>
     `;
   }
 
@@ -297,59 +223,79 @@ export class AppShell extends LitElement {
           })}
         >
           <div class="p-6 border-b border-base-300">
-            <span class="text-lg font-semibold">AI Act Compliance</span>
-            <p class="text-sm text-base-content/60">Herramienta de seguimiento</p>
+            <span class="text-lg font-semibold">${t('app.shortTitle')}</span>
+            <p class="text-sm text-base-content/60">${t('app.sidebarSubtitle')}</p>
           </div>
           <div class="flex-1 overflow-y-auto">${this.renderNavigation(activeProject)}</div>
         </aside>
 
         <div class="flex-1 flex flex-col">
-          <header class="navbar bg-base-100 border-b border-base-300 sticky top-0 z-20">
-            <div class="flex-none lg:hidden">
-              <button class="btn btn-ghost btn-square" @click=${this.toggleMenu}>
-                <span class="text-2xl leading-none">☰</span>
-              </button>
-            </div>
-            <div class="flex-1 flex flex-col lg:flex-row lg:items-center gap-2 px-4">
-              <h1 class="text-xl font-semibold">${activeProject?.name ?? 'Panel de control'}</h1>
-              ${activeProject
-                ? html`<span class="badge badge-outline">${activeProject.role}</span>`
-                : html`<span class="text-sm text-base-content/60">Selecciona un proyecto</span>`}
-            </div>
-            <div class="flex-none pr-4 flex items-center gap-3">
-              <label class="form-control w-auto min-w-[8rem]">
-                <span class="label py-0">
-                  <span class="label-text text-sm font-medium">
-                    ${t('app.languageLabel')}
-                  </span>
-                </span>
-                <select
-                  id=${languageSelectId}
-                  class="select select-bordered select-sm"
-                  aria-label=${t('app.languageSelectAria')}
-                  .value=${this.language}
-                  @change=${this.handleLanguageChange}
-                >
-                  ${supportedLanguages.map(
-                    (language) => html`
-                      <option value=${language}>
-                        ${t(`languages.${language}.full`)}
-                      </option>
-                    `
-                  )}
-                </select>
-              </label>
-              <div class="text-right">
-                <p class="text-sm font-semibold">${user?.full_name ?? 'Invitado'}</p>
-                <p class="text-xs text-base-content/60">${user?.email ?? 'Sin sesión'}</p>
+          <header class="bg-base-100 border-b border-base-300 sticky top-0 z-20">
+            <div class="navbar gap-4 px-4 py-2">
+              <div class="flex-none lg:hidden">
+                <button class="btn btn-ghost btn-square btn-sm" @click=${this.toggleMenu} aria-label=${t('app.menuToggle')}>
+                  <span class="text-xl leading-none">☰</span>
+                </button>
               </div>
-              <button class="btn btn-sm" @click=${this.logout}>Cerrar sesión</button>
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                
+                <div class="flex-1 flex justify-end lg:justify-center">
+                  <label
+                    class="input input-bordered input-sm flex items-center gap-2 w-full max-w-md"
+                    aria-label=${t('app.searchAria')}
+                  >
+                    <input
+                      class="grow bg-transparent outline-none"
+                      type="search"
+                      placeholder=${t('app.searchPlaceholder')}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <label class="form-control w-auto min-w-[8rem]">
+                  <select
+                    id=${languageSelectId}
+                    class="select select-bordered select-sm"
+                    aria-label=${t('app.languageSelectAria')}
+                    .value=${this.language}
+                    @change=${this.handleLanguageChange}
+                  >
+                    ${supportedLanguages.map(
+                      (language) => html`
+                        <option value=${language}>
+                          ${t(`languages.${language}.full`)}
+                        </option>
+                      `
+                    )}
+                  </select>
+                </label>
+                <div class="text-right">
+                  <p class="text-sm font-semibold">${user?.full_name ?? t('app.guestUser')}</p>
+                  <p class="text-xs text-base-content/60">${user?.email ?? t('app.noSession')}</p>
+                </div>
+                <button class="btn btn-sm" @click=${this.logout}>${t('app.logout')}</button>
+                <span class="hidden md:inline text-base-content/40">│</span>
+              </div>
+            </div>
+            <div class="border-t border-base-300 px-4 py-3 flex flex-col lg:flex-row lg:items-center gap-2">
+              <h1 class="text-xl font-semibold flex-1">${activeProject?.name ?? t('app.layout.defaultProjectTitle')}</h1>
+              ${activeProject
+                ? html`<span class="badge badge-outline">${t(`roles.${activeProject.role}` as const)}</span>`
+                : html`<span class="text-sm text-base-content/60">${t('app.layout.selectProjectHint')}</span>`}
             </div>
           </header>
 
           <main class="flex-1 overflow-y-auto p-6">
             <slot></slot>
           </main>
+
+          <footer class="bg-base-100 border-t border-base-300 px-6 py-3 text-sm text-base-content/70 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              ${this.isOnline ? t('app.footer.online') : t('app.footer.offline')}
+            </span>
+            <span>${t('app.footer.version', { version: APP_VERSION })}</span>
+          </footer>
         </div>
       </div>
     `;

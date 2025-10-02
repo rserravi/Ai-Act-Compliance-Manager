@@ -1,10 +1,12 @@
-import { html, LitElement, type PropertyValueMap } from 'lit';
+import { html, type PropertyValueMap } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { navigateTo } from '../../navigation';
 import { AuthController } from '../../state/controllers';
+import { LocalizedElement } from '../../shared/localized-element';
+import { t } from '../../shared/i18n';
 
 @customElement('sign-in-verify-page')
-export class SignInVerifyPage extends LitElement {
+export class SignInVerifyPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
   private readonly auth = new AuthController(this);
@@ -40,12 +42,12 @@ export class SignInVerifyPage extends LitElement {
   private async handleVerificationSubmit(event: Event): Promise<void> {
     event.preventDefault();
     if (!this.registrationId) {
-      this.verificationError = 'No se encontró el registro. Vuelve a iniciar el proceso.';
+      this.verificationError = t('auth.signup.verificationMissing');
       return;
     }
 
     if (this.verificationCode.length !== 8) {
-      this.verificationError = 'Introduce los 8 caracteres del código enviado.';
+      this.verificationError = t('auth.signup.verificationCodeRequired');
       return;
     }
 
@@ -57,11 +59,11 @@ export class SignInVerifyPage extends LitElement {
         registration_id: this.registrationId,
         code: this.verificationCode
       });
-      this.feedback = 'Autenticación completada. Redirigiendo a la plataforma...';
+      this.feedback = t('auth.feedback.signUpVerified');
       navigateTo('/', { replace: true });
     } catch (error) {
       console.error(error);
-      this.verificationError = 'El código no es válido. Verifica e inténtalo nuevamente.';
+      this.verificationError = t('auth.feedback.signUpVerificationError');
     } finally {
       this.isVerifying = false;
     }
@@ -71,14 +73,14 @@ export class SignInVerifyPage extends LitElement {
     return html`
       <div class="card-body space-y-6">
         <header class="space-y-1 text-center">
-          <h1 class="text-3xl font-bold">Verificación no disponible</h1>
+          <h1 class="text-3xl font-bold">${t('auth.signup.verificationUnavailableTitle')}</h1>
           <p class="text-base-content/70">
-            ${this.feedback}
+            ${this.feedback ?? t('auth.signup.verificationUnavailableSubtitle')}
           </p>
         </header>
 
         <button class="btn btn-primary" type="button" @click=${() => navigateTo('/sign-in')}>
-          Volver al registro
+          ${t('auth.signup.returnToRegistration')}
         </button>
       </div>
     `;
@@ -88,9 +90,9 @@ export class SignInVerifyPage extends LitElement {
     return html`
       <form class="card-body space-y-4" @submit=${this.handleVerificationSubmit}>
         <header class="space-y-1 text-center">
-          <h1 class="text-3xl font-bold">Verifica tu cuenta</h1>
+          <h1 class="text-3xl font-bold">${t('auth.signup.verificationTitle')}</h1>
           <p class="text-base-content/70">
-            Introduce el código de 8 caracteres enviado por tu método de contacto.
+            ${t('auth.signup.verificationSubtitle', { email: '—' })}
           </p>
         </header>
 
@@ -98,7 +100,7 @@ export class SignInVerifyPage extends LitElement {
         ${this.verificationError ? html`<div class="alert alert-error text-sm">${this.verificationError}</div>` : null}
 
         <label class="form-control">
-          <span class="label"><span class="label-text">Código de verificación</span></span>
+          <span class="label"><span class="label-text">${t('auth.signup.verificationCodeLabel')}</span></span>
           <input
             class="input input-bordered text-center tracking-widest"
             required
@@ -113,13 +115,13 @@ export class SignInVerifyPage extends LitElement {
         </label>
 
         <button class="btn btn-primary" type="submit" ?disabled=${this.isVerifying || this.verificationCode.length !== 8}>
-          Verificar y acceder
+          ${t('auth.signup.verifyButton')}
         </button>
 
         <p class="text-sm text-base-content/70 text-center">
-          ¿Necesitas modificar tus datos?
+          ${t('auth.signup.modifyDataPrompt')}
           <button class="link" type="button" @click=${() => navigateTo('/sign-in')}>
-            Editar registro
+            ${t('auth.signup.editRegistration')}
           </button>
         </p>
       </form>

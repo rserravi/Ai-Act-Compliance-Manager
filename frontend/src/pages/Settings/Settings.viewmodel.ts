@@ -1,3 +1,5 @@
+import { t } from '../../shared/i18n';
+
 export type NotificationSetting = {
   id: string;
   label: string;
@@ -8,18 +10,18 @@ export function getNotificationSettings(): NotificationSetting[] {
   return [
     {
       id: 'incidents',
-      label: 'Alertas de incidentes',
-      description: 'Recibe un correo cuando se registre un nuevo incidente crítico.'
+      label: t('settings.notifications.items.incidents.label'),
+      description: t('settings.notifications.items.incidents.description')
     },
     {
       id: 'deliverables',
-      label: 'Recordatorios de entregables',
-      description: 'Avisos semanales de entregables próximos a vencer.'
+      label: t('settings.notifications.items.deliverables.label'),
+      description: t('settings.notifications.items.deliverables.description')
     },
     {
       id: 'audits',
-      label: 'Ejecución de auditorías',
-      description: 'Notificaciones sobre auditorías programadas y resultados.'
+      label: t('settings.notifications.items.audits.label'),
+      description: t('settings.notifications.items.audits.description')
     }
   ];
 }

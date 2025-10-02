@@ -22,7 +22,29 @@ const resources = {
         searchAria: "Buscar en la aplicación",
         greeting: "Hola",
         languageLabel: "Idioma",
-        languageSelectAria: "Seleccionar idioma"
+        languageLabelShort: "LANG",
+        languageSelectAria: "Seleccionar idioma",
+        sidebarSubtitle: "Herramienta de seguimiento",
+        appBarPrefix: "│ AppBar:",
+        appBarLogo: "Logo",
+        menuToggle: "Abrir menú",
+        projectSelector: {
+          title: "Proyecto activo",
+          all: "Todos los proyectos",
+          empty: "Sin proyectos activos"
+        },
+        layout: {
+          defaultProjectTitle: "Panel de control",
+          selectProjectHint: "Selecciona un proyecto"
+        },
+        guestUser: "Invitado",
+        noSession: "Sin sesión",
+        logout: "Cerrar sesión",
+        footer: {
+          online: "Estado de conexión: Conectado",
+          offline: "Estado de conexión: Sin conexión",
+          version: "Versión: v{{version}}"
+        }
       },
       nav: {
         dashboard: "Dashboard",
@@ -82,12 +104,20 @@ const resources = {
           submit: "Registrarme",
           hasAccount: "¿Ya tienes cuenta?",
           goToLogin: "Volver al login",
+          language: "Idioma preferido",
           verificationTitle: "Verifica tu cuenta",
           verificationSubtitle: "Hemos enviado un código de verificación a {{email}}. Introdúcelo para completar el registro.",
           verificationCodeLabel: "Código de verificación",
           verifyButton: "Confirmar código",
           resendButton: "Enviar nuevo código",
-          resendHelp: "Si no lo recibes, revisa tu carpeta de spam o solicita un nuevo código."
+          resendHelp: "Si no lo recibes, revisa tu carpeta de spam o solicita un nuevo código.",
+          verificationMissing: "No se encontró el registro. Vuelve a iniciar el proceso.",
+          verificationCodeRequired: "Introduce los 8 caracteres del código enviado.",
+          verificationUnavailableTitle: "Verificación no disponible",
+          verificationUnavailableSubtitle: "No encontramos un registro pendiente. Inicia un nuevo registro para continuar.",
+          returnToRegistration: "Volver al registro",
+          modifyDataPrompt: "¿Necesitas modificar tus datos?",
+          editRegistration: "Editar registro"
         },
         contactMethods: {
           email: "Correo",
@@ -111,6 +141,7 @@ const resources = {
       },
       deliverables: {
         title: "Entregables del Proyecto",
+        subtitle: "Gestiona la documentación obligatoria del proyecto seleccionado.",
         columns: {
           name: "Entregable",
           status: "Estado",
@@ -121,10 +152,17 @@ const resources = {
           upload: "Subir",
           assign: "Asignar"
         },
+        status: {
+          open: "Abierto",
+          inProgress: "En progreso",
+          inReview: "En revisión",
+          done: "Terminado"
+        },
         assignModal: {
           title: "Asignar Entregable",
           assignee: "Asignar a",
-          dueDate: "Fecha de entrega"
+          dueDate: "Fecha de entrega",
+          placeholder: "Selecciona un contacto"
         }
       },
       languages: {
@@ -142,9 +180,12 @@ const resources = {
         view: "Ver",
         loading: "Cargando…",
         notFound: "No encontrado",
-        notAvailable: "N/D"
+        notAvailable: "N/D",
+        remove: "Eliminar"
       },
       dashboard: {
+        pageTitle: "Panel de control",
+        pageSubtitle: "Resumen de indicadores de cumplimiento y actividad reciente.",
         metrics: {
           registeredSystems: "Sistemas registrados",
           highRiskSystems: "Sistemas de alto riesgo",
@@ -225,6 +266,13 @@ const resources = {
 
       calendarWorkflows: {
         title: "Calendario & Workflows",
+        subtitle: "Consulta las tareas y hitos planificados para el proyecto {{project}}.",
+        empty: "No hay tareas registradas para este proyecto.",
+        task: {
+          assignee: "Asignado a {{assignee}}",
+          unassigned: "Sin asignar",
+          due: "Fecha objetivo: {{date}}"
+        },
         calendar: {
           title: "Próximos hitos",
           subtitle: "Eventos de cumplimiento para la semana en curso",
@@ -311,6 +359,19 @@ const resources = {
         }
       },
       auditEvidences: {
+        pageTitle: "Evidencias de auditoría",
+        pageSubtitle: "Estado de la documentación preparada para auditorías de cumplimiento del proyecto {{project}}.",
+        summary: {
+          totalDocuments: "Documentos",
+          description: "Registros disponibles"
+        },
+        table: {
+          columns: {
+            name: "Nombre",
+            status: "Estado",
+            updated: "Última actualización"
+          }
+        },
         title: "Auditorías & evidencias",
         tabs: {
           audits: "Auditorías",
@@ -348,7 +409,14 @@ const resources = {
         }
       },
       settings: {
+        pageTitle: "Configuración",
+        pageSubtitle: "Preferencias de cuenta y notificaciones personales.",
         title: "Ajustes de la aplicación",
+        account: {
+          title: "Cuenta",
+          noSession: "Sin sesión activa",
+          noCompany: "Organización no definida"
+        },
         preferences: {
           title: "Preferencias",
           language: "Idioma de la interfaz",
@@ -364,6 +432,20 @@ const resources = {
             email: "Correo electrónico",
             slack: "Slack",
             sms: "SMS"
+          },
+          items: {
+            incidents: {
+              label: "Alertas de incidentes",
+              description: "Recibe un correo cuando se registre un nuevo incidente crítico."
+            },
+            deliverables: {
+              label: "Recordatorios de entregables",
+              description: "Avisos semanales de entregables próximos a vencer."
+            },
+            audits: {
+              label: "Ejecución de auditorías",
+              description: "Notificaciones sobre auditorías programadas y resultados."
+            }
           }
         },
         integrations: {
@@ -374,6 +456,8 @@ const resources = {
       },
 
       projects: {
+        pageTitle: "Proyectos",
+        pageSubtitle: "Gestiona los sistemas de IA y su documentación asociada.",
         actions: {
           newProject: "Nuevo proyecto"
         },
@@ -391,7 +475,8 @@ const resources = {
             all: "Todas"
           },
           search: {
-            label: "Buscar proyectos…"
+            label: "Buscar proyectos…",
+            placeholder: "Nombre del proyecto"
           }
         },
         columns: {
@@ -412,6 +497,7 @@ const resources = {
         },
         wizard: {
           title: "Asistente de Nuevo Proyecto",
+          subtitle: "Recorre los pasos para crear un proyecto y registrar sus datos básicos.",
           addContact: "Añadir Contacto",
           steps: {
             details: "Detalles",
@@ -439,22 +525,39 @@ const resources = {
           },
           placeholders: {
             team: "p.ej. ada.lovelace@example.com, grace.hopper@example.com",
-            notes: "Anotaciones sobre el alcance, el contexto o los próximos pasos..."
+            notes: "Anotaciones sobre el alcance, el contexto o los próximos pasos...",
+            businessUnit: "Unidad o departamento principal"
+          },
+          risk: {
+            description: "Selecciona la clasificación de riesgo identificada tras la evaluación inicial.",
+            option: "Riesgo {{risk}}"
+          },
+          team: {
+            empty: "Todavía no hay contactos asignados."
           },
           summary: {
-            title: "Resumen del Proyecto"
+            title: "Resumen del Proyecto",
+            contacts: "Contactos",
+            teamCount: "{{count}} contactos",
+            unset: "No definida",
+            unclassifiedRisk: "Sin clasificar",
+            noNotes: "Sin notas"
           },
           finish: "Crear Proyecto"
         }
       },
       incidents: {
+        pageTitle: "Incidentes",
+        pageSubtitle: "Seguimiento de incidencias reportadas y su estado de revisión.",
         columns: {
           id: "ID",
           system: "Sistema",
           severity: "Severidad",
           status: "Estado",
-          date: "Fecha"
-        }
+          date: "Fecha",
+          title: "Título"
+        },
+        empty: "No hay incidentes registrados para este contexto."
       },
       roles: {
         provider: "Proveedor",
@@ -489,6 +592,12 @@ const resources = {
       systemDetail: {
         loading: "Cargando…",
         notFound: "No encontrado",
+        identifier: "Identificador: {{id}}",
+        stats: {
+          role: "Rol",
+          risk: "Riesgo",
+          docStatus: "Estado documental"
+        },
         chips: {
           role: "Rol: {{role}}",
           risk: "Riesgo: {{risk}}",
@@ -516,6 +625,15 @@ const resources = {
           workflows: "Kanban de cumplimiento…",
           evidences: "Evidencias adjuntas…",
           history: "Timeline de cambios…"
+        },
+        assessments: {
+          title: "Evaluaciones de riesgo",
+          empty: "Sin evaluaciones de riesgo registradas.",
+          columns: {
+            date: "Fecha",
+            classification: "Clasificación",
+            justification: "Justificación"
+          }
         },
         dialog: {
           title: "Reportar incidente",
@@ -706,7 +824,29 @@ const resources = {
         searchAria: "Search across the application",
         greeting: "Hello",
         languageLabel: "Language",
-        languageSelectAria: "Select language"
+        languageLabelShort: "LANG",
+        languageSelectAria: "Select language",
+        sidebarSubtitle: "Monitoring toolkit",
+        appBarPrefix: "│ AppBar:",
+        appBarLogo: "Logo",
+        menuToggle: "Open menu",
+        projectSelector: {
+          title: "Active project",
+          all: "All projects",
+          empty: "No active projects"
+        },
+        layout: {
+          defaultProjectTitle: "Dashboard",
+          selectProjectHint: "Select a project"
+        },
+        guestUser: "Guest",
+        noSession: "No session",
+        logout: "Sign out",
+        footer: {
+          online: "Connection status: Online",
+          offline: "Connection status: Offline",
+          version: "Version: v{{version}}"
+        }
       },
       nav: {
         dashboard: "Dashboard",
@@ -766,12 +906,20 @@ const resources = {
           submit: "Create account",
           hasAccount: "Already have an account?",
           goToLogin: "Back to login",
+          language: "Preferred language",
           verificationTitle: "Verify your account",
           verificationSubtitle: "We sent a verification code to {{email}}. Enter it below to finish your registration.",
           verificationCodeLabel: "Verification code",
           verifyButton: "Confirm code",
           resendButton: "Send new code",
-          resendHelp: "Didn't receive it? Check your spam folder or request another code."
+          resendHelp: "Didn't receive it? Check your spam folder or request another code.",
+          verificationMissing: "We couldn't find the registration. Please start again.",
+          verificationCodeRequired: "Enter the 8 characters of the verification code.",
+          verificationUnavailableTitle: "Verification unavailable",
+          verificationUnavailableSubtitle: "We couldn't find a pending registration. Start a new registration to continue.",
+          returnToRegistration: "Back to registration",
+          modifyDataPrompt: "Need to update your details?",
+          editRegistration: "Edit registration"
         },
         contactMethods: {
           email: "Email",
@@ -795,6 +943,7 @@ const resources = {
       },
       deliverables: {
         title: "Project Deliverables",
+        subtitle: "Manage the mandatory documentation for the selected project.",
         columns: {
           name: "Deliverable",
           status: "Status",
@@ -805,10 +954,73 @@ const resources = {
           upload: "Upload",
           assign: "Assign"
         },
+        status: {
+          open: "Open",
+          inProgress: "In progress",
+          inReview: "Under review",
+          done: "Completed"
+        },
         assignModal: {
           title: "Assign Deliverable",
           assignee: "Assign to",
-          dueDate: "Due Date"
+          dueDate: "Due date",
+          placeholder: "Select a contact"
+        }
+      },
+      calendarWorkflows: {
+        title: "Calendar & workflows",
+        subtitle: "Review scheduled tasks and milestones for project {{project}}.",
+        empty: "No tasks recorded for this project.",
+        task: {
+          assignee: "Assigned to {{assignee}}",
+          unassigned: "Unassigned",
+          due: "Target date: {{date}}"
+        }
+      },
+      settings: {
+        pageTitle: "Settings",
+        pageSubtitle: "Account preferences and personal notifications.",
+        title: "Application settings",
+        account: {
+          title: "Account",
+          noSession: "No active session",
+          noCompany: "Organization not defined"
+        },
+        preferences: {
+          title: "Preferences",
+          language: "Interface language",
+          theme: "Theme",
+          themeOptions: {
+            light: "Light",
+            dark: "Dark"
+          }
+        },
+        notifications: {
+          title: "Notifications",
+          channels: {
+            email: "Email",
+            slack: "Slack",
+            sms: "SMS"
+          },
+          items: {
+            incidents: {
+              label: "Incident alerts",
+              description: "Get an email whenever a critical incident is logged."
+            },
+            deliverables: {
+              label: "Deliverable reminders",
+              description: "Weekly reminders for deliverables nearing their deadline."
+            },
+            audits: {
+              label: "Audit execution",
+              description: "Notifications about scheduled audits and results."
+            }
+          }
+        },
+        integrations: {
+          title: "Integrations",
+          apiKey: "API key",
+          regenerate: "Regenerate"
         }
       },
       languages: {
@@ -826,9 +1038,12 @@ const resources = {
         view: "View",
         loading: "Loading…",
         notFound: "Not found",
-        notAvailable: "N/A"
+        notAvailable: "N/A",
+        remove: "Remove"
       },
       dashboard: {
+        pageTitle: "Dashboard",
+        pageSubtitle: "Summary of compliance indicators and recent activity.",
         metrics: {
           registeredSystems: "Registered systems",
           highRiskSystems: "High-risk systems",
@@ -907,6 +1122,8 @@ const resources = {
         }
       },
       projects: {
+        pageTitle: "Projects",
+        pageSubtitle: "Manage AI systems and their associated documentation.",
         actions: {
           newProject: "New project"
         },
@@ -924,7 +1141,8 @@ const resources = {
             all: "All"
           },
           search: {
-            label: "Search projects…"
+            label: "Search projects…",
+            placeholder: "Project name"
           }
         },
         columns: {
@@ -945,6 +1163,7 @@ const resources = {
         },
         wizard: {
           title: "New Project Wizard",
+          subtitle: "Follow the steps to create a project and capture its core data.",
           addContact: "Add Contact",
           steps: {
             details: "Details",
@@ -972,22 +1191,39 @@ const resources = {
           },
           placeholders: {
             team: "e.g. ada.lovelace@example.com, grace.hopper@example.com",
-            notes: "Notes about scope, context, or next steps..."
+            notes: "Notes about scope, context, or next steps...",
+            businessUnit: "Primary unit or department"
+          },
+          risk: {
+            description: "Select the risk classification identified after the initial assessment.",
+            option: "{{risk}} risk"
+          },
+          team: {
+            empty: "No contacts added yet."
           },
           summary: {
-            title: "Project Summary"
+            title: "Project Summary",
+            contacts: "Contacts",
+            teamCount: "{{count}} contacts",
+            unset: "Not defined",
+            unclassifiedRisk: "Unclassified",
+            noNotes: "No notes"
           },
           finish: "Create Project"
         }
       },
       incidents: {
+        pageTitle: "Incidents",
+        pageSubtitle: "Track reported incidents and their review status.",
         columns: {
           id: "ID",
           system: "System",
           severity: "Severity",
           status: "Status",
-          date: "Date"
-        }
+          date: "Date",
+          title: "Title"
+        },
+        empty: "No incidents recorded for this context."
       },
       roles: {
         provider: "Provider",
@@ -1022,6 +1258,12 @@ const resources = {
       systemDetail: {
         loading: "Loading…",
         notFound: "Not found",
+        identifier: "Identifier: {{id}}",
+        stats: {
+          role: "Role",
+          risk: "Risk",
+          docStatus: "Documentation status"
+        },
         chips: {
           role: "Role: {{role}}",
           risk: "Risk: {{risk}}",
@@ -1049,6 +1291,15 @@ const resources = {
           workflows: "Compliance kanban…",
           evidences: "Attached evidence…",
           history: "Change timeline…"
+        },
+        assessments: {
+          title: "Risk assessments",
+          empty: "No recorded risk assessments.",
+          columns: {
+            date: "Date",
+            classification: "Classification",
+            justification: "Justification"
+          }
         },
         dialog: {
           title: "Report incident",
@@ -1239,7 +1490,29 @@ const resources = {
         searchAria: "Cerca a l'aplicació",
         greeting: "Hola",
         languageLabel: "Llengua",
-        languageSelectAria: "Selecciona llengua"
+        languageLabelShort: "LANG",
+        languageSelectAria: "Selecciona llengua",
+        sidebarSubtitle: "Eina de seguiment",
+        appBarPrefix: "│ AppBar:",
+        appBarLogo: "Logo",
+        menuToggle: "Obrir menú",
+        projectSelector: {
+          title: "Projecte actiu",
+          all: "Tots els projectes",
+          empty: "Sense projectes actius"
+        },
+        layout: {
+          defaultProjectTitle: "Quadre de comandament",
+          selectProjectHint: "Selecciona un projecte"
+        },
+        guestUser: "Convidat",
+        noSession: "Sense sessió",
+        logout: "Tanca la sessió",
+        footer: {
+          online: "Estat de connexió: Connectat",
+          offline: "Estat de connexió: Sense connexió",
+          version: "Versió: v{{version}}"
+        }
       },
       nav: {
         dashboard: "Panell",
@@ -1299,12 +1572,20 @@ const resources = {
           submit: "Registrar-me",
           hasAccount: "Ja tens compte?",
           goToLogin: "Torna al login",
+          language: "Llengua preferida",
           verificationTitle: "Verifica el teu compte",
           verificationSubtitle: "Hem enviat un codi de verificació a {{email}}. Introdueix-lo per completar el registre.",
           verificationCodeLabel: "Codi de verificació",
           verifyButton: "Confirmar codi",
           resendButton: "Enviar un nou codi",
-          resendHelp: "Si no el reps, revisa el correu brossa o sol·licita un nou codi."
+          resendHelp: "Si no el reps, revisa el correu brossa o sol·licita un nou codi.",
+          verificationMissing: "No s'ha trobat el registre. Torna a iniciar el procés.",
+          verificationCodeRequired: "Introdueix els 8 caràcters del codi enviat.",
+          verificationUnavailableTitle: "Verificació no disponible",
+          verificationUnavailableSubtitle: "No hem trobat cap registre pendent. Inicia un nou registre per continuar.",
+          returnToRegistration: "Torna al registre",
+          modifyDataPrompt: "Necessites modificar les teves dades?",
+          editRegistration: "Edita el registre"
         },
         contactMethods: {
           email: "Correu",
@@ -1328,6 +1609,7 @@ const resources = {
       },
       deliverables: {
         title: "Lliurables del Projecte",
+        subtitle: "Gestiona la documentació obligatòria del projecte seleccionat.",
         columns: {
           name: "Lliurable",
           status: "Estat",
@@ -1338,10 +1620,73 @@ const resources = {
           upload: "Puja",
           assign: "Assigna"
         },
+        status: {
+          open: "Obert",
+          inProgress: "En progrés",
+          inReview: "En revisió",
+          done: "Completat"
+        },
         assignModal: {
           title: "Assignar Lliurable",
           assignee: "Assignar a",
-          dueDate: "Data de lliurament"
+          dueDate: "Data de lliurament",
+          placeholder: "Selecciona un contacte"
+        }
+      },
+      calendarWorkflows: {
+        title: "Calendari i workflows",
+        subtitle: "Consulta les tasques i fites planificades per al projecte {{project}}.",
+        empty: "No hi ha tasques registrades per a aquest projecte.",
+        task: {
+          assignee: "Assignat a {{assignee}}",
+          unassigned: "Sense assignar",
+          due: "Data objectiu: {{date}}"
+        }
+      },
+      settings: {
+        pageTitle: "Configuració",
+        pageSubtitle: "Preferències de compte i notificacions personals.",
+        title: "Ajustos de l'aplicació",
+        account: {
+          title: "Compte",
+          noSession: "Sense sessió activa",
+          noCompany: "Organització no definida"
+        },
+        preferences: {
+          title: "Preferències",
+          language: "Llengua de la interfície",
+          theme: "Tema",
+          themeOptions: {
+            light: "Clar",
+            dark: "Fosc"
+          }
+        },
+        notifications: {
+          title: "Notificacions",
+          channels: {
+            email: "Correu electrònic",
+            slack: "Slack",
+            sms: "SMS"
+          },
+          items: {
+            incidents: {
+              label: "Alertes d'incidents",
+              description: "Rep un correu quan es registri un incident crític."
+            },
+            deliverables: {
+              label: "Recordatoris de lliurables",
+              description: "Avisos setmanals de lliurables propers a vèncer."
+            },
+            audits: {
+              label: "Execució d'auditories",
+              description: "Notificacions sobre auditories programades i resultats."
+            }
+          }
+        },
+        integrations: {
+          title: "Integracions",
+          apiKey: "Clau API",
+          regenerate: "Regenera"
         }
       },
       languages: {
@@ -1359,9 +1704,12 @@ const resources = {
         view: "Veure",
         loading: "Carregant…",
         notFound: "No s'ha trobat",
-        notAvailable: "N/D"
+        notAvailable: "N/D",
+        remove: "Elimina"
       },
       dashboard: {
+        pageTitle: "Quadre de control",
+        pageSubtitle: "Resum d'indicadors de compliment i activitat recent.",
         metrics: {
           registeredSystems: "Sistemes registrats",
           highRiskSystems: "Sistemes d'alt risc",
@@ -1440,6 +1788,8 @@ const resources = {
         }
       },
       projects: {
+        pageTitle: "Projectes",
+        pageSubtitle: "Gestiona els sistemes d'IA i la seva documentació associada.",
         actions: {
           newProject: "Nou projecte"
         },
@@ -1457,7 +1807,8 @@ const resources = {
             all: "Totes"
           },
           search: {
-            label: "Cerca projectes…"
+            label: "Cerca projectes…",
+            placeholder: "Nom del projecte"
           }
         },
         columns: {
@@ -1478,6 +1829,7 @@ const resources = {
         },
         wizard: {
           title: "Assistent de Nou Projecte",
+          subtitle: "Segueix els passos per crear un projecte i registrar-ne les dades bàsiques.",
           addContact: "Afegeix Contacte",
           steps: {
             details: "Detalls",
@@ -1505,22 +1857,39 @@ const resources = {
           },
           placeholders: {
             team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
-            notes: "Anotacions sobre l'abast, el context o els propers passos..."
+            notes: "Anotacions sobre l'abast, el context o els propers passos...",
+            businessUnit: "Unitat o departament principal"
+          },
+          risk: {
+            description: "Selecciona la classificació de risc identificada després de l'avaluació inicial.",
+            option: "Risc {{risk}}"
+          },
+          team: {
+            empty: "Encara no hi ha contactes assignats."
           },
           summary: {
-            title: "Resum del Projecte"
+            title: "Resum del Projecte",
+            contacts: "Contactes",
+            teamCount: "{{count}} contactes",
+            unset: "No definida",
+            unclassifiedRisk: "Sense classificar",
+            noNotes: "Sense notes"
           },
           finish: "Crea Projecte"
         }
       },
       incidents: {
+        pageTitle: "Incidents",
+        pageSubtitle: "Seguiment d'incidents reportats i del seu estat de revisió.",
         columns: {
           id: "ID",
           system: "Sistema",
           severity: "Severitat",
           status: "Estat",
-          date: "Data"
-        }
+          date: "Data",
+          title: "Títol"
+        },
+        empty: "No hi ha incidents registrats per a aquest context."
       },
       roles: {
         provider: "Proveïdor",
@@ -1555,6 +1924,12 @@ const resources = {
       systemDetail: {
         loading: "Carregant…",
         notFound: "No s'ha trobat",
+        identifier: "Identificador: {{id}}",
+        stats: {
+          role: "Rol",
+          risk: "Risc",
+          docStatus: "Estat documental"
+        },
         chips: {
           role: "Rol: {{role}}",
           risk: "Risc: {{risk}}",
@@ -1582,6 +1957,15 @@ const resources = {
           workflows: "Kanban de compliment…",
           evidences: "Evidències adjuntes…",
           history: "Cronologia de canvis…"
+        },
+        assessments: {
+          title: "Avaluacions de risc",
+          empty: "No hi ha avaluacions de risc registrades.",
+          columns: {
+            date: "Data",
+            classification: "Classificació",
+            justification: "Justificació"
+          }
         },
         dialog: {
           title: "Reporta incident",
@@ -1772,7 +2156,29 @@ const resources = {
         searchAria: "Rechercher dans l'application",
         greeting: "Bonjour",
         languageLabel: "Langue",
-        languageSelectAria: "Sélectionner la langue"
+        languageLabelShort: "LANG",
+        languageSelectAria: "Sélectionner la langue",
+        sidebarSubtitle: "Outil de suivi",
+        appBarPrefix: "│ AppBar :",
+        appBarLogo: "Logo",
+        menuToggle: "Ouvrir le menu",
+        projectSelector: {
+          title: "Projet actif",
+          all: "Tous les projets",
+          empty: "Aucun projet actif"
+        },
+        layout: {
+          defaultProjectTitle: "Tableau de bord",
+          selectProjectHint: "Sélectionnez un projet"
+        },
+        guestUser: "Invité",
+        noSession: "Pas de session",
+        logout: "Se déconnecter",
+        footer: {
+          online: "Statut de connexion : En ligne",
+          offline: "Statut de connexion : Hors ligne",
+          version: "Version : v{{version}}"
+        }
       },
       nav: {
         dashboard: "Tableau de bord",
@@ -1832,12 +2238,20 @@ const resources = {
           submit: "Créer le compte",
           hasAccount: "Vous avez déjà un compte ?",
           goToLogin: "Retour au login",
+          language: "Langue préférée",
           verificationTitle: "Vérifiez votre compte",
           verificationSubtitle: "Nous avons envoyé un code de vérification à {{email}}. Saisissez-le pour finaliser l'inscription.",
           verificationCodeLabel: "Code de vérification",
           verifyButton: "Confirmer le code",
           resendButton: "Envoyer un nouveau code",
-          resendHelp: "Vous ne l'avez pas reçu ? Vérifiez vos spams ou demandez un nouveau code."
+          resendHelp: "Vous ne l'avez pas reçu ? Vérifiez vos spams ou demandez un nouveau code.",
+          verificationMissing: "Impossible de trouver l'inscription. Veuillez recommencer.",
+          verificationCodeRequired: "Saisissez les 8 caractères du code envoyé.",
+          verificationUnavailableTitle: "Vérification indisponible",
+          verificationUnavailableSubtitle: "Nous n'avons trouvé aucune inscription en attente. Lancez un nouveau processus pour continuer.",
+          returnToRegistration: "Retour à l'inscription",
+          modifyDataPrompt: "Besoin de modifier vos informations ?",
+          editRegistration: "Modifier l'inscription"
         },
         contactMethods: {
           email: "E-mail",
@@ -1861,6 +2275,7 @@ const resources = {
       },
       deliverables: {
         title: "Livrables du Projet",
+        subtitle: "Gérez la documentation obligatoire du projet sélectionné.",
         columns: {
           name: "Livrable",
           status: "Statut",
@@ -1871,10 +2286,73 @@ const resources = {
           upload: "Télécharger",
           assign: "Assigner"
         },
+        status: {
+          open: "Ouvert",
+          inProgress: "En cours",
+          inReview: "En révision",
+          done: "Terminé"
+        },
         assignModal: {
           title: "Assigner le Livrable",
           assignee: "Assigner à",
-          dueDate: "Date d'échéance"
+          dueDate: "Date d'échéance",
+          placeholder: "Sélectionnez un contact"
+        }
+      },
+      calendarWorkflows: {
+        title: "Calendrier et workflows",
+        subtitle: "Consultez les tâches et jalons planifiés pour le projet {{project}}.",
+        empty: "Aucune tâche enregistrée pour ce projet.",
+        task: {
+          assignee: "Attribué à {{assignee}}",
+          unassigned: "Non attribué",
+          due: "Date cible : {{date}}"
+        }
+      },
+      settings: {
+        pageTitle: "Paramètres",
+        pageSubtitle: "Préférences du compte et notifications personnelles.",
+        title: "Paramètres de l'application",
+        account: {
+          title: "Compte",
+          noSession: "Aucune session active",
+          noCompany: "Organisation non définie"
+        },
+        preferences: {
+          title: "Préférences",
+          language: "Langue de l'interface",
+          theme: "Thème",
+          themeOptions: {
+            light: "Clair",
+            dark: "Sombre"
+          }
+        },
+        notifications: {
+          title: "Notifications",
+          channels: {
+            email: "E-mail",
+            slack: "Slack",
+            sms: "SMS"
+          },
+          items: {
+            incidents: {
+              label: "Alertes d'incidents",
+              description: "Recevez un e-mail lorsqu'un incident critique est enregistré."
+            },
+            deliverables: {
+              label: "Rappels de livrables",
+              description: "Rappels hebdomadaires pour les livrables proches de l'échéance."
+            },
+            audits: {
+              label: "Exécution d'audits",
+              description: "Notifications sur les audits planifiés et leurs résultats."
+            }
+          }
+        },
+        integrations: {
+          title: "Intégrations",
+          apiKey: "Clé API",
+          regenerate: "Régénérer"
         }
       },
       languages: {
@@ -1892,9 +2370,12 @@ const resources = {
         view: "Voir",
         loading: "Chargement…",
         notFound: "Introuvable",
-        notAvailable: "N/D"
+        notAvailable: "N/D",
+        remove: "Supprimer"
       },
       dashboard: {
+        pageTitle: "Tableau de bord",
+        pageSubtitle: "Résumé des indicateurs de conformité et de l'activité récente.",
         metrics: {
           registeredSystems: "Systèmes enregistrés",
           highRiskSystems: "Systèmes à haut risque",
@@ -1973,6 +2454,8 @@ const resources = {
         }
       },
       projects: {
+        pageTitle: "Projets",
+        pageSubtitle: "Gérez les systèmes d'IA et leur documentation associée.",
         actions: {
           newProject: "Nouveau projet"
         },
@@ -1990,7 +2473,8 @@ const resources = {
             all: "Toutes"
           },
           search: {
-            label: "Rechercher des projets…"
+            label: "Rechercher des projets…",
+            placeholder: "Nom du projet"
           }
         },
         columns: {
@@ -2011,6 +2495,7 @@ const resources = {
         },
         wizard: {
           title: "Assistant de Nouveau Projet",
+          subtitle: "Suivez les étapes pour créer un projet et enregistrer ses données clés.",
           addContact: "Ajouter un contact",
           steps: {
             details: "Détails",
@@ -2038,22 +2523,39 @@ const resources = {
           },
           placeholders: {
             team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
-            notes: "Notes sur le périmètre, le contexte ou les prochaines étapes..."
+            notes: "Notes sur le périmètre, le contexte ou les prochaines étapes...",
+            businessUnit: "Unité ou département principal"
+          },
+          risk: {
+            description: "Sélectionnez la classification de risque identifiée après l'évaluation initiale.",
+            option: "Risque {{risk}}"
+          },
+          team: {
+            empty: "Aucun contact ajouté pour le moment."
           },
           summary: {
-            title: "Résumé du Projet"
+            title: "Résumé du Projet",
+            contacts: "Contacts",
+            teamCount: "{{count}} contacts",
+            unset: "Non défini",
+            unclassifiedRisk: "Non classé",
+            noNotes: "Aucune note"
           },
           finish: "Créer le Projet"
         }
       },
       incidents: {
+        pageTitle: "Incidents",
+        pageSubtitle: "Suivez les incidents déclarés et leur état de revue.",
         columns: {
           id: "ID",
           system: "Système",
           severity: "Gravité",
           status: "Statut",
-          date: "Date"
-        }
+          date: "Date",
+          title: "Titre"
+        },
+        empty: "Aucun incident enregistré pour ce contexte."
       },
       roles: {
         provider: "Fournisseur",
@@ -2088,6 +2590,12 @@ const resources = {
       systemDetail: {
         loading: "Chargement…",
         notFound: "Introuvable",
+        identifier: "Identifiant : {{id}}",
+        stats: {
+          role: "Rôle",
+          risk: "Risque",
+          docStatus: "Statut documentaire"
+        },
         chips: {
           role: "Rôle : {{role}}",
           risk: "Risque : {{risk}}",
@@ -2115,6 +2623,15 @@ const resources = {
           workflows: "Kanban de conformité…",
           evidences: "Preuves jointes…",
           history: "Chronologie des changements…"
+        },
+        assessments: {
+          title: "Évaluations de risque",
+          empty: "Aucune évaluation de risque enregistrée.",
+          columns: {
+            date: "Date",
+            classification: "Classification",
+            justification: "Justification"
+          }
         },
         dialog: {
           title: "Déclarer un incident",

@@ -8,6 +8,7 @@ declare interface ImportMetaEnv {
   readonly VITE_AUTH_REGISTRATION_VERIFY_ENDPOINT: string
   readonly VITE_AUTH_REGISTRATION_RESEND_ENDPOINT: string
   readonly VITE_AUTH_PROFILE_ENDPOINT: string
+  readonly VITE_APP_VERSION: string
 }
 
 declare interface ImportMeta {

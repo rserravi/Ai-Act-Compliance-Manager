@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import {
@@ -8,6 +8,8 @@ import {
   type TimelineEvent
 } from './Dashboard.viewmodel';
 import styles from '../../styles.css?inline';
+import { LocalizedElement } from '../../shared/localized-element';
+import { t } from '../../shared/i18n';
 
 const STATUS_COLOR_MAP: Record<string, string> = {
   vigente: 'var(--su)',
@@ -17,40 +19,76 @@ const STATUS_COLOR_MAP: Record<string, string> = {
 };
 
 @customElement('dashboard-page')
-export class DashboardPage extends LitElement {
+export class DashboardPage extends LocalizedElement {
   static styles = [css([styles] as any)];
   declare renderRoot: HTMLElement;
 
   private readonly model = createDashboardViewModel();
 
+  private formatDateTime(date: Date): string {
+    return `${date.toLocaleDateString(this.currentLanguage)} · ${date.toLocaleTimeString(this.currentLanguage, {
+      hour: '2-digit',
+      minute: '2-digit'
+    })}`;
+  }
+
+  private getTimelineContext(event: TimelineEvent): Record<string, unknown> {
+    const metadata = event.metadata ?? {};
+    switch (event.type) {
+      case 'riskAssessment':
+        return {
+          system: metadata.system ?? '',
+          risk: metadata.classification ? t(`riskLevels.${metadata.classification as string}`) : ''
+        };
+      case 'incidentClosed':
+        return {
+          system: metadata.system ?? '',
+          incident: metadata.incident ?? '',
+          owner: metadata.owner ?? ''
+        };
+      case 'documentUpdated':
+        return {
+          system: metadata.system ?? '',
+          document: metadata.document ?? ''
+        };
+      case 'taskCreated': {
+        const system = metadata.system ?? '';
+        const taskKey = metadata.taskKey as string | undefined;
+        const task = taskKey ? t(taskKey, { system }) : metadata.task ?? '';
+        return {
+          system,
+          task
+        };
+      }
+      default:
+        return metadata;
+    }
+  }
+
   private renderKpis() {
     const { kpis } = this.model;
+    const metrics = [
+      { label: t('dashboard.metrics.registeredSystems'), value: kpis.registeredSystems },
+      { label: t('dashboard.metrics.highRiskSystems'), value: kpis.highRiskSystems },
+      {
+        label: t('dashboard.metrics.pendingEvidencesThisWeek'),
+        value: kpis.pendingEvidencesThisWeek
+      },
+      { label: t('dashboard.metrics.tasksToday'), value: kpis.tasksToday }
+    ];
+
     return html`
       <div class="grid gap-4 md:grid-cols-4">
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Sistemas Registrados</span>
-            <span class="text-3xl font-semibold">${kpis.registeredSystems}</span>
-          </div>
-        </div>
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Sistemas de Alto Riesgo</span>
-            <span class="text-3xl font-semibold">${kpis.highRiskSystems}</span>
-          </div>
-        </div>
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Evidencias Pendientes (esta semana)</span>
-            <span class="text-3xl font-semibold">${kpis.pendingEvidencesThisWeek}</span>
-          </div>
-        </div>
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <span class="text-xs uppercase text-base-content/60">Tareas para hoy</span>
-            <span class="text-3xl font-semibold">${kpis.tasksToday}</span>
-          </div>
-        </div>
+        ${metrics.map(
+          (metric) => html`
+            <div class="card bg-base-100 shadow">
+              <div class="card-body">
+                <span class="text-xs uppercase text-base-content/60">${metric.label}</span>
+                <span class="text-3xl font-semibold">${metric.value}</span>
+              </div>
+            </div>
+          `
+        )}
       </div>
     `;
   }
@@ -61,16 +99,18 @@ export class DashboardPage extends LitElement {
       <div class="card bg-base-100 shadow">
         <div class="card-body space-y-4">
           <header>
-            <h2 class="card-title">Cumplimiento por unidad</h2>
-            <p class="text-sm text-base-content/60">Distribución de estados documentales por unidad de negocio.</p>
+            <h2 class="card-title">${t('dashboard.compliance.title')}</h2>
+            <p class="text-sm text-base-content/60">${t('dashboard.compliance.subtitle')}</p>
           </header>
           <div class="flex flex-wrap gap-2">
             ${DOC_STATUS_ORDER.map(
-              (status) => html`<span class="badge badge-neutral badge-outline capitalize">${status}</span>`
+              (status) => html`<span class="badge badge-neutral badge-outline capitalize">
+                ${t(`docStatus.${status}`)}
+              </span>`
             )}
           </div>
           ${entries.length === 0
-            ? html`<p class="text-sm text-base-content/60">No hay datos disponibles.</p>`
+            ? html`<p class="text-sm text-base-content/60">${t('dashboard.compliance.units.noData')}</p>`
             : html`
                 <div class="space-y-4">
                   ${entries.map((entry) => {
@@ -83,7 +123,11 @@ export class DashboardPage extends LitElement {
                       <article class="space-y-2" aria-label=${`Indicadores para ${entry.businessUnit}`}>
                         <div class="flex items-center justify-between">
                           <h3 class="font-semibold">${entry.businessUnit}</h3>
-                          <span class="text-xs text-base-content/60">${entry.total} sistemas</span>
+                          <span class="text-xs text-base-content/60">
+                            ${entry.total === 1
+                              ? t('dashboard.compliance.totalLabel_one', { count: entry.total })
+                              : t('dashboard.compliance.totalLabel_other', { count: entry.total })}
+                          </span>
                         </div>
                         <div class="w-full h-3 rounded bg-base-200 overflow-hidden flex">
                           ${segments.length
@@ -93,7 +137,7 @@ export class DashboardPage extends LitElement {
                                   style="width:${segment.percent}%; background-color:${
                                     STATUS_COLOR_MAP[segment.status as string] ?? 'var(--bc)'
                                   }"
-                                  title=${`${segment.status}: ${segment.count}`}
+                                  title=${`${t(`docStatus.${segment.status}`)}: ${segment.count}`}
                                 ></div>`
                               )
                             : html`<div class="flex-1 bg-base-300"></div>`}
@@ -101,7 +145,7 @@ export class DashboardPage extends LitElement {
                         <div class="flex flex-wrap gap-2 text-xs">
                           ${segments.map(
                             (segment) => html`<span class="badge badge-ghost capitalize">
-                              ${segment.status} · ${segment.count}
+                              ${t(`docStatus.${segment.status}`)} · ${segment.count}
                             </span>`
                           )}
                         </div>
@@ -117,35 +161,39 @@ export class DashboardPage extends LitElement {
 
   private renderTimelineItem(event: TimelineEvent) {
     const date = new Date(event.date);
+    const typeKey = `dashboard.timeline.items.${event.type}` as const;
+    const typeLabel = t(`dashboard.timeline.types.${event.type}` as const);
+    const context = this.getTimelineContext(event);
     return html`
       <li class="border-l border-base-300 pl-4 relative">
         <span class="w-3 h-3 rounded-full bg-primary absolute -left-1 top-1"></span>
         <div class="flex items-center justify-between">
-          <h4 class="font-semibold">${event.type}</h4>
+          <h4 class="font-semibold">${t(`${typeKey}.title` as const)}</h4>
           <span class="text-xs text-base-content/60">
-            ${date.toLocaleDateString()} · ${date.toLocaleTimeString()}
+            ${this.formatDateTime(date)} · ${typeLabel}
           </span>
         </div>
-        <p class="text-sm text-base-content/70">
-          ${Object.entries(event.metadata ?? {})
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(' · ')}
-        </p>
+        <p class="text-sm text-base-content/70">${t(`${typeKey}.description` as const, context)}</p>
       </li>
     `;
   }
 
   private renderTimeline() {
+    const events = this.model.timeline;
     return html`
       <div class="card bg-base-100 shadow">
         <div class="card-body space-y-4">
           <header>
-            <h2 class="card-title">Actividad reciente</h2>
-            <p class="text-sm text-base-content/60">Eventos de seguimiento y documentación más recientes.</p>
+            <h2 class="card-title">${t('dashboard.timeline.title')}</h2>
+            <p class="text-sm text-base-content/60">${t('dashboard.timeline.subtitle')}</p>
           </header>
-          <ol class="space-y-4">
-            ${repeat(this.model.timeline, (item) => item.id, (item) => this.renderTimelineItem(item))}
-          </ol>
+          ${events.length === 0
+            ? html`<p class="text-sm text-base-content/60">${t('dashboard.timeline.empty')}</p>`
+            : html`
+                <ol class="space-y-4">
+                  ${repeat(events, (item) => item.id, (item) => this.renderTimelineItem(item))}
+                </ol>
+              `}
         </div>
       </div>
     `;
@@ -157,33 +205,50 @@ export class DashboardPage extends LitElement {
       <div class="card bg-base-100 shadow">
         <div class="card-body space-y-4">
           <header>
-            <h2 class="card-title">Acciones pendientes</h2>
-            <p class="text-sm text-base-content/60">Tareas en curso asociadas a sistemas y proyectos.</p>
+            <h2 class="card-title">${t('dashboard.actions.title')}</h2>
+            <p class="text-sm text-base-content/60">${t('dashboard.actions.subtitle')}</p>
           </header>
-          <div class="overflow-x-auto">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Sistema</th>
-                  <th>Responsable</th>
-                  <th>Fecha límite</th>
-                  <th>Prioridad</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${items.map((action: PendingAction) => html`
-                  <tr>
-                    <td class="font-medium">${action.systemName}</td>
-                    <td>${action.owner}</td>
-                    <td>${action.due}</td>
-                    <td><span class="badge badge-outline capitalize">${action.priority}</span></td>
-                    <td><span class="badge badge-neutral capitalize">${action.status}</span></td>
-                  </tr>
-                `)}
-              </tbody>
-            </table>
-          </div>
+          ${items.length === 0
+            ? html`<p class="text-sm text-base-content/60">${t('dashboard.actions.empty')}</p>`
+            : html`
+                <div class="overflow-x-auto">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>${t('dashboard.actions.columns.task')}</th>
+                        <th>${t('dashboard.actions.columns.system')}</th>
+                        <th>${t('dashboard.actions.columns.owner')}</th>
+                        <th>${t('dashboard.actions.columns.due')}</th>
+                        <th>${t('dashboard.actions.columns.priority')}</th>
+                        <th>${t('dashboard.actions.columns.status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${items.map((action: PendingAction) => {
+                        const dueDate = new Date(action.due);
+                        return html`
+                          <tr>
+                            <td class="font-medium">${t(action.titleKey, { system: action.systemName })}</td>
+                            <td>${action.systemName}</td>
+                            <td>${action.owner}</td>
+                            <td>${dueDate.toLocaleDateString(this.currentLanguage)}</td>
+                            <td>
+                              <span class="badge badge-outline capitalize">
+                                ${t(`dashboard.actions.priority.${action.priority}` as const)}
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge badge-neutral capitalize">
+                                ${t(`dashboard.actions.status.${action.status}` as const)}
+                              </span>
+                            </td>
+                          </tr>
+                        `;
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              `}
         </div>
       </div>
     `;
@@ -193,8 +258,8 @@ export class DashboardPage extends LitElement {
     return html`
       <section class="space-y-6">
         <header class="space-y-1">
-          <h1 class="text-3xl font-bold">Panel de control</h1>
-          <p class="text-base-content/70">Resumen de indicadores de cumplimiento y actividad reciente.</p>
+          <h1 class="text-3xl font-bold">${t('dashboard.pageTitle')}</h1>
+          <p class="text-base-content/70">${t('dashboard.pageSubtitle')}</p>
         </header>
         ${this.renderKpis()}
         <div class="grid gap-6 lg:grid-cols-2">

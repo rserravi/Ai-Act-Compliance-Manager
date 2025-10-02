@@ -1,10 +1,11 @@
-import { html, LitElement } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import { getProjectContacts } from './OrgRoles.viewmodel';
+import { LocalizedElement } from '../../shared/localized-element';
 
 @customElement('org-roles-page')
-export class OrgRolesPage extends LitElement {
+export class OrgRolesPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
   private readonly projects = new ProjectController(this);

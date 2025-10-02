@@ -1,10 +1,12 @@
-import { html, LitElement } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import { getTasksForProject } from './CalendarWorkflows.viewmodel';
+import { LocalizedElement } from '../../shared/localized-element';
+import { t } from '../../shared/i18n';
 
 @customElement('calendar-workflows-page')
-export class CalendarWorkflowsPage extends LitElement {
+export class CalendarWorkflowsPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
   private readonly projects = new ProjectController(this);
@@ -23,22 +25,34 @@ export class CalendarWorkflowsPage extends LitElement {
     return html`
       <section class="space-y-6">
         <header class="space-y-1">
-          <h1 class="text-3xl font-bold">Calendario y workflows</h1>
+          <h1 class="text-3xl font-bold">${t('calendarWorkflows.title')}</h1>
           <p class="text-base-content/70">
-            Consulta las tareas y hitos planificados para el proyecto ${project?.name ?? 'seleccionado'}.
+            ${t('calendarWorkflows.subtitle', { project: project?.name ?? t('common.notAvailable') })}
           </p>
         </header>
 
         <div class="grid gap-4 md:grid-cols-2">
           ${tasks.length === 0
-            ? html`<p class="text-sm text-base-content/70">No hay tareas registradas para este proyecto.</p>`
+            ? html`<p class="text-sm text-base-content/70">${t('calendarWorkflows.empty')}</p>`
             : tasks.map((task) => html`
                 <article class="card bg-base-100 shadow">
                   <div class="card-body space-y-2">
                     <h3 class="card-title text-lg">${task.title}</h3>
-                    <p class="text-sm text-base-content/70">Asignado a ${task.assignee ?? 'Sin asignar'}</p>
-                    <p class="text-sm">Fecha objetivo: ${task.due}</p>
-                    <span class="badge badge-outline">${task.status}</span>
+                    <p class="text-sm text-base-content/70">
+                      ${t('calendarWorkflows.task.assignee', {
+                        assignee: task.assignee ?? t('calendarWorkflows.task.unassigned')
+                      })}
+                    </p>
+                    <p class="text-sm">
+                      ${t('calendarWorkflows.task.due', {
+                        date: task.due
+                          ? new Date(task.due).toLocaleDateString(this.currentLanguage)
+                          : t('common.notAvailable')
+                      })}
+                    </p>
+                    <span class="badge badge-outline">
+                      ${t(`dashboard.actions.status.${task.status}` as const)}
+                    </span>
                   </div>
                 </article>
               `)}

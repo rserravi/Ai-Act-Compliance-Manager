@@ -1,10 +1,12 @@
-import { html, LitElement } from 'lit';
+import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { AuthController } from '../../state/controllers';
 import { navigateTo } from '../../navigation';
+import { LocalizedElement } from '../../shared/localized-element';
+import { t } from '../../shared/i18n';
 
 @customElement('login-page')
-export class LoginPage extends LitElement {
+export class LoginPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
   private readonly auth = new AuthController(this);
@@ -35,7 +37,7 @@ export class LoginPage extends LitElement {
       navigateTo(this.redirectPath, { replace: true });
     } catch (error) {
       console.error(error);
-      this.error = 'No se pudo iniciar sesión. Revisa las credenciales.';
+      this.error = t('auth.feedback.loginError');
     }
   }
 
@@ -50,7 +52,7 @@ export class LoginPage extends LitElement {
       navigateTo(this.redirectPath, { replace: true });
     } catch (error) {
       console.error(error);
-      this.error = 'La autenticación SSO falló. Inténtalo de nuevo.';
+      this.error = t('auth.feedback.ssoError');
     }
   }
 
@@ -60,14 +62,14 @@ export class LoginPage extends LitElement {
         <section class="card w-full max-w-lg bg-base-100 shadow-xl">
           <form class="card-body space-y-4" @submit=${this.handleSubmit}>
             <header class="space-y-1 text-center">
-              <h1 class="text-3xl font-bold">Accede a la plataforma</h1>
-              <p class="text-base-content/70">Gestiona tus sistemas y documentación del AI Act.</p>
+              <h1 class="text-3xl font-bold">${t('auth.login.title')}</h1>
+              <p class="text-base-content/70">${t('auth.login.subtitle')}</p>
             </header>
 
             ${this.error ? html`<div class="alert alert-error text-sm">${this.error}</div>` : null}
 
             <label class="form-control">
-              <span class="label"><span class="label-text">Compañía</span></span>
+              <span class="label"><span class="label-text">${t('auth.fields.company')}</span></span>
               <input class="input input-bordered" required .value=${this.company} @input=${(event: Event) => {
                 const input = event.currentTarget as HTMLInputElement;
                 this.company = input.value;
@@ -75,7 +77,7 @@ export class LoginPage extends LitElement {
             </label>
 
             <label class="form-control">
-              <span class="label"><span class="label-text">Correo electrónico</span></span>
+              <span class="label"><span class="label-text">${t('auth.fields.email')}</span></span>
               <input class="input input-bordered" type="email" required .value=${this.email} @input=${(event: Event) => {
                 const input = event.currentTarget as HTMLInputElement;
                 this.email = input.value;
@@ -83,7 +85,7 @@ export class LoginPage extends LitElement {
             </label>
 
             <label class="form-control">
-              <span class="label"><span class="label-text">Contraseña</span></span>
+              <span class="label"><span class="label-text">${t('auth.fields.password')}</span></span>
               <input class="input input-bordered" type="password" required .value=${this.password} @input=${(event: Event) => {
                 const input = event.currentTarget as HTMLInputElement;
                 this.password = input.value;
@@ -91,18 +93,22 @@ export class LoginPage extends LitElement {
             </label>
 
             <button class="btn btn-primary" type="submit" ?disabled=${this.auth.isAuthenticating}>
-              Entrar
+              ${t('auth.login.submit')}
             </button>
 
-            <div class="divider">o</div>
+            <div class="divider">${t('auth.login.or')}</div>
 
             <button class="btn btn-outline" type="button" @click=${this.handleSSO} ?disabled=${this.auth.isAuthenticating}>
-              Acceder con SSO
+              ${t('auth.login.ssoButton')}
             </button>
 
+            <p class="text-xs text-base-content/60 text-center">
+              ${t('auth.login.ssoHint')}
+            </p>
+
             <p class="text-sm text-base-content/70 text-center">
-              ¿Necesitas crear una cuenta?
-              <a class="link" href="/sign-in">Regístrate</a>
+              ${t('auth.login.noAccount')}
+              <a class="link" href="/sign-in">${t('auth.login.goToSignUp')}</a>
             </p>
           </form>
         </section>

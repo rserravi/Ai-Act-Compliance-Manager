@@ -1,5 +1,6 @@
 import type { AISystem } from '../../domain/models';
 import type { ProjectFilter } from './Model';
+import { t } from '../../shared/i18n';
 
 export type ProjectState = 'initial' | 'in_progress' | 'maintenance';
 
@@ -35,10 +36,5 @@ export function filterProjects(projects: AISystem[], filter: ProjectFilter): Pro
 }
 
 export function getProjectStateLabel(state: ProjectState): string {
-  const labels: Record<ProjectState, string> = {
-    initial: 'Inicial',
-    in_progress: 'En curso',
-    maintenance: 'Mantenimiento'
-  };
-  return labels[state] ?? state;
+  return t(`projects.state.labels.${state}` as const);
 }

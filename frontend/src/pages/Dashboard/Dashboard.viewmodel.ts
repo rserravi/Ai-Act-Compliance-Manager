@@ -91,7 +91,10 @@ function buildTimeline(): TimelineEvent[] {
       date: '2025-09-12T14:45:00Z',
       type: 'taskCreated',
       systemId: '5',
-      metadata: { system: 'Asistente Ventas', task: 'Actualizar dataset de entrenamiento' }
+      metadata: {
+        system: 'Asistente Ventas',
+        taskKey: 'dashboard.actions.items.updateDataset'
+      }
     }
   ];
 }

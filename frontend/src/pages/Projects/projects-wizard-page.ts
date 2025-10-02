@@ -1,12 +1,14 @@
-import { html, LitElement } from 'lit';
+import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import type { AISystem } from '../../domain/models';
 import type { Contact } from '../../domain/models';
 import { navigateTo } from '../../navigation';
+import { LocalizedElement } from '../../shared/localized-element';
+import { t } from '../../shared/i18n';
 
 @customElement('projects-wizard-page')
-export class ProjectsWizardPage extends LitElement {
+export class ProjectsWizardPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
   private readonly projects = new ProjectController(this);
@@ -24,14 +26,19 @@ export class ProjectsWizardPage extends LitElement {
   }
 
   private get steps() {
-    return ['Detalles', 'Equipo', 'Riesgo', 'Resumen'];
+    return [
+      t('projects.wizard.steps.details'),
+      t('projects.wizard.steps.team'),
+      t('projects.wizard.steps.riskAssessment'),
+      t('projects.wizard.steps.summary')
+    ];
   }
 
   private addTeamMember() {
-    const name = prompt('Nombre del contacto');
+    const name = prompt(t('projects.wizard.contact.name'));
     if (!name) return;
-    const role = prompt('Rol en el proyecto') ?? '';
-    const email = prompt('Correo de contacto') ?? '';
+    const role = prompt(t('projects.wizard.contact.role')) ?? '';
+    const email = prompt(t('projects.wizard.contact.email')) ?? '';
     const member: Contact = {
       id: `contact-${Date.now()}`,
       name,
@@ -81,30 +88,44 @@ export class ProjectsWizardPage extends LitElement {
     return html`
       <div class="grid gap-4 md:grid-cols-2">
         <label class="form-control">
-          <span class="label"><span class="label-text">Nombre del proyecto</span></span>
-          <input class="input input-bordered" .value=${this.name} @input=${(event: Event) => {
-            const input = event.currentTarget as HTMLInputElement;
-            this.name = input.value;
-          }} required>
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.name')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.name}
+            @input=${(event: Event) => {
+              const input = event.currentTarget as HTMLInputElement;
+              this.name = input.value;
+            }}
+            required
+          >
         </label>
         <label class="form-control">
-          <span class="label"><span class="label-text">Rol</span></span>
-          <select class="select select-bordered" .value=${this.projectRole} @change=${(event: Event) => {
-            const select = event.currentTarget as HTMLSelectElement;
-            this.projectRole = select.value as AISystem['role'];
-          }}>
-            <option value="provider">Proveedor</option>
-            <option value="importer">Importador</option>
-            <option value="distributor">Distribuidor</option>
-            <option value="user">Usuario</option>
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.role')}</span></span>
+          <select
+            class="select select-bordered"
+            .value=${this.projectRole}
+            @change=${(event: Event) => {
+              const select = event.currentTarget as HTMLSelectElement;
+              this.projectRole = select.value as AISystem['role'];
+            }}
+          >
+            <option value="provider">${t('roles.provider')}</option>
+            <option value="importer">${t('roles.importer')}</option>
+            <option value="distributor">${t('roles.distributor')}</option>
+            <option value="user">${t('roles.user')}</option>
           </select>
         </label>
         <label class="form-control md:col-span-2">
-          <span class="label"><span class="label-text">Unidad de negocio</span></span>
-          <input class="input input-bordered" .value=${this.businessUnit} @input=${(event: Event) => {
-            const input = event.currentTarget as HTMLInputElement;
-            this.businessUnit = input.value;
-          }}>
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.businessUnit')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.businessUnit}
+            @input=${(event: Event) => {
+              const input = event.currentTarget as HTMLInputElement;
+              this.businessUnit = input.value;
+            }}
+            placeholder=${t('projects.wizard.placeholders.businessUnit')}
+          >
         </label>
       </div>
     `;
@@ -113,17 +134,17 @@ export class ProjectsWizardPage extends LitElement {
   private renderTeamStep() {
     return html`
       <div class="space-y-4">
-        <button class="btn btn-sm" @click=${this.addTeamMember}>Añadir contacto</button>
+        <button class="btn btn-sm" @click=${this.addTeamMember}>${t('projects.wizard.addContact')}</button>
         ${this.team.length === 0
-          ? html`<p class="text-sm text-base-content/70">Todavía no hay contactos asignados.</p>`
+          ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.empty')}</p>`
           : html`
               <div class="overflow-x-auto">
                 <table class="table">
                   <thead>
                     <tr>
-                      <th>Nombre</th>
-                      <th>Rol</th>
-                      <th>Correo</th>
+                      <th>${t('projects.wizard.contact.name')}</th>
+                      <th>${t('projects.wizard.contact.role')}</th>
+                      <th>${t('projects.wizard.contact.email')}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -134,7 +155,9 @@ export class ProjectsWizardPage extends LitElement {
                         <td>${member.role}</td>
                         <td>${member.email}</td>
                         <td>
-                          <button class="btn btn-ghost btn-xs" @click=${() => this.removeTeamMember(member.id)}>Eliminar</button>
+                          <button class="btn btn-ghost btn-xs" @click=${() => this.removeTeamMember(member.id)}>
+                            ${t('common.remove')}
+                          </button>
                         </td>
                       </tr>
                     `)}
@@ -149,27 +172,33 @@ export class ProjectsWizardPage extends LitElement {
   private renderRiskStep() {
     return html`
       <div class="space-y-4">
-        <p class="text-sm text-base-content/70">
-          Selecciona la clasificación de riesgo identificada tras la evaluación inicial.
-        </p>
+        <p class="text-sm text-base-content/70">${t('projects.wizard.risk.description')}</p>
         <div class="join join-vertical md:join-horizontal">
-          ${['alto', 'limitado', 'minimo'].map((value) => html`
+          ${(['alto', 'limitado', 'minimo'] as const).map((value) => html`
             <button
               class="btn join-item ${this.risk === value ? 'btn-primary' : 'btn-outline'}"
               @click=${() => {
                 this.risk = value as AISystem['risk'];
               }}
             >
-              Riesgo ${value}
+              ${t('projects.wizard.risk.option', {
+                risk: t(`riskLevels.${value}` as const)
+              })}
             </button>
           `)}
         </div>
         <label class="form-control">
-          <span class="label"><span class="label-text">Notas adicionales</span></span>
-          <textarea class="textarea textarea-bordered" rows="4" .value=${this.notes} @input=${(event: Event) => {
-            const textarea = event.currentTarget as HTMLTextAreaElement;
-            this.notes = textarea.value;
-          }}></textarea>
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.notes')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="4"
+            .value=${this.notes}
+            placeholder=${t('projects.wizard.placeholders.notes')}
+            @input=${(event: Event) => {
+              const textarea = event.currentTarget as HTMLTextAreaElement;
+              this.notes = textarea.value;
+            }}
+          ></textarea>
         </label>
       </div>
     `;
@@ -179,13 +208,22 @@ export class ProjectsWizardPage extends LitElement {
     return html`
       <div class="space-y-4">
         <article class="prose">
-          <h2>Resumen</h2>
-          <p><strong>Nombre:</strong> ${this.name}</p>
-          <p><strong>Rol:</strong> ${this.projectRole}</p>
-          <p><strong>Unidad:</strong> ${this.businessUnit || 'No definida'}</p>
-          <p><strong>Riesgo:</strong> ${this.risk ?? 'Sin clasificar'}</p>
-          <p><strong>Contactos:</strong> ${this.team.length}</p>
-          <p><strong>Notas:</strong> ${this.notes || 'Sin notas'}</p>
+          <h2>${t('projects.wizard.summary.title')}</h2>
+          <p><strong>${t('projects.wizard.fields.name')}:</strong> ${this.name}</p>
+          <p><strong>${t('projects.wizard.fields.role')}:</strong> ${t(`roles.${this.projectRole}` as const)}</p>
+          <p><strong>${t('projects.wizard.fields.businessUnit')}:</strong> ${
+            this.businessUnit || t('projects.wizard.summary.unset')
+          }</p>
+          <p><strong>${t('projects.wizard.fields.risk')}:</strong> ${
+            this.risk ? t(`riskLevels.${this.risk}` as const) : t('projects.wizard.summary.unclassifiedRisk')
+          }</p>
+          <p><strong>${t('projects.wizard.summary.contacts')}:</strong> ${t(
+            'projects.wizard.summary.teamCount',
+            { count: this.team.length }
+          )}</p>
+          <p><strong>${t('projects.wizard.fields.notes')}:</strong> ${
+            this.notes || t('projects.wizard.summary.noNotes')
+          }</p>
         </article>
       </div>
     `;
@@ -211,8 +249,8 @@ export class ProjectsWizardPage extends LitElement {
     return html`
       <section class="space-y-6">
         <header class="space-y-1">
-          <h1 class="text-3xl font-bold">Nuevo proyecto</h1>
-          <p class="text-base-content/70">Recorre los pasos para crear un proyecto y registrar sus datos básicos.</p>
+          <h1 class="text-3xl font-bold">${t('projects.wizard.title')}</h1>
+          <p class="text-base-content/70">${t('projects.wizard.subtitle')}</p>
         </header>
 
         ${this.renderStepIndicator()}
@@ -221,9 +259,13 @@ export class ProjectsWizardPage extends LitElement {
           <div class="card-body space-y-6">
             ${this.renderCurrentStep()}
             <div class="flex justify-between">
-              <button class="btn" ?disabled=${this.step === 0} @click=${this.prevStep}>Atrás</button>
+              <button class="btn" ?disabled=${this.step === 0} @click=${this.prevStep}>
+                ${t('common.back')}
+              </button>
               <button class="btn btn-primary" ?disabled=${!canContinue} @click=${this.nextStep}>
-                ${this.step === this.steps.length - 1 ? 'Crear proyecto' : 'Continuar'}
+                ${this.step === this.steps.length - 1
+                  ? t('projects.wizard.finish')
+                  : t('common.next')}
               </button>
             </div>
           </div>
