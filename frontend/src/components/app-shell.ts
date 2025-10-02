@@ -153,8 +153,8 @@ export class AppShell extends LocalizedElement {
         ${NAVIGATION_ITEMS.map((item) => html`
           <li>
             <a
-              class=${classMap({ 'active font-semibold': active === item.href })}
-              aria-current=${active === item.href ? 'page' : undefined}
+              class=${classMap({ 'active font-semibold': activePath === item.href })}
+              aria-current=${activePath === item.href ? 'page' : undefined}
               @click=${() => this.handleNavigate(item.href)}
             >
               ${t(item.labelKey)}
@@ -167,7 +167,7 @@ export class AppShell extends LocalizedElement {
             <nav class="menu px-4 pb-6 text-base-content/80">
               ${PROJECT_NAV_ITEMS.map((item) => {
                 const href = item.getHref(activeProject.id);
-                const isActive = active.startsWith(href);
+                const isActive = activePath.startsWith(href);
                 return html`
                   <li>
                     <a
