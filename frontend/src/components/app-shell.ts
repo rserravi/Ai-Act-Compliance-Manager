@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import type { AISystem } from '../domain/models';
 import { AuthController, ProjectController } from '../state/controllers';
-import { navigateTo } from '../navigation';
+import { getCurrentPath, navigateTo } from '../navigation';
 import {
   t,
   supportedLanguages,
@@ -19,11 +19,90 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? '0.1.0';
 const NAVIGATION_ITEMS: ReadonlyArray<{
   labelKey: 'nav.dashboard' | 'nav.projects' | 'nav.incidents' | 'nav.settings';
   href: string;
+  icon: ReturnType<typeof html>;
 }> = [
-  { labelKey: 'nav.dashboard', href: '/' },
-  { labelKey: 'nav.projects', href: '/projects' },
-  { labelKey: 'nav.incidents', href: '/incidents' },
-  { labelKey: 'nav.settings', href: '/settings' }
+  {
+    labelKey: 'nav.dashboard',
+    href: '/',
+    icon: html`<svg
+      class="w-5 h-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75V21h15V9.75"
+      />
+    </svg>`
+  },
+  {
+    labelKey: 'nav.projects',
+    href: '/projects',
+    icon: html`<svg
+      class="w-5 h-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4.379a1.5 1.5 0 0 1 1.06.44l1.121 1.12a1.5 1.5 0 0 0 1.06.44H19.5A1.5 1.5 0 0 1 21 9.5v9A1.5 1.5 0 0 1 19.5 20h-15A1.5 1.5 0 0 1 3 18.5v-11Z"
+      />
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M3 13.5h18"
+      />
+    </svg>`
+  },
+  {
+    labelKey: 'nav.incidents',
+    href: '/incidents',
+    icon: html`<svg
+      class="w-5 h-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 9v3.75m0 3v.008h.008V15.75H12Zm9.53 3.75-7.5-13.5a1.125 1.125 0 0 0-1.96 0l-7.5 13.5A1.125 1.125 0 0 0 5.625 21h12.75a1.125 1.125 0 0 0 1.155-1.5Z"
+      />
+    </svg>`
+  },
+  {
+    labelKey: 'nav.settings',
+    href: '/settings',
+    icon: html`<svg
+      class="w-5 h-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M9.75 3a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V4.5A.75.75 0 0 0 15 5.25h1.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 0 .75.75h1.5a.75.75 0 0 1 .75.75v3a.75.75 0 0 1-.75.75H18a.75.75 0 0 0-.75.75v1.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75h-3A.75.75 0 0 1 9.75 21v-1.5A.75.75 0 0 0 9 18.75H7.5a.75.75 0 0 1-.75-.75V16.5A.75.75 0 0 0 6 15.75H4.5a.75.75 0 0 1-.75-.75v-3a.75.75 0 0 1 .75-.75H6a.75.75 0 0 0 .75-.75V9a.75.75 0 0 1 .75-.75H9A.75.75 0 0 0 9.75 7.5Z"
+      />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>`
+  }
 ];
 
 const PROJECT_NAV_ITEMS = [
@@ -96,9 +175,14 @@ export class AppShell extends LocalizedElement {
   @state() private mobileMenuOpen = false;
   @state() private language = getCurrentLanguage();
   @state() private isOnline = navigator.onLine;
+  @state() private activePath = getCurrentPath();
 
   private readonly updateOnlineStatus = () => {
     this.isOnline = navigator.onLine;
+  };
+
+  private readonly syncActivePath = () => {
+    this.activePath = getCurrentPath();
   };
 
   private toggleMenu() {
@@ -108,6 +192,7 @@ export class AppShell extends LocalizedElement {
   private handleNavigate(href: string) {
     navigateTo(href);
     this.mobileMenuOpen = false;
+    this.syncActivePath();
   }
 
   private handleProjectChange(event: Event) {
@@ -123,14 +208,17 @@ export class AppShell extends LocalizedElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.language = getCurrentLanguage();
+    this.syncActivePath();
     window.addEventListener('online', this.updateOnlineStatus);
     window.addEventListener('offline', this.updateOnlineStatus);
+    window.addEventListener('popstate', this.syncActivePath);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     window.removeEventListener('online', this.updateOnlineStatus);
     window.removeEventListener('offline', this.updateOnlineStatus);
+    window.removeEventListener('popstate', this.syncActivePath);
   }
 
   protected override handleLanguageChanged(language: SupportedLanguage): void {
@@ -147,7 +235,7 @@ export class AppShell extends LocalizedElement {
   }
 
   private renderNavigation(activeProject: AISystem | null) {
-    const activePath = window.location.pathname;
+    const activePath = this.activePath;
     return html`
       <nav class="menu px-4 py-6 text-base-content/80">
         ${NAVIGATION_ITEMS.map((item) => html`
@@ -155,9 +243,13 @@ export class AppShell extends LocalizedElement {
             <a
               class=${classMap({ 'active font-semibold': activePath === item.href })}
               aria-current=${activePath === item.href ? 'page' : undefined}
+              href=${item.href}
               @click=${() => this.handleNavigate(item.href)}
             >
-              ${t(item.labelKey)}
+              <span class="flex items-center gap-3">
+                <span class="text-base-content/60">${item.icon}</span>
+                <span>${t(item.labelKey)}</span>
+              </span>
             </a>
           </li>
         `)}
@@ -173,9 +265,13 @@ export class AppShell extends LocalizedElement {
                     <a
                       class=${classMap({ 'active font-semibold': isActive })}
                       aria-current=${isActive ? 'page' : undefined}
+                      href=${href}
                       @click=${() => this.handleNavigate(href)}
                     >
-                      ${t(item.labelKey)}
+                      <span class="flex items-center gap-3">
+                        <span class="text-base-content/60">${item.icon}</span>
+                        <span>${t(item.labelKey)}</span>
+                      </span>
                     </a>
                   </li>
                 `;
@@ -225,6 +321,9 @@ export class AppShell extends LocalizedElement {
           <div class="p-6 border-b border-base-300">
             <span class="text-lg font-semibold">${t('app.shortTitle')}</span>
             <p class="text-sm text-base-content/60">${t('app.sidebarSubtitle')}</p>
+          </div>
+          <div class="border-b border-base-300 px-6 py-4 space-y-3">
+            ${this.renderProjectSelectorMenuItems()}
           </div>
           <div class="flex-1 overflow-y-auto">${this.renderNavigation(activeProject)}</div>
         </aside>
