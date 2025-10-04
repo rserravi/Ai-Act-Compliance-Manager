@@ -103,3 +103,15 @@ def test_legacy_token_without_sub_claim_is_accepted():
     response = client.post("/risk-evaluations", json={"answers": {}}, headers=headers)
 
     assert response.status_code == 200
+
+
+def test_invalid_token_falls_back_to_demo_user_when_allowed():
+    client = TestClient(_main_module.app)
+
+    response = client.post(
+        "/risk-evaluations",
+        json={"answers": {}},
+        headers={"Authorization": "Bearer not-a-valid-token"},
+    )
+
+    assert response.status_code == 200

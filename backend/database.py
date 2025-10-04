@@ -49,6 +49,16 @@ def init_db() -> None:
                 connection.execute(text("ALTER TABLE users ADD COLUMN preferences_language VARCHAR(50)"))
             connection.commit()
 
+    if inspector.has_table("projects"):
+        project_columns = {column["name"] for column in inspector.get_columns("projects")}
+        if "purpose" not in project_columns:
+            with engine.connect() as connection:
+                if is_sqlite:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN purpose VARCHAR(512)"))
+                else:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN purpose VARCHAR(512)"))
+                connection.commit()
+
 
 def get_db() -> Iterator[Session]:
     db = SessionLocal()
