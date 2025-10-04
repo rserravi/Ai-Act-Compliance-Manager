@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
 from functools import partial
-from typing import Optional
+from typing import List, Optional
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -88,3 +88,43 @@ class PendingUserRegistrationModel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False
     )
+
+
+class ProjectModel(Base):
+    __tablename__ = "projects"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), nullable=False)
+    risk: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    documentation_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    business_units: Mapped[List[str] | None] = mapped_column(JSON, nullable=True)
+    team: Mapped[List[str] | None] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+    risk_assessments: Mapped[List["RiskAssessmentModel"]] = relationship(
+        "RiskAssessmentModel",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
+
+
+class RiskAssessmentModel(Base):
+    __tablename__ = "risk_assessments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=generate_uuid)
+    project_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    date: Mapped[str] = mapped_column(String(50), nullable=False)
+    classification: Mapped[str] = mapped_column(String(50), nullable=False)
+    justification: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+    project: Mapped[ProjectModel] = relationship("ProjectModel", back_populates="risk_assessments")

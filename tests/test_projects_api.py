@@ -1,4 +1,5 @@
 import os
+import os
 import sys
 from importlib import import_module, reload
 from pathlib import Path
@@ -21,8 +22,11 @@ os.environ["JWT_ALGORITHM"] = "HS256"
 os.environ["DATABASE_URL"] = ""
 
 _database_module = reload(import_module("backend.database"))
+_session_scope = _database_module.session_scope
 sys.modules.pop("backend.models", None)
-import_module("backend.models")
+_models_module = import_module("backend.models")
+ProjectModel = _models_module.ProjectModel
+RiskAssessmentModel = _models_module.RiskAssessmentModel
 _main_module = reload(import_module("backend.main"))
 
 
@@ -91,19 +95,27 @@ def test_projects_crud_flow():
     assert final_data["risk"] == "high"
     assert len(final_data["team"]) == 2
 
+    with _session_scope() as session:
+        stored_project = session.get(ProjectModel, project_payload["id"])
+        assert stored_project is not None
+        assert stored_project.risk == "high"
+        assert stored_project.team == ["ana@example.com", "ben@example.com"]
+
 
 def test_project_subresources_use_project_id():
     client = TestClient(_main_module.app)
     headers = _get_auth_headers(client)
 
-    _main_module.projects.clear()
-    _main_module.risk_assessments.clear()
     _main_module.deliverables.clear()
     _main_module.tasks.clear()
     _main_module.evidences.clear()
     _main_module.technical_dossiers.clear()
     _main_module.teams.clear()
     _main_module.incidents.clear()
+
+    with _session_scope() as session:
+        session.query(RiskAssessmentModel).delete()
+        session.query(ProjectModel).delete()
 
     project_id = "proj-sub-123"
     project_payload = {
@@ -131,6 +143,11 @@ def test_project_subresources_use_project_id():
     )
     assert risk_response.status_code == 200
     assert risk_response.json()["project_id"] == project_id
+
+    with _session_scope() as session:
+        stored_risk = session.get(RiskAssessmentModel, risk_payload["id"])
+        assert stored_risk is not None
+        assert stored_risk.project_id == project_id
 
     risk_list = client.get(f"/projects/{project_id}/risk", headers=headers)
     assert risk_list.status_code == 200

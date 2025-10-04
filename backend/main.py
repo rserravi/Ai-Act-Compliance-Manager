@@ -32,6 +32,15 @@ from backend.repositories.user_repository import (
     model_to_schema,
     update_user_company,
 )
+from backend.repositories.project_repository import (
+    create_project as create_project_record,
+    create_risk_assessment as create_risk_assessment_record,
+    get_project_by_id as get_project_schema_by_id,
+    get_project_model_by_id,
+    list_projects as list_project_records,
+    list_risk_assessments as list_risk_assessment_records,
+    update_project as update_project_record,
+)
 from backend.security import verify_password
 
 from backend.schemas import (
@@ -135,10 +144,9 @@ def get_current_user(
 # In-memory stores (placeholders until real persistence is added)
 # ---------------------------------------------------------------------------
 
-projects: Dict[str, Project] = {}
 # Temporary alias to keep legacy endpoints functional while routes are migrated
-systems = projects
-risk_assessments: DefaultDict[str, List[RiskAssessment]] = defaultdict(list)
+# (legacy routes have been deprecated and data now lives in the database).
+systems: Dict[str, Project] = {}
 deliverables: DefaultDict[str, List[Deliverable]] = defaultdict(list)
 deliverable_templates: List[DeliverableTemplate] = []
 tasks: DefaultDict[str, List[Task]] = defaultdict(list)
@@ -437,28 +445,35 @@ def list_projects(
     risk: Optional[str] = None,
     doc: Optional[str] = None,
     q: Optional[str] = None,
+    db: Session = Depends(get_db),
 ):
-    data = list(projects.values())
-    if role:
-        data = [project for project in data if project.role == role]
-    if risk:
-        data = [project for project in data if project.risk == risk]
-    if doc:
-        data = [project for project in data if project.documentation_status == doc]
-    if q:
-        data = [project for project in data if q.lower() in project.name.lower()]
-    return data
+    return list_project_records(
+        db,
+        role=role,
+        risk=risk,
+        documentation_status=doc,
+        search=q,
+    )
 
 
 @app.post("/projects", response_model=Project)
-def create_project(payload: Project, current_user: User = Depends(get_current_user)):
-    projects[payload.id] = payload
-    return payload
+def create_project(
+    payload: Project,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if get_project_model_by_id(db, payload.id):
+        raise HTTPException(status_code=400, detail="Project already exists")
+    return create_project_record(db, payload)
 
 
 @app.get("/projects/{project_id}", response_model=Project)
-def get_project(project_id: str, current_user: User = Depends(get_current_user)):
-    project = projects.get(project_id)
+def get_project(
+    project_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    project = get_project_schema_by_id(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
@@ -466,15 +481,15 @@ def get_project(project_id: str, current_user: User = Depends(get_current_user))
 
 @app.patch("/projects/{project_id}", response_model=Project)
 def update_project(
-    project_id: str, payload: ProjectUpdate, current_user: User = Depends(get_current_user)
+    project_id: str,
+    payload: ProjectUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    project = projects.get(project_id)
-    if not project:
+    project_model = get_project_model_by_id(db, project_id)
+    if not project_model:
         raise HTTPException(status_code=404, detail="Project not found")
-    update_data = payload.dict(exclude_unset=True)
-    updated = project.copy(update=update_data)
-    projects[project_id] = updated
-    return updated
+    return update_project_record(db, project_model, payload)
 
 
 # ---------------------------------------------------------------------------
@@ -488,8 +503,14 @@ def get_risk_wizard_config(current_user: User = Depends(get_current_user)):
 
 
 @app.get("/projects/{project_id}/risk", response_model=List[RiskAssessment])
-def list_risk_assessments(project_id: str, current_user: User = Depends(get_current_user)):
-    return risk_assessments[project_id]
+def list_risk_assessments(
+    project_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not get_project_model_by_id(db, project_id):
+        raise HTTPException(status_code=404, detail="Project not found")
+    return list_risk_assessment_records(db, project_id)
 
 
 @app.post("/projects/{project_id}/risk", response_model=RiskAssessment)
@@ -497,11 +518,13 @@ def create_risk_assessment(
     project_id: str,
     payload: RiskAssessment,
     current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     if payload.project_id != project_id:
         raise HTTPException(status_code=400, detail="project_id mismatch")
-    risk_assessments[project_id].append(payload)
-    return payload
+    if not get_project_model_by_id(db, project_id):
+        raise HTTPException(status_code=404, detail="Project not found")
+    return create_risk_assessment_record(db, payload)
 
 
 # ---------------------------------------------------------------------------
