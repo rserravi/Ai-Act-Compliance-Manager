@@ -515,6 +515,9 @@ const resources = {
             riskAssessment: "Evaluación de Riesgo",
             summary: "Resumen"
           },
+          help: {
+            ariaLabel: "Mostrar ayuda del paso"
+          },
           fields: {
             name: "Nombre del proyecto",
             role: "Rol en la cadena de valor",
@@ -551,6 +554,7 @@ const resources = {
             teamCount: "{{count}} contactos",
             unset: "No definida",
             unclassifiedRisk: "Sin clasificar",
+            justification: "Justificación",
             noNotes: "Sin notas"
           },
           finish: "Crear Proyecto"
@@ -1191,6 +1195,9 @@ const resources = {
             riskAssessment: "Risk Assessment",
             summary: "Summary"
           },
+          help: {
+            ariaLabel: "Show step help"
+          },
           fields: {
             name: "Project name",
             role: "Role in the value chain",
@@ -1227,6 +1234,7 @@ const resources = {
             teamCount: "{{count}} contacts",
             unset: "Not defined",
             unclassifiedRisk: "Unclassified",
+            justification: "Justification",
             noNotes: "No notes"
           },
           finish: "Create Project"
@@ -1867,6 +1875,9 @@ const resources = {
             riskAssessment: "Avaluació de Risc",
             summary: "Resum"
           },
+          help: {
+            ariaLabel: "Mostra l'ajuda del pas"
+          },
           fields: {
             name: "Nom del projecte",
             role: "Rol a la cadena de valor",
@@ -1903,6 +1914,7 @@ const resources = {
             teamCount: "{{count}} contactes",
             unset: "No definida",
             unclassifiedRisk: "Sense classificar",
+            justification: "Justificació",
             noNotes: "Sense notes"
           },
           finish: "Crea Projecte"
@@ -2543,6 +2555,9 @@ const resources = {
             riskAssessment: "Évaluation des Risques",
             summary: "Résumé"
           },
+          help: {
+            ariaLabel: "Afficher l'aide de l'étape"
+          },
           fields: {
             name: "Nom du projet",
             role: "Rôle dans la chaîne de valeur",
@@ -2579,6 +2594,7 @@ const resources = {
             teamCount: "{{count}} contacts",
             unset: "Non défini",
             unclassifiedRisk: "Non classé",
+            justification: "Justification",
             noNotes: "Aucune note"
           },
           finish: "Créer le Projet"

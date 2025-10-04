@@ -46,6 +46,11 @@ export interface AISystem {
   docStatus?: DocStatus
   lastAssessment?: string // ISO date
   tags?: string[]
+  initialRiskAssessment?: {
+    classification: RiskLevel
+    justification: string
+    answers: RiskAnswer[]
+  }
 }
 
 export interface RiskAnswer {

@@ -1,4 +1,4 @@
-import type { AISystem, Contact, DeliverableType, DocumentRef, Task } from '../domain/models';
+import type { AISystem, Contact, DeliverableType, DocumentRef, RiskAnswer, Task } from '../domain/models';
 import { systems as initialSystems } from '../mocks/data';
 import { ObservableValue } from './observable';
 
@@ -19,6 +19,11 @@ export type CreateProjectInput = {
   team?: Contact[];
   risk?: AISystem['risk'];
   businessUnit?: string;
+  riskAssessment?: {
+    classification: AISystem['risk'];
+    justification: string;
+    answers: RiskAnswer[];
+  };
 };
 
 function readStoredActiveProject(): string | null {
@@ -67,9 +72,16 @@ export class ProjectStore {
       role: input.role,
       businessUnit: input.businessUnit,
       team: input.team,
-      risk: input.risk,
+      risk: input.risk ?? input.riskAssessment?.classification,
       docStatus: 'borrador',
-      lastAssessment: now.toISOString().slice(0, 10)
+      lastAssessment: now.toISOString().slice(0, 10),
+      initialRiskAssessment: input.riskAssessment
+        ? {
+            classification: input.riskAssessment.classification,
+            justification: input.riskAssessment.justification,
+            answers: input.riskAssessment.answers.map((answer) => ({ ...answer }))
+          }
+        : undefined
     };
 
     this.projects.update((prev) => [...prev, newProject]);
