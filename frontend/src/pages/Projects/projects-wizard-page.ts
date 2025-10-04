@@ -1,6 +1,6 @@
-import { html } from 'lit';
+import { html, type TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import type { AISystem, ProjectTeamMember } from '../../domain/models';
+import type { AISystem, ProjectTeamMember, RiskLevel } from '../../domain/models';
 import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
 import { infoCircleIcon } from '../../shared/icons';
@@ -22,6 +22,29 @@ export class ProjectsWizardPage extends LocalizedElement {
 
   protected createRenderRoot(): HTMLElement {
     return this;
+  }
+
+  private getRiskBadgeClasses(level: RiskLevel): string {
+    switch (level) {
+      case 'alto':
+      case 'inaceptable':
+        return 'badge badge-lg badge-error text-error-content';
+      case 'limitado':
+        return 'badge badge-lg badge-warning text-warning-content';
+      case 'minimo':
+        return 'badge badge-lg badge-success text-success-content';
+      default:
+        return 'badge badge-lg badge-neutral';
+    }
+  }
+
+  private renderRiskBadge(classification?: RiskLevel): TemplateResult | null {
+    if (!classification) {
+      return null;
+    }
+    const label = t(`riskLevels.${classification}` as const);
+    const classes = this.getRiskBadgeClasses(classification);
+    return html`<span class=${classes}>${label}</span>`;
   }
 
   private get steps(): string[] {
@@ -339,7 +362,7 @@ export class ProjectsWizardPage extends LocalizedElement {
   private renderRiskStepHelp(stepId: string, help: RiskWizardHelp) {
     const tooltipId = `risk-help-${stepId}`;
     return html`
-      <div class="relative inline-flex group">
+      <div class="relative z-50 inline-flex group">
         <button
           type="button"
           class="btn btn-circle btn-ghost btn-xs"
@@ -351,7 +374,7 @@ export class ProjectsWizardPage extends LocalizedElement {
         <div
           id=${tooltipId}
           role="tooltip"
-          class="pointer-events-none absolute right-0 top-full mt-2 w-72 max-w-sm rounded-md bg-base-200 p-4 text-sm shadow-lg opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+          class="pointer-events-none absolute right-0 top-full z-50 mt-2 w-72 max-w-sm rounded-md bg-base-200 p-4 text-sm shadow-lg opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
         >
           <p class="mb-2">${help.text}</p>
           ${help.links && help.links.length
@@ -480,7 +503,7 @@ export class ProjectsWizardPage extends LocalizedElement {
     if (!result) {
       return null;
     }
-    const classificationLabel = t(`riskLevels.${result.classification}` as const);
+    const classificationBadge = this.renderRiskBadge(result.classification);
     const resultCopyKey = `riskWizard.results.${result.classification}` as const;
     const implications = t(`${resultCopyKey}.implications` as const);
     const nextSteps = t(`${resultCopyKey}.next_steps` as const, {
@@ -495,7 +518,7 @@ export class ProjectsWizardPage extends LocalizedElement {
             <dt class="text-sm font-medium text-base-content/70">
               ${t('riskWizard.result.classificationLabel')}
             </dt>
-            <dd class="text-base font-semibold capitalize">${classificationLabel}</dd>
+            <dd class="text-base font-semibold">${classificationBadge}</dd>
           </div>
           <div>
             <dt class="text-sm font-medium text-base-content/70">
@@ -595,9 +618,12 @@ export class ProjectsWizardPage extends LocalizedElement {
                   .join(', ')
               : t('projects.wizard.summary.unset')
           }</p>
-          <p><strong>${t('projects.wizard.fields.risk')}:</strong> ${
-            riskResult ? t(`riskLevels.${riskResult.classification}` as const) : t('projects.wizard.summary.unclassifiedRisk')
-          }</p>
+          <p>
+            <strong>${t('projects.wizard.fields.risk')}:</strong>
+            ${riskResult
+              ? html` <span class="align-middle">${this.renderRiskBadge(riskResult.classification)}</span>`
+              : html` ${t('projects.wizard.summary.unclassifiedRisk')}`}
+          </p>
           <p><strong>${t('projects.wizard.summary.justification')}:</strong> ${
             riskResult?.justification ?? t('projects.wizard.summary.unset')
           }</p>
