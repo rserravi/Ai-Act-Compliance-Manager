@@ -14,6 +14,11 @@ import {
   type RiskWizardResult,
   type RiskWizardStep
 } from './Model';
+import {
+  createProject as createProjectRequest,
+  fetchProjectDeliverables as fetchProjectDeliverablesFromApi,
+  fetchProjects as fetchProjectsFromApi,
+} from './Service/projects.service';
 
 const PROJECT_DRAFT_STORAGE_KEY = 'projects.newProjectDraft';
 const WIZARD_STEP_IDS = ['details', 'team', 'riskAssessment', 'summary'] as const;
@@ -49,6 +54,8 @@ type WizardState = {
   riskError?: string;
   riskAnswers: Record<string, unknown>;
   notes: string;
+  isSubmitting: boolean;
+  submitError?: string;
 };
 
 export class ProjectsWizardViewModel implements ReactiveController {
@@ -73,7 +80,9 @@ export class ProjectsWizardViewModel implements ReactiveController {
     isRiskEvaluating: false,
     riskError: undefined,
     riskAnswers: {},
-    notes: ''
+    notes: '',
+    isSubmitting: false,
+    submitError: undefined,
   };
   #tempProjectId: string | null = null;
   #persistenceSuspended = 0;
@@ -154,6 +163,14 @@ export class ProjectsWizardViewModel implements ReactiveController {
 
   get notes(): string {
     return this.#state.notes;
+  }
+
+  get isSubmitting(): boolean {
+    return this.#state.isSubmitting;
+  }
+
+  get submissionError(): string | undefined {
+    return this.#state.submitError;
   }
 
   get riskSteps(): ReadonlyArray<RiskWizardStep> {
@@ -280,6 +297,9 @@ export class ProjectsWizardViewModel implements ReactiveController {
   }
 
   canContinueToNextStep(): boolean {
+    if (this.#state.isSubmitting) {
+      return false;
+    }
     if (this.#state.step === 0) {
       const hasName = this.#state.name.trim().length > 0;
       const hasPurpose = this.#state.purpose.trim().length > 0;
@@ -299,7 +319,10 @@ export class ProjectsWizardViewModel implements ReactiveController {
     return true;
   }
 
-  goNext(): void {
+  async goNext(): Promise<void> {
+    if (this.#state.isSubmitting) {
+      return;
+    }
     if (this.#state.step === 2) {
       if (!this.#riskWizard.isComplete) {
         this.#riskWizard.nextStep();
@@ -321,27 +344,46 @@ export class ProjectsWizardViewModel implements ReactiveController {
       return;
     }
 
-    const project = this.#projects.value.createProject({
-      name: this.#state.name,
-      role: this.#state.projectRole,
-      purpose: this.#state.purpose,
-      owner: this.#state.owner,
-      team: this.#state.team,
-      businessUnit: this.#state.businessUnit,
-      deployments: [...this.#state.deployments],
-      risk: this.#state.riskResult?.classification,
-      riskAssessment: this.#state.riskResult
-        ? {
-            classification: this.#state.riskResult.classification,
-            justification: this.#state.riskResult.justification,
-            answers: this.#riskWizard.answersList
-          }
-        : undefined
-    });
+    this.#setSubmitError(undefined);
+    this.#setSubmitting(true);
 
-    this.#clearDraft(true);
-    this.#resetWizardState();
-    navigateTo(`/projects/${project.id}/deliverables`, { replace: true });
+    try {
+      const requestPayload = {
+        name: this.#state.name,
+        role: this.#state.projectRole,
+        purpose: this.#state.purpose,
+        owner: this.#state.owner,
+        businessUnit: this.#state.businessUnit || undefined,
+        deployments: [...this.#state.deployments],
+        risk: this.#state.riskResult?.classification,
+        riskAssessment: this.#state.riskResult
+          ? {
+              classification: this.#state.riskResult.classification,
+              justification: this.#state.riskResult.justification,
+              answers: this.#riskWizard.answersList
+            }
+          : undefined
+      };
+
+      const { projectId } = await createProjectRequest(requestPayload);
+      const [projects, deliverables] = await Promise.all([
+        fetchProjectsFromApi({}),
+        fetchProjectDeliverablesFromApi(projectId)
+      ]);
+
+      this.#projects.value.replaceProjects(projects);
+      this.#projects.value.setDocumentsForProject(projectId, deliverables);
+      this.#projects.value.setActiveProjectId(projectId);
+
+      this.#clearDraft(true);
+      this.#resetWizardState();
+      navigateTo(`/projects/${projectId}/deliverables`, { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error inesperado';
+      this.#setSubmitError(message);
+    } finally {
+      this.#setSubmitting(false);
+    }
   }
 
   goPrevious(): void {
@@ -666,10 +708,30 @@ export class ProjectsWizardViewModel implements ReactiveController {
         isRiskEvaluating: false,
         riskError: undefined,
         riskAnswers: {},
-        notes: ''
+        notes: '',
+        isSubmitting: false,
+        submitError: undefined,
       };
       this.#riskWizard = this.#createRiskWizard();
       this.#syncRiskState();
     });
+  }
+
+  #setSubmitting(value: boolean): void {
+    if (this.#state.isSubmitting === value) {
+      return;
+    }
+    this.#updateState(() => {
+      this.#state.isSubmitting = value;
+    }, { persist: false });
+  }
+
+  #setSubmitError(message: string | undefined): void {
+    if (this.#state.submitError === message) {
+      return;
+    }
+    this.#updateState(() => {
+      this.#state.submitError = message;
+    }, { persist: false });
   }
 }

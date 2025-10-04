@@ -62,6 +62,7 @@ from backend.schemas import (
     OrgStructure,
     PendingActivity,
     Project,
+    ProjectCreate,
     ProjectUpdate,
     RACIEntry,
     RiskAssessment,
@@ -461,13 +462,15 @@ def list_projects(
 
 @app.post("/projects", response_model=Project)
 def create_project(
-    payload: Project,
+    payload: ProjectCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if get_project_model_by_id(db, payload.id):
+    if payload.id and get_project_model_by_id(db, payload.id):
         raise HTTPException(status_code=400, detail="Project already exists")
-    return create_project_record(db, payload)
+    project = create_project_record(db, payload)
+    create_initial_deliverables(project.id)
+    return project
 
 
 @app.get("/projects/{project_id}", response_model=Project)
@@ -798,3 +801,54 @@ def list_team_members(project_id: str, current_user: User = Depends(get_current_
 @app.get("/activities/pending", response_model=List[PendingActivity])
 def list_pending_activities(current_user: User = Depends(get_current_user)):
     return pending_activities
+REQUIRED_DELIVERABLES: tuple[dict[str, str], ...] = (
+    {
+        "name": "Documentación Técnica (Anexo IV)",
+        "type": "technical_documentation",
+    },
+    {
+        "name": "Declaración de Conformidad de la UE",
+        "type": "declaration_of_conformity",
+    },
+    {
+        "name": "Documentación del Sistema de Gestión de Calidad",
+        "type": "quality_management_system",
+    },
+    {
+        "name": "Plan de Seguimiento Post-Comercialización",
+        "type": "post_market_monitoring_plan",
+    },
+    {
+        "name": "Instrucciones de Uso",
+        "type": "instructions_for_use",
+    },
+    {
+        "name": "Registros (Logs) generados automáticamente",
+        "type": "logs",
+    },
+)
+
+
+def create_initial_deliverables(project_id: str) -> List[Deliverable]:
+    existing = deliverables.get(project_id)
+    if existing:
+        return existing
+
+    now = datetime.now(timezone.utc)
+    entries: List[Deliverable] = []
+    for template in REQUIRED_DELIVERABLES:
+        entries.append(
+            Deliverable(
+                id=f"{project_id}-{uuid4().hex}",
+                project_id=project_id,
+                name=template["name"],
+                type=template["type"],
+                version=0,
+                status="Abierto",
+                updated_at=now,
+            )
+        )
+
+    deliverables[project_id] = entries
+    return entries
+

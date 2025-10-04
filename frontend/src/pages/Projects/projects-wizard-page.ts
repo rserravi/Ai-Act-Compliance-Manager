@@ -739,7 +739,7 @@ export class ProjectsWizardPage extends LocalizedElement {
   };
 
   private handleNext = () => {
-    this.#viewModel.goNext();
+    void this.#viewModel.goNext();
   };
 
   private canContinueToNextStep(): boolean {
@@ -748,6 +748,11 @@ export class ProjectsWizardPage extends LocalizedElement {
 
   protected render() {
     const canContinue = this.canContinueToNextStep();
+    const isSubmitting = this.#viewModel.isSubmitting;
+    const actionButtonClasses = ['btn', 'btn-primary'];
+    if (isSubmitting) {
+      actionButtonClasses.push('loading');
+    }
 
     return html`
       <section class="space-y-6">
@@ -758,24 +763,27 @@ export class ProjectsWizardPage extends LocalizedElement {
 
         ${this.renderStepIndicator()}
 
-        <div class="card bg-base-100 shadow">
-          <div class="card-body space-y-6">
-            ${this.renderCurrentStep()}
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div class="flex flex-wrap gap-2">
-                <button class="btn btn-ghost" type="button" @click=${this.handleCancel}>
-                  ${t('common.cancel')}
-                </button>
-                <button class="btn" type="button" ?disabled=${this.#viewModel.step === 0} @click=${this.handlePrevious}>
-                  ${t('common.back')}
+          <div class="card bg-base-100 shadow">
+            <div class="card-body space-y-6">
+              ${this.renderCurrentStep()}
+              ${this.#viewModel.submissionError
+                ? html`<div class="alert alert-error"><span>${this.#viewModel.submissionError}</span></div>`
+                : null}
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap gap-2">
+                  <button class="btn btn-ghost" type="button" @click=${this.handleCancel}>
+                    ${t('common.cancel')}
+                  </button>
+                  <button class="btn" type="button" ?disabled=${this.#viewModel.step === 0} @click=${this.handlePrevious}>
+                    ${t('common.back')}
+                  </button>
+                </div>
+                <button class=${actionButtonClasses.join(' ')} type="button" ?disabled=${!canContinue} @click=${this.handleNext}>
+                  ${this.#viewModel.step === this.#viewModel.steps.length - 1
+                    ? t('projects.wizard.finish')
+                    : t('common.next')}
                 </button>
               </div>
-              <button class="btn btn-primary" type="button" ?disabled=${!canContinue} @click=${this.handleNext}>
-                ${this.#viewModel.step === this.#viewModel.steps.length - 1
-                  ? t('projects.wizard.finish')
-                  : t('common.next')}
-              </button>
-            </div>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import type { DocumentRef, Task } from '../../domain/models';
 import type { ProjectStore } from '../../state/project-store';
+import { fetchProjectDeliverables } from '../Projects/Service/projects.service';
 
 export class DeliverablesViewModel {
   constructor(private readonly store: ProjectStore) {}
@@ -12,6 +13,12 @@ export class DeliverablesViewModel {
   getDocuments(projectId: string | null): DocumentRef[] {
     if (!projectId) return [];
     return this.store.getDocumentsByProjectId(projectId);
+  }
+
+  async refreshDocuments(projectId: string): Promise<DocumentRef[]> {
+    const documents = await fetchProjectDeliverables(projectId);
+    this.store.setDocumentsForProject(projectId, documents);
+    return documents;
   }
 
   uploadNewVersion(docId: string, currentVersion: number) {

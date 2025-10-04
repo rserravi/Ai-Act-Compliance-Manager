@@ -67,6 +67,19 @@ export class ProjectStore {
     this.activeProjectId.value = id;
   }
 
+  replaceProjects(projects: AISystem[]): void {
+    const cloned = projects.map((project) => ({ ...project }));
+    this.projects.value = cloned;
+  }
+
+  setDocumentsForProject(projectId: string, documents: DocumentRef[]): void {
+    const normalized = documents.map((doc) => ({ ...doc }));
+    this.documents.update((prev) => {
+      const others = prev.filter((doc) => doc.systemId !== projectId);
+      return [...others, ...normalized];
+    });
+  }
+
   createProject(input: CreateProjectInput): AISystem {
     const now = new Date();
     const newProject: AISystem = {
