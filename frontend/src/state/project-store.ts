@@ -16,9 +16,12 @@ const ACTIVE_KEY = 'app.activeProjectId';
 export type CreateProjectInput = {
   name: string;
   role: AISystem['role'];
+  purpose: string;
+  owner: string;
   team?: Contact[];
   risk?: AISystem['risk'];
   businessUnit?: string;
+  deployments: string[];
   riskAssessment?: {
     classification: AISystem['risk'];
     justification: string;
@@ -70,8 +73,11 @@ export class ProjectStore {
       id: `prj-${Math.random().toString(36).slice(2, 8)}`,
       name: input.name.trim(),
       role: input.role,
+      purpose: input.purpose.trim(),
+      owner: input.owner.trim(),
       businessUnit: input.businessUnit,
       team: input.team,
+      deployments: [...input.deployments],
       risk: input.risk ?? input.riskAssessment?.classification,
       docStatus: 'borrador',
       lastAssessment: now.toISOString().slice(0, 10),
