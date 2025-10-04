@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class AISystem(BaseModel):
+class Project(BaseModel):
     id: str
     name: str
     role: str  # provider/importer/distributor/user

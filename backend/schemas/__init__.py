@@ -1,5 +1,5 @@
-from .ai_system import AISystem
-from .ai_system_update import AISystemUpdate
+from .project import Project
+from .project_update import ProjectUpdate
 from .audit import Audit
 from .contact import Contact
 from .contact_method import ContactMethod
@@ -35,8 +35,8 @@ from .user import User
 from .user_preferences import UserPreferences
 
 __all__ = [
-    "AISystem",
-    "AISystemUpdate",
+    "Project",
+    "ProjectUpdate",
     "Audit",
     "Contact",
     "ContactMethod",

@@ -16,9 +16,12 @@ _TEMP_DIR = TemporaryDirectory()
 os.environ["SQLITE_DB_PATH"] = str(Path(_TEMP_DIR.name) / "test.db")
 os.environ["JWT_SECRET"] = "integration-test-secret"
 os.environ["JWT_ALGORITHM"] = "HS256"
+os.environ["DATABASE_URL"] = ""
 
 # Reload modules so that they pick up the testing configuration
 _database_module = reload(import_module("backend.database"))
+sys.modules.pop("backend.models", None)
+import_module("backend.models")
 _main_module = reload(import_module("backend.main"))
 
 from backend.repositories.pending_user_repository import get_pending_registration_by_id
