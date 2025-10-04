@@ -17,6 +17,7 @@ load_dotenv()
 
 from backend.database import SessionLocal, get_db, init_db
 from backend.services.email_service import send_registration_code_email, send_welcome_email
+from backend.services.risk_evaluation_service import evaluate_risk
 from backend.repositories.pending_user_repository import (
     delete_pending_registration,
     get_pending_registration_by_id,
@@ -64,6 +65,8 @@ from backend.schemas import (
     ProjectUpdate,
     RACIEntry,
     RiskAssessment,
+    RiskEvaluationPayload,
+    RiskEvaluationResult,
     RiskWizardConfig,
     Settings,
     SignInPayload,
@@ -500,6 +503,15 @@ def update_project(
 @app.get("/configs/risk-wizard", response_model=RiskWizardConfig)
 def get_risk_wizard_config(current_user: User = Depends(get_current_user)):
     return RiskWizardConfig()
+
+
+@app.post("/risk-evaluations", response_model=RiskEvaluationResult)
+def create_risk_evaluation(
+    payload: RiskEvaluationPayload,
+    current_user: User = Depends(get_current_user),
+):
+    result = evaluate_risk(payload.answers)
+    return RiskEvaluationResult(**result)
 
 
 @app.get("/projects/{project_id}/risk", response_model=List[RiskAssessment])

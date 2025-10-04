@@ -500,15 +500,88 @@ export class ProjectsWizardPage extends LocalizedElement {
 
   private renderRiskResult() {
     const result = this.#viewModel.riskResult;
-    if (!result) {
-      return null;
+    const loading = this.#viewModel.isRiskEvaluationLoading;
+    const error = this.#viewModel.riskEvaluationError;
+
+    if (loading) {
+      return html`
+        <article class="rounded-lg border border-base-300 bg-base-200/40 p-4">
+          <div class="flex items-center gap-3">
+            <span class="loading loading-spinner loading-md"></span>
+            <span class="text-sm text-base-content/70">${t('projects.wizard.risk.evaluation.loading')}</span>
+          </div>
+        </article>
+
+        <label class="form-control">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.notes')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="4"
+            .value=${this.#viewModel.notes}
+            placeholder=${t('projects.wizard.placeholders.notes')}
+            @input=${(event: Event) => {
+              const textarea = event.currentTarget as HTMLTextAreaElement;
+              this.#viewModel.setNotes(textarea.value);
+            }}
+          ></textarea>
+        </label>
+      `;
     }
+
+    if (error) {
+      return html`
+        <div class="alert alert-error flex-col items-start gap-2">
+          <div>
+            <p class="font-semibold">${t('projects.wizard.risk.evaluation.error')}</p>
+            <p class="text-sm">${error}</p>
+          </div>
+          <button class="btn btn-sm" type="button" @click=${() => this.#viewModel.retryRiskEvaluation()}>
+            ${t('common.retry')}
+          </button>
+        </div>
+
+        <label class="form-control mt-4">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.notes')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="4"
+            .value=${this.#viewModel.notes}
+            placeholder=${t('projects.wizard.placeholders.notes')}
+            @input=${(event: Event) => {
+              const textarea = event.currentTarget as HTMLTextAreaElement;
+              this.#viewModel.setNotes(textarea.value);
+            }}
+          ></textarea>
+        </label>
+      `;
+    }
+
+    if (!result) {
+      return html`
+        <p class="rounded-lg border border-dashed border-base-300 bg-base-200/40 p-4 text-sm text-base-content/70">
+          ${t('projects.wizard.risk.evaluation.awaiting')}
+        </p>
+
+        <label class="form-control mt-4">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.notes')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="4"
+            .value=${this.#viewModel.notes}
+            placeholder=${t('projects.wizard.placeholders.notes')}
+            @input=${(event: Event) => {
+              const textarea = event.currentTarget as HTMLTextAreaElement;
+              this.#viewModel.setNotes(textarea.value);
+            }}
+          ></textarea>
+        </label>
+      `;
+    }
+
     const classificationBadge = this.renderRiskBadge(result.classification);
     const resultCopyKey = `riskWizard.results.${result.classification}` as const;
     const implications = t(`${resultCopyKey}.implications` as const);
-    const nextSteps = t(`${resultCopyKey}.next_steps` as const, {
-      returnObjects: true
-    }) as string[];
+    const obligations = Array.isArray(result.obligations) ? result.obligations : [];
 
     return html`
       <article class="rounded-lg border border-base-300 bg-base-200/40 p-4">
@@ -533,14 +606,14 @@ export class ProjectsWizardPage extends LocalizedElement {
               <p class="text-sm text-base-content/80">${implications}</p>`
           : null}
 
-        ${Array.isArray(nextSteps) && nextSteps.length
+        ${obligations.length
           ? html`
               <div class="mt-4">
                 <p class="text-sm font-medium text-base-content/70">
                   ${t('riskWizard.result.nextSteps')}
                 </p>
                 <ul class="list-disc space-y-1 pl-5 text-sm">
-                  ${nextSteps.map((step) => html`<li>${step}</li>`)}
+                  ${obligations.map((step) => html`<li>${step}</li>`)}
                 </ul>
               </div>
             `

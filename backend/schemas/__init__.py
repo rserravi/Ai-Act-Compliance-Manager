@@ -18,6 +18,7 @@ from .org_structure import OrgStructure
 from .pending_activity import PendingActivity
 from .raci_entry import RACIEntry
 from .risk_assessment import RiskAssessment
+from .risk_evaluation import RiskEvaluationPayload, RiskEvaluationResult
 from .risk_wizard_config import RiskWizardConfig
 from .settings import Settings
 from .sign_in_payload import SignInPayload
@@ -55,6 +56,8 @@ __all__ = [
     "PendingActivity",
     "RACIEntry",
     "RiskAssessment",
+    "RiskEvaluationPayload",
+    "RiskEvaluationResult",
     "RiskWizardConfig",
     "Settings",
     "SignInPayload",

@@ -39,6 +39,7 @@ export type RiskWizardRule = {
 export type RiskWizardResult = {
   classification: RiskLevel;
   justification: string;
+  obligations: string[];
 };
 
 export type RiskWizardStep = {
