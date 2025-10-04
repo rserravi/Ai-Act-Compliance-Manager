@@ -560,7 +560,48 @@ const resources = {
             option: "Riesgo {{risk}}"
           },
           team: {
-            empty: "Todavía no hay contactos asignados."
+            empty: "Todavía no hay contactos asignados.",
+            form: {
+              title: "Añadir miembro del equipo",
+              description: "Completa los datos y asigna responsabilidades RACI.",
+              raciTitle: "Responsabilidades RACI",
+              raciHelper: "Selecciona los roles que aplican a esta persona.",
+              owner: "Owner del proyecto",
+              reviewer: "Revisor/a",
+              submit: "Agregar al equipo"
+            },
+            raci: {
+              responsible: "Responsable (R)",
+              accountable: "Aprobador (A)",
+              consulted: "Consultado (C)",
+              informed: "Informado (I)",
+              none: "Sin asignar"
+            },
+            table: {
+              responsibilities: "Responsabilidades",
+              owner: "Owner",
+              reviewer: "Revisor/a"
+            },
+            owner: {
+              yes: "Sí",
+              no: "No"
+            },
+            reviewer: {
+              yes: "Sí",
+              no: "No"
+            },
+            invites: {
+              title: "Invitaciones pendientes",
+              description: "Envía invitaciones por email para que completen su perfil.",
+              placeholder: "persona@empresa.com",
+              add: "Enviar invitación",
+              empty: "Sin invitaciones pendientes",
+              status: "Estado",
+              pending: "Pendiente",
+              remove: "Cancelar invitación",
+              summaryLabel: "Invitaciones",
+              summary: "{{count}} invitaciones pendientes"
+            }
           },
           validations: {
             deployments: "Selecciona al menos un despliegue previsto."
@@ -1257,7 +1298,48 @@ const resources = {
             option: "{{risk}} risk"
           },
           team: {
-            empty: "No contacts added yet."
+            empty: "No contacts added yet.",
+            form: {
+              title: "Add team member",
+              description: "Fill in the details and assign RACI responsibilities.",
+              raciTitle: "RACI responsibilities",
+              raciHelper: "Select the roles that apply to this person.",
+              owner: "Project owner",
+              reviewer: "Reviewer",
+              submit: "Add to team"
+            },
+            raci: {
+              responsible: "Responsible (R)",
+              accountable: "Accountable (A)",
+              consulted: "Consulted (C)",
+              informed: "Informed (I)",
+              none: "Not assigned"
+            },
+            table: {
+              responsibilities: "Responsibilities",
+              owner: "Owner",
+              reviewer: "Reviewer"
+            },
+            owner: {
+              yes: "Yes",
+              no: "No"
+            },
+            reviewer: {
+              yes: "Yes",
+              no: "No"
+            },
+            invites: {
+              title: "Pending invitations",
+              description: "Send invitations by email so they can complete their profile.",
+              placeholder: "person@example.com",
+              add: "Send invitation",
+              empty: "No pending invitations",
+              status: "Status",
+              pending: "Pending",
+              remove: "Cancel invitation",
+              summaryLabel: "Invites",
+              summary: "{{count}} pending invitations"
+            }
           },
           validations: {
             deployments: "Select at least one planned deployment."
@@ -1954,7 +2036,48 @@ const resources = {
             option: "Risc {{risk}}"
           },
           team: {
-            empty: "Encara no hi ha contactes assignats."
+            empty: "Encara no hi ha contactes assignats.",
+            form: {
+              title: "Afegeix membre de l'equip",
+              description: "Omple les dades i assigna responsabilitats RACI.",
+              raciTitle: "Responsabilitats RACI",
+              raciHelper: "Selecciona els rols que pertoquen a aquesta persona.",
+              owner: "Owner del projecte",
+              reviewer: "Revisor/a",
+              submit: "Afegeix a l'equip"
+            },
+            raci: {
+              responsible: "Responsable (R)",
+              accountable: "Aprovador (A)",
+              consulted: "Consultat (C)",
+              informed: "Informada (I)",
+              none: "Sense assignar"
+            },
+            table: {
+              responsibilities: "Responsabilitats",
+              owner: "Owner",
+              reviewer: "Revisor/a"
+            },
+            owner: {
+              yes: "Sí",
+              no: "No"
+            },
+            reviewer: {
+              yes: "Sí",
+              no: "No"
+            },
+            invites: {
+              title: "Invitacions pendents",
+              description: "Envia invitacions per correu perquè completin el seu perfil.",
+              placeholder: "persona@empresa.com",
+              add: "Envia invitació",
+              empty: "Sense invitacions pendents",
+              status: "Estat",
+              pending: "Pendent",
+              remove: "Cancel·la invitació",
+              summaryLabel: "Invitacions",
+              summary: "{{count}} invitacions pendents"
+            }
           },
           validations: {
             deployments: "Selecciona almenys un desplegament previst."
@@ -2651,7 +2774,48 @@ const resources = {
             option: "Risque {{risk}}"
           },
           team: {
-            empty: "Aucun contact ajouté pour le moment."
+            empty: "Aucun contact ajouté pour le moment.",
+            form: {
+              title: "Ajouter un membre de l'équipe",
+              description: "Renseignez les informations et assignez les responsabilités RACI.",
+              raciTitle: "Responsabilités RACI",
+              raciHelper: "Sélectionnez les rôles applicables à cette personne.",
+              owner: "Propriétaire du projet",
+              reviewer: "Relecteur",
+              submit: "Ajouter à l'équipe"
+            },
+            raci: {
+              responsible: "Responsable (R)",
+              accountable: "Approbateur (A)",
+              consulted: "Consulté (C)",
+              informed: "Informé (I)",
+              none: "Non assigné"
+            },
+            table: {
+              responsibilities: "Responsabilités",
+              owner: "Owner",
+              reviewer: "Relecteur"
+            },
+            owner: {
+              yes: "Oui",
+              no: "Non"
+            },
+            reviewer: {
+              yes: "Oui",
+              no: "Non"
+            },
+            invites: {
+              title: "Invitations en attente",
+              description: "Envoyez des invitations par email pour qu'ils complètent leur profil.",
+              placeholder: "personne@entreprise.com",
+              add: "Envoyer invitation",
+              empty: "Aucune invitation en attente",
+              status: "Statut",
+              pending: "En attente",
+              remove: "Annuler l'invitation",
+              summaryLabel: "Invitations",
+              summary: "{{count}} invitations en attente"
+            }
           },
           validations: {
             deployments: "Sélectionnez au moins un déploiement prévu."

@@ -28,6 +28,19 @@ export interface Contact {
   notification: string
 }
 
+export interface RaciMatrix {
+  responsible: boolean
+  accountable: boolean
+  consulted: boolean
+  informed: boolean
+}
+
+export interface ProjectTeamMember extends Contact {
+  raci: RaciMatrix
+  isOwner: boolean
+  isReviewer: boolean
+}
+
 export interface Organization {
   id: UUID
   name: string
@@ -42,7 +55,7 @@ export interface AISystem {
   owner?: string
   businessUnit?: string
   deployments?: string[]
-  team?: Contact[]
+  team?: ProjectTeamMember[]
   risk?: RiskLevel
   docStatus?: DocStatus
   lastAssessment?: string // ISO date

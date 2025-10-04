@@ -1,4 +1,4 @@
-import type { AISystem, Contact, DeliverableType, DocumentRef, RiskAnswer, Task } from '../domain/models';
+import type { AISystem, DeliverableType, DocumentRef, ProjectTeamMember, RiskAnswer, Task } from '../domain/models';
 import { systems as initialSystems } from '../mocks/data';
 import { ObservableValue } from './observable';
 
@@ -18,7 +18,7 @@ export type CreateProjectInput = {
   role: AISystem['role'];
   purpose: string;
   owner: string;
-  team?: Contact[];
+  team?: ProjectTeamMember[];
   risk?: AISystem['risk'];
   businessUnit?: string;
   deployments: string[];
