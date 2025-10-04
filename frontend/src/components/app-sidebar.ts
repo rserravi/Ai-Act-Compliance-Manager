@@ -179,6 +179,7 @@ export class AppSidebar extends LocalizedElement {
 
     return html`
       <aside
+        id="app-main-navigation"
         class=${classMap({
           'w-72 bg-base-100 border-r border-base-300 flex flex-col fixed inset-y-0 z-30 transform transition-transform lg:static lg:translate-x-0':
             true,
