@@ -604,6 +604,26 @@ export class ProjectsWizardPage extends LocalizedElement {
     this.riskAnswers = this.riskWizard.answers;
   }
 
+  private handleNameChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.name = input.value;
+  }
+
+  private handlePurposeChange(event: Event) {
+    const textarea = event.currentTarget as HTMLTextAreaElement;
+    this.purpose = textarea.value;
+  }
+
+  private handleOwnerChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.owner = input.value;
+  }
+
+  private handleBusinessUnitChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.businessUnit = input.value;
+  }
+
   private handleDeploymentToggle(option: DeploymentOption, checked: boolean) {
     if (checked) {
       if (!this.deployments.includes(option)) {
@@ -632,10 +652,8 @@ export class ProjectsWizardPage extends LocalizedElement {
           <input
             class="input input-bordered"
             .value=${this.name}
-            @input=${(event: Event) => {
-              const input = event.currentTarget as HTMLInputElement;
-              this.name = input.value;
-            }}
+            @input=${this.handleNameChange}
+            @change=${this.handleNameChange}
             required
           >
         </label>
@@ -662,10 +680,8 @@ export class ProjectsWizardPage extends LocalizedElement {
             rows="3"
             .value=${this.purpose}
             placeholder=${t('projects.wizard.placeholders.purpose')}
-            @input=${(event: Event) => {
-              const textarea = event.currentTarget as HTMLTextAreaElement;
-              this.purpose = textarea.value;
-            }}
+            @input=${this.handlePurposeChange}
+            @change=${this.handlePurposeChange}
             required
           ></textarea>
         </label>
@@ -675,10 +691,8 @@ export class ProjectsWizardPage extends LocalizedElement {
             class="input input-bordered"
             .value=${this.owner}
             placeholder=${t('projects.wizard.placeholders.owner')}
-            @input=${(event: Event) => {
-              const input = event.currentTarget as HTMLInputElement;
-              this.owner = input.value;
-            }}
+            @input=${this.handleOwnerChange}
+            @change=${this.handleOwnerChange}
             required
           >
         </label>
@@ -687,10 +701,8 @@ export class ProjectsWizardPage extends LocalizedElement {
           <input
             class="input input-bordered"
             .value=${this.businessUnit}
-            @input=${(event: Event) => {
-              const input = event.currentTarget as HTMLInputElement;
-              this.businessUnit = input.value;
-            }}
+            @input=${this.handleBusinessUnitChange}
+            @change=${this.handleBusinessUnitChange}
             placeholder=${t('projects.wizard.placeholders.businessUnit')}
           >
         </label>
@@ -1084,14 +1096,20 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
   }
 
+  private canContinueToNextStep(): boolean {
+    if (this.step === 0) {
+      const hasName = this.name.trim().length > 0;
+      const hasPurpose = this.purpose.trim().length > 0;
+      const hasOwner = this.owner.trim().length > 0;
+      const hasDeployments = this.deployments.length > 0;
+      return hasName && hasPurpose && hasOwner && hasDeployments;
+    }
+
+    return true;
+  }
+
   protected render() {
-    const canContinue =
-      this.step === 0
-        ? this.name.trim().length > 0 &&
-          this.purpose.trim().length > 0 &&
-          this.owner.trim().length > 0 &&
-          this.deployments.length > 0
-        : true;
+    const canContinue = this.canContinueToNextStep();
 
     return html`
       <section class="space-y-6">
