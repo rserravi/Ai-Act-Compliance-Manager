@@ -3,6 +3,7 @@
 Este documento define **agentes**, **flujos**, **eventos** y **puntos de integración** del producto tras los cambios solicitados.
 
 ---
+#fetch https://daisyui.com/llms.txt
 
 ## 0) Stack y criterios de diseño
 
