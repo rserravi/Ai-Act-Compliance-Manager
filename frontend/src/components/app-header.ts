@@ -44,7 +44,6 @@ export class AppHeader extends LocalizedElement {
         return firstLetter.toUpperCase();
       }
     }
-
     return '?';
   }
 
@@ -69,7 +68,7 @@ export class AppHeader extends LocalizedElement {
     this.dispatchEvent(new CustomEvent('logout', { bubbles: true, composed: true }));
   }
 
-  private toggleMenu() {
+    private toggleMenu() {
     this.dispatchEvent(new CustomEvent('toggle-menu', { bubbles: true, composed: true }));
   }
 
@@ -91,7 +90,7 @@ export class AppHeader extends LocalizedElement {
               aria-expanded=${this.mobileMenuOpen ? 'true' : 'false'}
               aria-controls="app-main-navigation"
             >
-              <span class="text-xl leading-none">☰</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
           </div>
           <div class="flex-1 min-w-0 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-6">
