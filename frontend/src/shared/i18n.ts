@@ -32,7 +32,8 @@ const resources = {
           title: "Proyecto activo",
           placeholder: "Seleccionar Proyecto",
           all: "Todos los proyectos",
-          empty: "Sin proyectos activos"
+          empty: "Sin proyectos activos",
+          wizardDisabled: "No disponible durante la creación de un proyecto."
         },
         layout: {
           defaultProjectTitle: "Panel de control",
@@ -907,7 +908,8 @@ const resources = {
           title: "Active project",
           placeholder: "Select project",
           all: "All projects",
-          empty: "No active projects"
+          empty: "No active projects",
+          wizardDisabled: "Disabled while creating a new project."
         },
         layout: {
           defaultProjectTitle: "Dashboard",
@@ -1646,7 +1648,8 @@ const resources = {
           title: "Projecte actiu",
           placeholder: "Seleccionar projecte",
           all: "Tots els projectes",
-          empty: "Sense projectes actius"
+          empty: "Sense projectes actius",
+          wizardDisabled: "No es pot canviar mentre crees un projecte nou."
         },
         layout: {
           defaultProjectTitle: "Quadre de comandament",
@@ -2385,7 +2388,8 @@ const resources = {
           title: "Projet actif",
           placeholder: "Sélectionner un projet",
           all: "Tous les projets",
-          empty: "Aucun projet actif"
+          empty: "Aucun projet actif",
+          wizardDisabled: "Indisponible pendant la création d'un nouveau projet."
         },
         layout: {
           defaultProjectTitle: "Tableau de bord",

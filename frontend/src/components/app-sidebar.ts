@@ -137,6 +137,8 @@ export class AppSidebar extends LocalizedElement {
   }
 
   private renderProjectSelectorMenuItems() {
+    const inWizard = this.activePath.startsWith('/projects/new');
+
     if (!this.projects.length) {
       return html`<span class="text-sm text-base-content/70">${t('app.projectSelector.empty')}</span>`;
     }
@@ -154,6 +156,7 @@ export class AppSidebar extends LocalizedElement {
           class="select select-bordered select-sm"
           @change=${this.handleProjectChange}
           .value=${this.activeProjectId ?? ''}
+          ?disabled=${inWizard}
         >
           <option value="">${emptyOptionLabel}</option>
           ${this.projects.map(
@@ -162,6 +165,11 @@ export class AppSidebar extends LocalizedElement {
             </option>`
           )}
         </select>
+        ${inWizard
+          ? html`<p class="mt-1 text-xs text-base-content/60">${t(
+              'app.projectSelector.wizardDisabled'
+            )}</p>`
+          : null}
       </label>
     `;
   }
