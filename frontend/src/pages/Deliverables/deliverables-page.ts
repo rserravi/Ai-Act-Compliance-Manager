@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import type { DocumentRef } from '../../domain/models';
@@ -29,6 +29,22 @@ export class DeliverablesPage extends LocalizedElement {
 
   private get viewModel() {
     return new DeliverablesViewModel(this.projects.value);
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (!changedProperties.has('projectId')) {
+      return;
+    }
+
+    const newProjectId = this.projectId?.trim();
+    if (newProjectId) {
+      if (this.projects.activeProjectId !== newProjectId) {
+        this.projects.value.setActiveProjectId(newProjectId);
+      }
+    } else if (this.projects.activeProjectId !== null) {
+      this.projects.value.setActiveProjectId(null);
+    }
   }
 
   private translateStatus(status: DocumentRef['status']): string {
