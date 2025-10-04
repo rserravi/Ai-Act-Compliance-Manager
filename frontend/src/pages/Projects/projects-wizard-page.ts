@@ -1,405 +1,165 @@
 import { html } from 'lit';
-import type { PropertyValues } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import { ProjectController } from '../../state/controllers';
+import { customElement } from 'lit/decorators.js';
 import type { AISystem, ProjectTeamMember } from '../../domain/models';
-import { navigateTo } from '../../navigation';
 import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
 import { infoCircleIcon } from '../../shared/icons';
-import { eventBus } from '../../shared/events/bus';
+import { ProjectsWizardViewModel } from './projects-wizard.viewmodel';
 import {
-  ProjectRiskWizardViewModel,
-  type RiskWizardQuestion,
-  type RiskWizardResult,
-  type RiskWizardHelp
-} from './ProjectRiskWizard.viewmodel';
-import './team-member-form';
+  DEPLOYMENT_OPTIONS,
+  type DeploymentOption,
+  type RiskWizardHelp,
+  type RiskWizardQuestion
+} from './Model';
 import type { TeamMemberFormSubmitDetail } from './team-member-form';
-
-const DEPLOYMENT_OPTIONS = ['sandbox', 'pilot', 'production', 'internal_only'] as const;
-const PROJECT_ROLES = ['provider', 'importer', 'distributor', 'user'] as const;
-type DeploymentOption = (typeof DEPLOYMENT_OPTIONS)[number];
-
-const PROJECT_DRAFT_STORAGE_KEY = 'projects.newProjectDraft';
-
-type ProjectWizardDraft = {
-  tempProjectId: string;
-  step: number;
-  details: {
-    name: string;
-    role: AISystem['role'];
-    purpose: string;
-    owner: string;
-    businessUnit: string;
-    deployments: DeploymentOption[];
-  };
-  team: ProjectTeamMember[];
-  pendingInvites: string[];
-  inviteEmail?: string;
-  risk: {
-    stepIndex: number;
-    answers: Record<string, unknown>;
-    result?: RiskWizardResult;
-  };
-  notes: string;
-};
-
-function isDeploymentOption(value: unknown): value is DeploymentOption {
-  return (DEPLOYMENT_OPTIONS as readonly string[]).includes(value as DeploymentOption);
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
-function isProjectRole(value: unknown): value is AISystem['role'] {
-  return (PROJECT_ROLES as readonly string[]).includes(value as AISystem['role']);
-}
+import './team-member-form';
 
 @customElement('projects-wizard-page')
 export class ProjectsWizardPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
-  private static readonly PERSISTED_STATE_KEYS = [
-    'step',
-    'name',
-    'projectRole',
-    'purpose',
-    'owner',
-    'businessUnit',
-    'deployments',
-    'team',
-    'pendingInvites',
-    'inviteEmail',
-    'riskStepIndex',
-    'riskAnswers',
-    'riskResult',
-    'notes'
-  ] as const satisfies ReadonlyArray<PropertyKey>;
-
-  private readonly projects = new ProjectController(this);
-  private riskWizard = new ProjectRiskWizardViewModel();
-
-  private tempProjectId: string | null = null;
-  private persistenceSuspendedCount = 0;
-
-  @state() private step = 0;
-  @state() private name = '';
-  @state() private projectRole: AISystem['role'] = 'provider';
-  @state() private purpose = '';
-  @state() private owner = '';
-  @state() private businessUnit = '';
-  @state() private deployments: DeploymentOption[] = [];
-  @state() private team: ProjectTeamMember[] = [];
-  @state() private pendingInvites: string[] = [];
-  @state() private inviteEmail = '';
-  @state() private riskStepIndex = this.riskWizard.stepIndex;
-  @state() private riskResult: RiskWizardResult = this.riskWizard.result;
-  @state() private riskAnswers: Record<string, unknown> = this.riskWizard.answers;
-  @state() private notes = '';
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.ensureTempProjectId();
-    this.restoreDraft();
-  }
+  #viewModel = new ProjectsWizardViewModel(this);
 
   protected createRenderRoot(): HTMLElement {
     return this;
   }
 
-  private get steps() {
-    return [
-      t('projects.wizard.steps.details'),
-      t('projects.wizard.steps.team'),
-      t('projects.wizard.steps.riskAssessment'),
-      t('projects.wizard.steps.summary')
-    ];
+  private get steps(): string[] {
+    return this.#viewModel.steps.map((stepId) =>
+      t(`projects.wizard.steps.${stepId}` as const)
+    );
   }
 
-  private ensureTempProjectId(): string {
-    if (!this.tempProjectId) {
-      this.tempProjectId = this.generateTempProjectId();
-    }
-    return this.tempProjectId;
+  private renderStepIndicator() {
+    return html`
+      <ul class="steps">
+        ${this.steps.map((label, index) => html`
+          <li class="step ${index <= this.#viewModel.step ? 'step-primary' : ''}">${label}</li>
+        `)}
+      </ul>
+    `;
   }
 
-  private generateTempProjectId(): string {
-    return `draft-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  private handleNameChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.#viewModel.setName(input.value);
   }
 
-  private withPersistenceSuppressed(mutator: () => void): void {
-    this.persistenceSuspendedCount += 1;
-    try {
-      mutator();
-    } finally {
-      const updateDone = this.updateComplete;
-      void updateDone.finally(() => {
-        this.persistenceSuspendedCount = Math.max(0, this.persistenceSuspendedCount - 1);
-      });
-    }
+  private handlePurposeChange(event: Event) {
+    const textarea = event.currentTarget as HTMLTextAreaElement;
+    this.#viewModel.setPurpose(textarea.value);
   }
 
-  private shouldPersistDraft(changedProperties: PropertyValues<this>): boolean {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-    if (this.persistenceSuspendedCount > 0) {
-      return false;
-    }
-    const changed = changedProperties as Map<PropertyKey, unknown>;
-    return ProjectsWizardPage.PERSISTED_STATE_KEYS.some((key) => changed.has(key));
+  private handleOwnerChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.#viewModel.setOwner(input.value);
   }
 
-  private persistDraft(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const tempId = this.ensureTempProjectId();
-    const draft: ProjectWizardDraft = {
-      tempProjectId: tempId,
-      step: this.step,
-      details: {
-        name: this.name,
-        role: this.projectRole,
-        purpose: this.purpose,
-        owner: this.owner,
-        businessUnit: this.businessUnit,
-        deployments: [...this.deployments]
-      },
-      team: this.team.map((member) => ({
-        ...member,
-        raci: { ...member.raci }
-      })),
-      pendingInvites: this.pendingInvites.filter(isNonEmptyString),
-      inviteEmail: this.inviteEmail,
-      risk: {
-        stepIndex: this.riskStepIndex,
-        answers: { ...this.riskAnswers },
-        result: this.riskResult ? { ...this.riskResult } : undefined
-      },
-      notes: this.notes
-    };
-
-    try {
-      window.localStorage.setItem(PROJECT_DRAFT_STORAGE_KEY, JSON.stringify(draft));
-      eventBus.emit({
-        type: 'PROJECT_DRAFT_UPDATED',
-        payload: { tempId, storageKey: PROJECT_DRAFT_STORAGE_KEY }
-      });
-    } catch (error) {
-      console.warn('projects-wizard-page: unable to persist draft', error);
-    }
+  private handleBusinessUnitChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.#viewModel.setBusinessUnit(input.value);
   }
 
-  private restoreDraft(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const stored = window.localStorage.getItem(PROJECT_DRAFT_STORAGE_KEY);
-    if (!stored) {
-      return;
-    }
-
-    let parsed: ProjectWizardDraft | null = null;
-    try {
-      parsed = JSON.parse(stored) as ProjectWizardDraft;
-    } catch (error) {
-      console.warn('projects-wizard-page: unable to parse stored draft', error);
-      window.localStorage.removeItem(PROJECT_DRAFT_STORAGE_KEY);
-      return;
-    }
-
-    if (!parsed) {
-      return;
-    }
-
-    this.withPersistenceSuppressed(() => {
-      if (isNonEmptyString(parsed.tempProjectId)) {
-        this.tempProjectId = parsed.tempProjectId;
-      }
-
-      this.step = this.clampStep(parsed.step);
-      this.name = typeof parsed.details?.name === 'string' ? parsed.details.name : '';
-      const storedRole = parsed.details?.role;
-      this.projectRole = isProjectRole(storedRole) ? storedRole : 'provider';
-      this.purpose = typeof parsed.details?.purpose === 'string' ? parsed.details.purpose : '';
-      this.owner = typeof parsed.details?.owner === 'string' ? parsed.details.owner : '';
-      this.businessUnit =
-        typeof parsed.details?.businessUnit === 'string' ? parsed.details.businessUnit : '';
-      this.deployments = Array.isArray(parsed.details?.deployments)
-        ? parsed.details.deployments.filter(isDeploymentOption)
-        : [];
-
-      this.team = this.restoreTeamMembers(parsed.team);
-      this.pendingInvites = Array.isArray(parsed.pendingInvites)
-        ? parsed.pendingInvites.filter(isNonEmptyString)
-        : [];
-      this.inviteEmail = typeof parsed.inviteEmail === 'string' ? parsed.inviteEmail : '';
-      this.notes = typeof parsed.notes === 'string' ? parsed.notes : '';
-
-      this.restoreRiskWizard(parsed.risk);
-    });
+  private handleRoleChange(event: Event) {
+    const select = event.currentTarget as HTMLSelectElement;
+    this.#viewModel.setProjectRole(select.value as AISystem['role']);
   }
 
-  private restoreTeamMembers(raw: unknown): ProjectTeamMember[] {
-    if (!Array.isArray(raw)) {
-      return [];
-    }
-
-    const members: ProjectTeamMember[] = [];
-    for (const candidate of raw) {
-      if (!candidate || typeof candidate !== 'object') {
-        continue;
-      }
-      const data = candidate as Record<string, unknown>;
-      if (
-        typeof data.id !== 'string' ||
-        typeof data.name !== 'string' ||
-        typeof data.role !== 'string' ||
-        typeof data.email !== 'string'
-      ) {
-        continue;
-      }
-      const raciSource =
-        data.raci && typeof data.raci === 'object' ? (data.raci as Record<string, unknown>) : {};
-      members.push({
-        id: data.id,
-        name: data.name,
-        role: data.role,
-        email: data.email,
-        phone: typeof data.phone === 'string' ? data.phone : '',
-        notification: typeof data.notification === 'string' ? data.notification : 'email',
-        raci: {
-          responsible: Boolean(raciSource.responsible),
-          accountable: Boolean(raciSource.accountable),
-          consulted: Boolean(raciSource.consulted),
-          informed: Boolean(raciSource.informed)
-        },
-        isOwner: Boolean(data.isOwner),
-        isReviewer: Boolean(data.isReviewer)
-      });
-    }
-    return members;
+  private handleDeploymentToggle(option: DeploymentOption, event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.#viewModel.toggleDeployment(option, input.checked);
   }
 
-  private restoreRiskWizard(risk?: ProjectWizardDraft['risk']): void {
-    this.riskWizard = new ProjectRiskWizardViewModel();
-    if (!risk || typeof risk !== 'object') {
-      this.updateRiskState();
-      return;
-    }
-
-    const answers = risk.answers && typeof risk.answers === 'object' ? risk.answers : {};
-    for (const [questionId, value] of Object.entries(answers)) {
-      this.riskWizard.setAnswer(questionId, value);
-    }
-
-    const targetStep = this.clampRiskStep(risk.stepIndex);
-    while (this.riskWizard.stepIndex < targetStep && !this.riskWizard.isComplete) {
-      this.riskWizard.nextStep();
-    }
-
-    this.updateRiskState();
-  }
-
-  private clampStep(step: unknown): number {
-    const numeric = typeof step === 'number' && Number.isFinite(step) ? Math.trunc(step) : 0;
-    const max = this.steps.length - 1;
-    return Math.min(Math.max(0, numeric), max);
-  }
-
-  private clampRiskStep(step: unknown): number {
-    const numeric = typeof step === 'number' && Number.isFinite(step) ? Math.trunc(step) : 0;
-    const max = this.riskWizard.steps.length - 1;
-    return Math.min(Math.max(0, numeric), max);
-  }
-
-  private clearDraft(notifySyncAgent: boolean): void {
-    const previousTempId = this.tempProjectId;
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.removeItem(PROJECT_DRAFT_STORAGE_KEY);
-      } catch (error) {
-        console.warn('projects-wizard-page: unable to clear stored draft', error);
-      }
-    }
-    this.tempProjectId = null;
-
-    if (notifySyncAgent && previousTempId) {
-      eventBus.emit({
-        type: 'PROJECT_DRAFT_CLEARED',
-        payload: { tempId: previousTempId, storageKey: PROJECT_DRAFT_STORAGE_KEY }
-      });
-    }
-  }
-
-  private resetWizardState(): void {
-    this.withPersistenceSuppressed(() => {
-      this.step = 0;
-      this.name = '';
-      this.projectRole = 'provider';
-      this.purpose = '';
-      this.owner = '';
-      this.businessUnit = '';
-      this.deployments = [];
-      this.team = [];
-      this.pendingInvites = [];
-      this.inviteEmail = '';
-      this.notes = '';
-      this.riskWizard = new ProjectRiskWizardViewModel();
-      this.updateRiskState();
-    });
+  private renderDetailsStep() {
+    return html`
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="form-control">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.name')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.#viewModel.name}
+            @input=${this.handleNameChange}
+            @change=${this.handleNameChange}
+            required
+          >
+        </label>
+        <label class="form-control">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.role')}</span></span>
+          <select
+            class="select select-bordered"
+            .value=${this.#viewModel.projectRole}
+            @change=${this.handleRoleChange}
+          >
+            <option value="provider">${t('roles.provider')}</option>
+            <option value="importer">${t('roles.importer')}</option>
+            <option value="distributor">${t('roles.distributor')}</option>
+            <option value="user">${t('roles.user')}</option>
+          </select>
+        </label>
+        <label class="form-control md:col-span-2">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.purpose')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="3"
+            .value=${this.#viewModel.purpose}
+            placeholder=${t('projects.wizard.placeholders.purpose')}
+            @input=${this.handlePurposeChange}
+            @change=${this.handlePurposeChange}
+            required
+          ></textarea>
+        </label>
+        <label class="form-control">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.owner')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.#viewModel.owner}
+            placeholder=${t('projects.wizard.placeholders.owner')}
+            @input=${this.handleOwnerChange}
+            @change=${this.handleOwnerChange}
+            required
+          >
+        </label>
+        <label class="form-control md:col-span-2">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.businessUnit')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.#viewModel.businessUnit}
+            @input=${this.handleBusinessUnitChange}
+            @change=${this.handleBusinessUnitChange}
+            placeholder=${t('projects.wizard.placeholders.businessUnit')}
+          >
+        </label>
+        <label class="form-control md:col-span-2">
+          <span class="label">
+            <span class="label-text">${t('projects.wizard.fields.deployments')}</span>
+            <span class="label-text-alt">${t('projects.wizard.deployments.helper')}</span>
+          </span>
+          <div class="space-y-2 rounded-lg border border-base-300 p-4">
+            ${DEPLOYMENT_OPTIONS.map((option) => {
+              const selected = this.#viewModel.deployments.includes(option);
+              return html`
+                <label class="label cursor-pointer justify-start gap-3">
+                  <input
+                    class="checkbox checkbox-sm"
+                    type="checkbox"
+                    .checked=${selected}
+                    @change=${(event: Event) => this.handleDeploymentToggle(option, event)}
+                  >
+                  <span>${t(`projects.wizard.deployments.options.${option}` as const)}</span>
+                </label>
+              `;
+            })}
+          </div>
+          ${this.#viewModel.deployments.length === 0
+            ? html`<span class="mt-2 text-sm text-error">${t('projects.wizard.validations.deployments')}</span>`
+            : null}
+        </label>
+      </div>
+    `;
   }
 
   private handleMemberAdded(event: CustomEvent<TeamMemberFormSubmitDetail>) {
-    const detail = event.detail;
-    const member: ProjectTeamMember = {
-      id: `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-      name: detail.name,
-      role: detail.role,
-      email: detail.email,
-      phone: '',
-      notification: 'email',
-      raci: { ...detail.raci },
-      isOwner: detail.isOwner,
-      isReviewer: detail.isReviewer
-    };
-
-    this.team = [...this.team, member];
-  }
-
-  private handleInviteInput(event: Event) {
-    const input = event.currentTarget as HTMLInputElement;
-    this.inviteEmail = input.value;
-  }
-
-  private addPendingInvite(event: Event) {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    if (!form.reportValidity()) {
-      return;
-    }
-    const email = this.inviteEmail.trim();
-    if (!email) {
-      return;
-    }
-    if (this.pendingInvites.includes(email)) {
-      this.inviteEmail = '';
-      return;
-    }
-    this.pendingInvites = [...this.pendingInvites, email];
-    this.inviteEmail = '';
-  }
-
-  private removePendingInvite(email: string) {
-    this.pendingInvites = this.pendingInvites.filter((value) => value !== email);
-  }
-
-  private removeTeamMember(id: string) {
-    this.team = this.team.filter((member) => member.id !== id);
+    this.#viewModel.addTeamMember(event.detail);
   }
 
   private renderRaciBadges(member: ProjectTeamMember) {
@@ -422,19 +182,20 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
 
     return html`<div class="flex flex-wrap gap-1">
-      ${labels.map((label) => html`<span class="badge badge-outline">${t(label)}</span>`) }
+      ${labels.map((label) => html`<span class="badge badge-outline">${t(label)}</span>`)}
     </div>`;
   }
 
   private renderTeamTable() {
+    const team = this.#viewModel.team;
     return html`
       <div class="card border border-base-300 shadow-sm">
         <div class="card-body space-y-4">
           <header class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-lg font-semibold">${t('projects.wizard.fields.team')}</h3>
-            <span class="badge badge-neutral">${t('projects.wizard.summary.teamCount', { count: this.team.length })}</span>
+            <span class="badge badge-neutral">${t('projects.wizard.summary.teamCount', { count: team.length })}</span>
           </header>
-          ${this.team.length === 0
+          ${team.length === 0
             ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.empty')}</p>`
             : html`
                 <div class="overflow-x-auto">
@@ -451,7 +212,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                       </tr>
                     </thead>
                     <tbody>
-                      ${this.team.map(
+                      ${team.map(
                         (member) => html`
                           <tr>
                             <td>${member.name}</td>
@@ -468,7 +229,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                               <button
                                 type="button"
                                 class="btn btn-ghost btn-xs"
-                                @click=${() => this.removeTeamMember(member.id)}
+                                @click=${() => this.#viewModel.removeTeamMember(member.id)}
                               >
                                 ${t('common.remove')}
                               </button>
@@ -485,7 +246,22 @@ export class ProjectsWizardPage extends LocalizedElement {
     `;
   }
 
+  private handleInviteInput(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.#viewModel.setInviteEmail(input.value);
+  }
+
+  private handleInviteSubmit(event: Event) {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    if (!form.reportValidity()) {
+      return;
+    }
+    this.#viewModel.addPendingInvite();
+  }
+
   private renderPendingInvitesSection() {
+    const pendingInvites = this.#viewModel.pendingInvites;
     return html`
       <div class="card border border-base-300 shadow-sm">
         <div class="card-body space-y-4">
@@ -493,13 +269,13 @@ export class ProjectsWizardPage extends LocalizedElement {
             <h3 class="text-lg font-semibold">${t('projects.wizard.team.invites.title')}</h3>
             <p class="text-sm text-base-content/70">${t('projects.wizard.team.invites.description')}</p>
           </header>
-          <form class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]" @submit=${this.addPendingInvite}>
+          <form class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]" @submit=${this.handleInviteSubmit}>
             <label class="form-control">
               <span class="label"><span class="label-text">${t('projects.wizard.contact.email')}</span></span>
               <input
                 class="input input-bordered"
                 type="email"
-                .value=${this.inviteEmail}
+                .value=${this.#viewModel.inviteEmail}
                 required
                 placeholder=${t('projects.wizard.team.invites.placeholder')}
                 @input=${this.handleInviteInput}
@@ -509,7 +285,7 @@ export class ProjectsWizardPage extends LocalizedElement {
               <button class="btn btn-sm" type="submit">${t('projects.wizard.team.invites.add')}</button>
             </div>
           </form>
-          ${this.pendingInvites.length === 0
+          ${pendingInvites.length === 0
             ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.invites.empty')}</p>`
             : html`
                 <div class="overflow-x-auto">
@@ -522,7 +298,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                       </tr>
                     </thead>
                     <tbody>
-                      ${this.pendingInvites.map(
+                      ${pendingInvites.map(
                         (email) => html`
                           <tr>
                             <td>${email}</td>
@@ -531,7 +307,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                               <button
                                 type="button"
                                 class="btn btn-ghost btn-xs"
-                                @click=${() => this.removePendingInvite(email)}
+                                @click=${() => this.#viewModel.removePendingInvite(email)}
                               >
                                 ${t('projects.wizard.team.invites.remove')}
                               </button>
@@ -741,43 +517,10 @@ export class ProjectsWizardPage extends LocalizedElement {
   private renderTeamStep() {
     return html`
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <team-member-form
-          @member-added=${(event: CustomEvent<TeamMemberFormSubmitDetail>) => this.handleMemberAdded(event)}
-        ></team-member-form>
+        <team-member-form @member-added=${(event: CustomEvent<TeamMemberFormSubmitDetail>) => this.handleMemberAdded(event)}></team-member-form>
         <div class="space-y-6">
           ${this.renderTeamTable()}
           ${this.renderPendingInvitesSection()}
-        </div>
-      </div>
-    `;
-  }
-
-  private renderRiskStep() {
-    const steps = this.riskWizard.steps;
-    const currentStep = this.riskWizard.currentStep;
-    const isResultStep = Boolean(currentStep.rules && currentStep.default);
-
-    return html`
-      <div class="space-y-6">
-        <div class="overflow-x-auto">
-          <ul class="steps steps-vertical md:steps-horizontal">
-            ${steps.map(
-              (step, index) => html`<li class="step ${index <= this.riskStepIndex ? 'step-primary' : ''}">${
-                step.title
-              }</li>`
-            )}
-          </ul>
-        </div>
-
-        <div class="space-y-4">
-          <div class="flex items-start gap-2">
-            <h2 class="text-xl font-semibold">${currentStep.title}</h2>
-            ${currentStep.help ? this.renderRiskStepHelp(currentStep.id, currentStep.help) : null}
-          </div>
-
-          ${currentStep.questions?.map((question) => this.renderRiskQuestion(question)) ?? null}
-
-          ${isResultStep ? this.renderRiskResult() : null}
         </div>
       </div>
     `;
@@ -822,7 +565,7 @@ export class ProjectsWizardPage extends LocalizedElement {
   }
 
   private renderRiskQuestion(question: RiskWizardQuestion, nested = false): unknown {
-    const answer = this.riskAnswers[question.id];
+    const answer = this.#viewModel.riskAnswers[question.id];
     const containerClass = nested ? 'mt-4' : '';
 
     switch (question.type) {
@@ -838,7 +581,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                   name=${question.id}
                   value="true"
                   .checked=${answer === true}
-                  @change=${() => this.handleBooleanAnswer(question, true)}
+                  @change=${() => this.#viewModel.answerBoolean(question, true)}
                 >
                 <span>${t('riskWizard.form.yes')}</span>
               </label>
@@ -849,7 +592,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                   name=${question.id}
                   value="false"
                   .checked=${answer === false}
-                  @change=${() => this.handleBooleanAnswer(question, false)}
+                  @change=${() => this.#viewModel.answerBoolean(question, false)}
                 >
                 <span>${t('riskWizard.form.no')}</span>
               </label>
@@ -870,13 +613,11 @@ export class ProjectsWizardPage extends LocalizedElement {
               .value=${typeof answer === 'string' ? answer : ''}
               @change=${(event: Event) => {
                 const select = event.currentTarget as HTMLSelectElement;
-                this.handleSelectAnswer(question.id, select.value);
+                this.#viewModel.answerSelect(question.id, select.value);
               }}
             >
               <option value="">${t('riskWizard.form.selectPlaceholder')}</option>
-              ${(question.options ?? []).map(
-                (option) => html`<option value=${option}>${option}</option>`
-              )}
+              ${(question.options ?? []).map((option) => html`<option value=${option}>${option}</option>`)}
             </select>
           </label>
         `;
@@ -895,7 +636,7 @@ export class ProjectsWizardPage extends LocalizedElement {
                       .checked=${selected}
                       @change=${(event: Event) => {
                         const input = event.currentTarget as HTMLInputElement;
-                        this.handleMultiselectAnswer(question.id, option, input.checked);
+                        this.#viewModel.answerMultiselect(question.id, option, input.checked);
                       }}
                     >
                     <span>${option}</span>
@@ -916,7 +657,7 @@ export class ProjectsWizardPage extends LocalizedElement {
               .value=${typeof answer === 'string' ? (answer as string) : ''}
               @input=${(event: Event) => {
                 const textarea = event.currentTarget as HTMLTextAreaElement;
-                this.handleTextAnswer(question.id, textarea.value);
+                this.#viewModel.answerText(question.id, textarea.value);
               }}
             ></textarea>
           </label>
@@ -924,52 +665,11 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
   }
 
-  private handleBooleanAnswer(question: RiskWizardQuestion, value: boolean) {
-    this.riskWizard.setAnswer(question.id, value);
-    if (question.conditional && value !== question.conditional.on) {
-      this.riskWizard.clearAnswer(question.conditional.question.id);
-    }
-    this.updateRiskState();
-  }
-
-  private handleSelectAnswer(questionId: string, value: string) {
-    if (!value) {
-      this.riskWizard.clearAnswer(questionId);
-    } else {
-      this.riskWizard.setAnswer(questionId, value);
-    }
-    this.updateRiskState();
-  }
-
-  private handleMultiselectAnswer(questionId: string, option: string, checked: boolean) {
-    const current = Array.isArray(this.riskAnswers[questionId])
-      ? [...(this.riskAnswers[questionId] as string[])]
-      : [];
-    if (checked) {
-      if (!current.includes(option)) current.push(option);
-    } else {
-      const index = current.indexOf(option);
-      if (index >= 0) current.splice(index, 1);
-    }
-    if (current.length === 0) {
-      this.riskWizard.clearAnswer(questionId);
-    } else {
-      this.riskWizard.setAnswer(questionId, current);
-    }
-    this.updateRiskState();
-  }
-
-  private handleTextAnswer(questionId: string, value: string) {
-    if (!value.trim()) {
-      this.riskWizard.clearAnswer(questionId);
-    } else {
-      this.riskWizard.setAnswer(questionId, value);
-    }
-    this.updateRiskState();
-  }
-
   private renderRiskResult() {
-    const result = this.riskResult;
+    const result = this.#viewModel.riskResult;
+    if (!result) {
+      return null;
+    }
     const classificationLabel = t(`riskLevels.${result.classification}` as const);
     const resultCopyKey = `riskWizard.results.${result.classification}` as const;
     const implications = t(`${resultCopyKey}.implications` as const);
@@ -1019,57 +719,89 @@ export class ProjectsWizardPage extends LocalizedElement {
         <textarea
           class="textarea textarea-bordered"
           rows="4"
-          .value=${this.notes}
+          .value=${this.#viewModel.notes}
           placeholder=${t('projects.wizard.placeholders.notes')}
           @input=${(event: Event) => {
             const textarea = event.currentTarget as HTMLTextAreaElement;
-            this.notes = textarea.value;
+            this.#viewModel.setNotes(textarea.value);
           }}
         ></textarea>
       </label>
     `;
   }
 
+  private renderRiskStep() {
+    const steps = this.#viewModel.riskSteps;
+    const currentStep = this.#viewModel.currentRiskStep;
+    const isResultStep = Boolean(currentStep.rules && currentStep.default);
+
+    return html`
+      <div class="space-y-6">
+        <div class="overflow-x-auto">
+          <ul class="steps steps-vertical md:steps-horizontal">
+            ${steps.map(
+              (step, index) => html`<li class="step ${index <= this.#viewModel.riskStepIndex ? 'step-primary' : ''}">${
+                step.title
+              }</li>`
+            )}
+          </ul>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-start gap-2">
+            <h2 class="text-xl font-semibold">${currentStep.title}</h2>
+            ${currentStep.help ? this.renderRiskStepHelp(currentStep.id, currentStep.help) : null}
+          </div>
+
+          ${currentStep.questions?.map((question) => this.renderRiskQuestion(question)) ?? null}
+
+          ${isResultStep ? this.renderRiskResult() : null}
+        </div>
+      </div>
+    `;
+  }
+
   private renderSummaryStep() {
+    const riskResult = this.#viewModel.riskResult;
     return html`
       <div class="space-y-4">
         <article class="prose">
           <h2>${t('projects.wizard.summary.title')}</h2>
-          <p><strong>${t('projects.wizard.fields.name')}:</strong> ${this.name}</p>
-          <p><strong>${t('projects.wizard.fields.role')}:</strong> ${t(`roles.${this.projectRole}` as const)}</p>
+          <p><strong>${t('projects.wizard.fields.name')}:</strong> ${this.#viewModel.name}</p>
+          <p><strong>${t('projects.wizard.fields.role')}:</strong> ${t(`roles.${this.#viewModel.projectRole}` as const)}</p>
           <p><strong>${t('projects.wizard.fields.purpose')}:</strong> ${
-            this.purpose || t('projects.wizard.summary.unset')
+            this.#viewModel.purpose || t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.fields.owner')}:</strong> ${
-            this.owner || t('projects.wizard.summary.unset')
+            this.#viewModel.owner || t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.fields.businessUnit')}:</strong> ${
-            this.businessUnit || t('projects.wizard.summary.unset')
+            this.#viewModel.businessUnit || t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.fields.deployments')}:</strong> ${
-            this.deployments.length
-              ? this.deployments
+            this.#viewModel.deployments.length
+              ? this.#viewModel.deployments
                   .map((deployment) => t(`projects.wizard.deployments.options.${deployment}` as const))
                   .join(', ')
               : t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.fields.risk')}:</strong> ${
-            this.riskResult ? t(`riskLevels.${this.riskResult.classification}` as const) : t('projects.wizard.summary.unclassifiedRisk')
+            riskResult ? t(`riskLevels.${riskResult.classification}` as const) : t('projects.wizard.summary.unclassifiedRisk')
           }</p>
           <p><strong>${t('projects.wizard.summary.justification')}:</strong> ${
-            this.riskResult?.justification ?? t('projects.wizard.summary.unset')
+            riskResult?.justification ?? t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.summary.contacts')}:</strong> ${t(
             'projects.wizard.summary.teamCount',
-            { count: this.team.length }
+            { count: this.#viewModel.team.length }
           )}</p>
           <p><strong>${t('projects.wizard.team.invites.summaryLabel')}:</strong> ${
-            this.pendingInvites.length
-              ? t('projects.wizard.team.invites.summary', { count: this.pendingInvites.length })
+            this.#viewModel.pendingInvites.length
+              ? t('projects.wizard.team.invites.summary', { count: this.#viewModel.pendingInvites.length })
               : t('projects.wizard.team.invites.empty')
           }</p>
           <p><strong>${t('projects.wizard.fields.notes')}:</strong> ${
-            this.notes || t('projects.wizard.summary.noNotes')
+            this.#viewModel.notes || t('projects.wizard.summary.noNotes')
           }</p>
         </article>
       </div>
@@ -1077,7 +809,7 @@ export class ProjectsWizardPage extends LocalizedElement {
   }
 
   private renderCurrentStep() {
-    switch (this.step) {
+    switch (this.#viewModel.step) {
       case 0:
         return this.renderDetailsStep();
       case 1:
@@ -1089,12 +821,17 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
   }
 
-  protected override updated(changedProperties: PropertyValues<this>): void {
-    super.updated(changedProperties);
-    if (this.shouldPersistDraft(changedProperties)) {
-      this.persistDraft();
-    }
-  }
+  private handleCancel = () => {
+    this.#viewModel.cancel();
+  };
+
+  private handlePrevious = () => {
+    this.#viewModel.goPrevious();
+  };
+
+  private handleNext = () => {
+    this.#viewModel.goNext();
+  };
 
   private canContinueToNextStep(): boolean {
     if (this.step === 0) {
@@ -1125,15 +862,15 @@ export class ProjectsWizardPage extends LocalizedElement {
             ${this.renderCurrentStep()}
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap gap-2">
-                <button class="btn btn-ghost" type="button" @click=${this.cancelWizard}>
+                <button class="btn btn-ghost" type="button" @click=${this.handleCancel}>
                   ${t('common.cancel')}
                 </button>
-                <button class="btn" type="button" ?disabled=${this.step === 0} @click=${this.prevStep}>
+                <button class="btn" type="button" ?disabled=${this.#viewModel.step === 0} @click=${this.handlePrevious}>
                   ${t('common.back')}
                 </button>
               </div>
-              <button class="btn btn-primary" type="button" ?disabled=${!canContinue} @click=${this.nextStep}>
-                ${this.step === this.steps.length - 1
+              <button class="btn btn-primary" type="button" ?disabled=${!canContinue} @click=${this.handleNext}>
+                ${this.#viewModel.step === this.#viewModel.steps.length - 1
                   ? t('projects.wizard.finish')
                   : t('common.next')}
               </button>
