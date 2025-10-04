@@ -1,4 +1,5 @@
 import { html } from 'lit';
+import type { PropertyValues } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import type { AISystem, ProjectTeamMember } from '../../domain/models';
@@ -6,6 +7,7 @@ import { navigateTo } from '../../navigation';
 import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
 import { infoCircleIcon } from '../../shared/icons';
+import { eventBus } from '../../shared/events/bus';
 import {
   ProjectRiskWizardViewModel,
   type RiskWizardQuestion,
@@ -16,14 +18,71 @@ import './team-member-form';
 import type { TeamMemberFormSubmitDetail } from './team-member-form';
 
 const DEPLOYMENT_OPTIONS = ['sandbox', 'pilot', 'production', 'internal_only'] as const;
+const PROJECT_ROLES = ['provider', 'importer', 'distributor', 'user'] as const;
 type DeploymentOption = (typeof DEPLOYMENT_OPTIONS)[number];
+
+const PROJECT_DRAFT_STORAGE_KEY = 'projects.newProjectDraft';
+
+type ProjectWizardDraft = {
+  tempProjectId: string;
+  step: number;
+  details: {
+    name: string;
+    role: AISystem['role'];
+    purpose: string;
+    owner: string;
+    businessUnit: string;
+    deployments: DeploymentOption[];
+  };
+  team: ProjectTeamMember[];
+  pendingInvites: string[];
+  inviteEmail?: string;
+  risk: {
+    stepIndex: number;
+    answers: Record<string, unknown>;
+    result?: RiskWizardResult;
+  };
+  notes: string;
+};
+
+function isDeploymentOption(value: unknown): value is DeploymentOption {
+  return (DEPLOYMENT_OPTIONS as readonly string[]).includes(value as DeploymentOption);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isProjectRole(value: unknown): value is AISystem['role'] {
+  return (PROJECT_ROLES as readonly string[]).includes(value as AISystem['role']);
+}
 
 @customElement('projects-wizard-page')
 export class ProjectsWizardPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
+  private static readonly PERSISTED_STATE_KEYS: Array<keyof ProjectsWizardPage> = [
+    'step',
+    'name',
+    'projectRole',
+    'purpose',
+    'owner',
+    'businessUnit',
+    'deployments',
+    'team',
+    'pendingInvites',
+    'inviteEmail',
+    'riskStepIndex',
+    'riskAnswers',
+    'riskResult',
+    'notes'
+  ];
+
   private readonly projects = new ProjectController(this);
-  private readonly riskWizard = new ProjectRiskWizardViewModel();
+  private riskWizard = new ProjectRiskWizardViewModel();
+
+  private tempProjectId: string | null = null;
+  private persistenceSuspendedCount = 0;
 
   @state() private step = 0;
   @state() private name = '';
@@ -40,6 +99,12 @@ export class ProjectsWizardPage extends LocalizedElement {
   @state() private riskAnswers: Record<string, unknown> = this.riskWizard.answers;
   @state() private notes = '';
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.ensureTempProjectId();
+    this.restoreDraft();
+  }
+
   protected createRenderRoot(): HTMLElement {
     return this;
   }
@@ -51,6 +116,241 @@ export class ProjectsWizardPage extends LocalizedElement {
       t('projects.wizard.steps.riskAssessment'),
       t('projects.wizard.steps.summary')
     ];
+  }
+
+  private ensureTempProjectId(): string {
+    if (!this.tempProjectId) {
+      this.tempProjectId = this.generateTempProjectId();
+    }
+    return this.tempProjectId;
+  }
+
+  private generateTempProjectId(): string {
+    return `draft-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  private withPersistenceSuppressed(mutator: () => void): void {
+    this.persistenceSuspendedCount += 1;
+    try {
+      mutator();
+    } finally {
+      const updateDone = this.updateComplete;
+      void updateDone.finally(() => {
+        this.persistenceSuspendedCount = Math.max(0, this.persistenceSuspendedCount - 1);
+      });
+    }
+  }
+
+  private shouldPersistDraft(changedProperties: PropertyValues<this>): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    if (this.persistenceSuspendedCount > 0) {
+      return false;
+    }
+    return ProjectsWizardPage.PERSISTED_STATE_KEYS.some((key) => changedProperties.has(key));
+  }
+
+  private persistDraft(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const tempId = this.ensureTempProjectId();
+    const draft: ProjectWizardDraft = {
+      tempProjectId: tempId,
+      step: this.step,
+      details: {
+        name: this.name,
+        role: this.projectRole,
+        purpose: this.purpose,
+        owner: this.owner,
+        businessUnit: this.businessUnit,
+        deployments: [...this.deployments]
+      },
+      team: this.team.map((member) => ({
+        ...member,
+        raci: { ...member.raci }
+      })),
+      pendingInvites: this.pendingInvites.filter(isNonEmptyString),
+      inviteEmail: this.inviteEmail,
+      risk: {
+        stepIndex: this.riskStepIndex,
+        answers: { ...this.riskAnswers },
+        result: this.riskResult ? { ...this.riskResult } : undefined
+      },
+      notes: this.notes
+    };
+
+    try {
+      window.localStorage.setItem(PROJECT_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      eventBus.emit({
+        type: 'PROJECT_DRAFT_UPDATED',
+        payload: { tempId, storageKey: PROJECT_DRAFT_STORAGE_KEY }
+      });
+    } catch (error) {
+      console.warn('projects-wizard-page: unable to persist draft', error);
+    }
+  }
+
+  private restoreDraft(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const stored = window.localStorage.getItem(PROJECT_DRAFT_STORAGE_KEY);
+    if (!stored) {
+      return;
+    }
+
+    let parsed: ProjectWizardDraft | null = null;
+    try {
+      parsed = JSON.parse(stored) as ProjectWizardDraft;
+    } catch (error) {
+      console.warn('projects-wizard-page: unable to parse stored draft', error);
+      window.localStorage.removeItem(PROJECT_DRAFT_STORAGE_KEY);
+      return;
+    }
+
+    if (!parsed) {
+      return;
+    }
+
+    this.withPersistenceSuppressed(() => {
+      if (isNonEmptyString(parsed.tempProjectId)) {
+        this.tempProjectId = parsed.tempProjectId;
+      }
+
+      this.step = this.clampStep(parsed.step);
+      this.name = typeof parsed.details?.name === 'string' ? parsed.details.name : '';
+      const storedRole = parsed.details?.role;
+      this.projectRole = isProjectRole(storedRole) ? storedRole : 'provider';
+      this.purpose = typeof parsed.details?.purpose === 'string' ? parsed.details.purpose : '';
+      this.owner = typeof parsed.details?.owner === 'string' ? parsed.details.owner : '';
+      this.businessUnit =
+        typeof parsed.details?.businessUnit === 'string' ? parsed.details.businessUnit : '';
+      this.deployments = Array.isArray(parsed.details?.deployments)
+        ? parsed.details.deployments.filter(isDeploymentOption)
+        : [];
+
+      this.team = this.restoreTeamMembers(parsed.team);
+      this.pendingInvites = Array.isArray(parsed.pendingInvites)
+        ? parsed.pendingInvites.filter(isNonEmptyString)
+        : [];
+      this.inviteEmail = typeof parsed.inviteEmail === 'string' ? parsed.inviteEmail : '';
+      this.notes = typeof parsed.notes === 'string' ? parsed.notes : '';
+
+      this.restoreRiskWizard(parsed.risk);
+    });
+  }
+
+  private restoreTeamMembers(raw: unknown): ProjectTeamMember[] {
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    const members: ProjectTeamMember[] = [];
+    for (const candidate of raw) {
+      if (!candidate || typeof candidate !== 'object') {
+        continue;
+      }
+      const data = candidate as Record<string, unknown>;
+      if (
+        typeof data.id !== 'string' ||
+        typeof data.name !== 'string' ||
+        typeof data.role !== 'string' ||
+        typeof data.email !== 'string'
+      ) {
+        continue;
+      }
+      const raciSource =
+        data.raci && typeof data.raci === 'object' ? (data.raci as Record<string, unknown>) : {};
+      members.push({
+        id: data.id,
+        name: data.name,
+        role: data.role,
+        email: data.email,
+        phone: typeof data.phone === 'string' ? data.phone : '',
+        notification: typeof data.notification === 'string' ? data.notification : 'email',
+        raci: {
+          responsible: Boolean(raciSource.responsible),
+          accountable: Boolean(raciSource.accountable),
+          consulted: Boolean(raciSource.consulted),
+          informed: Boolean(raciSource.informed)
+        },
+        isOwner: Boolean(data.isOwner),
+        isReviewer: Boolean(data.isReviewer)
+      });
+    }
+    return members;
+  }
+
+  private restoreRiskWizard(risk?: ProjectWizardDraft['risk']): void {
+    this.riskWizard = new ProjectRiskWizardViewModel();
+    if (!risk || typeof risk !== 'object') {
+      this.updateRiskState();
+      return;
+    }
+
+    const answers = risk.answers && typeof risk.answers === 'object' ? risk.answers : {};
+    for (const [questionId, value] of Object.entries(answers)) {
+      this.riskWizard.setAnswer(questionId, value);
+    }
+
+    const targetStep = this.clampRiskStep(risk.stepIndex);
+    while (this.riskWizard.stepIndex < targetStep && !this.riskWizard.isComplete) {
+      this.riskWizard.nextStep();
+    }
+
+    this.updateRiskState();
+  }
+
+  private clampStep(step: unknown): number {
+    const numeric = typeof step === 'number' && Number.isFinite(step) ? Math.trunc(step) : 0;
+    const max = this.steps.length - 1;
+    return Math.min(Math.max(0, numeric), max);
+  }
+
+  private clampRiskStep(step: unknown): number {
+    const numeric = typeof step === 'number' && Number.isFinite(step) ? Math.trunc(step) : 0;
+    const max = this.riskWizard.steps.length - 1;
+    return Math.min(Math.max(0, numeric), max);
+  }
+
+  private clearDraft(notifySyncAgent: boolean): void {
+    const previousTempId = this.tempProjectId;
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(PROJECT_DRAFT_STORAGE_KEY);
+      } catch (error) {
+        console.warn('projects-wizard-page: unable to clear stored draft', error);
+      }
+    }
+    this.tempProjectId = null;
+
+    if (notifySyncAgent && previousTempId) {
+      eventBus.emit({
+        type: 'PROJECT_DRAFT_CLEARED',
+        payload: { tempId: previousTempId, storageKey: PROJECT_DRAFT_STORAGE_KEY }
+      });
+    }
+  }
+
+  private resetWizardState(): void {
+    this.withPersistenceSuppressed(() => {
+      this.step = 0;
+      this.name = '';
+      this.projectRole = 'provider';
+      this.purpose = '';
+      this.owner = '';
+      this.businessUnit = '';
+      this.deployments = [];
+      this.team = [];
+      this.pendingInvites = [];
+      this.inviteEmail = '';
+      this.notes = '';
+      this.riskWizard = new ProjectRiskWizardViewModel();
+      this.updateRiskState();
+    });
   }
 
   private handleMemberAdded(event: CustomEvent<TeamMemberFormSubmitDetail>) {
@@ -247,6 +547,12 @@ export class ProjectsWizardPage extends LocalizedElement {
     `;
   }
 
+  private cancelWizard() {
+    this.clearDraft(true);
+    this.resetWizardState();
+    navigateTo('/projects', { replace: true });
+  }
+
   private nextStep() {
     if (this.step === 2 && !this.riskWizard.isComplete) {
       this.riskWizard.nextStep();
@@ -277,7 +583,8 @@ export class ProjectsWizardPage extends LocalizedElement {
           }
         : undefined
     });
-    this.notes = '';
+    this.clearDraft(true);
+    this.resetWizardState();
     navigateTo(`/projects/${project.id}/deliverables`, { replace: true });
   }
 
@@ -769,6 +1076,13 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
   }
 
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    super.updated(changedProperties);
+    if (this.shouldPersistDraft(changedProperties)) {
+      this.persistDraft();
+    }
+  }
+
   protected render() {
     const canContinue =
       this.step === 0
@@ -790,11 +1104,16 @@ export class ProjectsWizardPage extends LocalizedElement {
         <div class="card bg-base-100 shadow">
           <div class="card-body space-y-6">
             ${this.renderCurrentStep()}
-            <div class="flex justify-between">
-              <button class="btn" ?disabled=${this.step === 0} @click=${this.prevStep}>
-                ${t('common.back')}
-              </button>
-              <button class="btn btn-primary" ?disabled=${!canContinue} @click=${this.nextStep}>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap gap-2">
+                <button class="btn btn-ghost" type="button" @click=${this.cancelWizard}>
+                  ${t('common.cancel')}
+                </button>
+                <button class="btn" type="button" ?disabled=${this.step === 0} @click=${this.prevStep}>
+                  ${t('common.back')}
+                </button>
+              </div>
+              <button class="btn btn-primary" type="button" ?disabled=${!canContinue} @click=${this.nextStep}>
                 ${this.step === this.steps.length - 1
                   ? t('projects.wizard.finish')
                   : t('common.next')}

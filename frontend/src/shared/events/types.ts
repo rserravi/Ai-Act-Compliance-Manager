@@ -9,3 +9,5 @@ export type AppEvent =
   | { type: 'DOCUMENT_UPDATED', payload: { document: DocumentRef } }
   | { type: 'EVIDENCE_ADDED', payload: { evidence: Evidence } }
   | { type: 'TASKS_CHANGED', payload: { systemId?: UUID } }
+  | { type: 'PROJECT_DRAFT_UPDATED', payload: { tempId: string; storageKey: string } }
+  | { type: 'PROJECT_DRAFT_CLEARED', payload: { tempId: string; storageKey: string } }

@@ -69,10 +69,12 @@ export class ProjectRiskWizardViewModel {
   #state: RiskWizardState;
   constructor() {
     this.steps = wizardDefinition.steps as RiskWizardStep[];
+    const answers: Record<string, unknown> = {};
+    const result = this.#evaluate(answers);
     this.#state = {
       stepIndex: 0,
-      answers: {},
-      result: this.#evaluate()
+      answers,
+      result
     };
   }
 
