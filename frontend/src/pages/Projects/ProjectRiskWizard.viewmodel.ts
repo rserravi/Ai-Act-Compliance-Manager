@@ -1,50 +1,11 @@
 import riskWizardConfig from '../../configs/risk-wizard.json';
-import type { RiskAnswer, RiskLevel } from '../../domain/models';
-
-export type RiskWizardQuestionType = 'boolean' | 'select' | 'multiselect' | 'text';
-
-export type RiskWizardQuestion = {
-  id: string;
-  text: string;
-  type: RiskWizardQuestionType;
-  options?: string[];
-  conditional?: {
-    on: unknown;
-    question: RiskWizardQuestion;
-  };
-};
-
-export type RiskWizardHelpLink = {
-  title: string;
-  url: string;
-};
-
-export type RiskWizardHelp = {
-  text: string;
-  links?: RiskWizardHelpLink[];
-};
-
-export type RiskWizardRuleConditionValue = 'not_empty' | string | string[];
-
-export type RiskWizardRule = {
-  if: Record<string, RiskWizardRuleConditionValue>;
-  classification: RiskLevel;
-  justification: string;
-};
-
-export type RiskWizardResult = {
-  classification: RiskLevel;
-  justification: string;
-};
-
-export type RiskWizardStep = {
-  id: string;
-  title: string;
-  help?: RiskWizardHelp;
-  questions?: RiskWizardQuestion[];
-  rules?: RiskWizardRule[];
-  default?: RiskWizardResult;
-};
+import type { RiskAnswer } from '../../domain/models';
+import type {
+  RiskWizardQuestion,
+  RiskWizardRuleConditionValue,
+  RiskWizardResult,
+  RiskWizardStep
+} from './Model';
 
 type RiskWizardState = {
   stepIndex: number;
