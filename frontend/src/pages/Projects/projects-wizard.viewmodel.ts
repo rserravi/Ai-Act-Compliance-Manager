@@ -82,6 +82,7 @@ export class ProjectsWizardViewModel implements ReactiveController {
   }
 
   hostConnected(): void {
+    this.#projects.value.setActiveProjectId(null);
     this.#ensureTempProjectId();
     this.#restoreDraft();
   }

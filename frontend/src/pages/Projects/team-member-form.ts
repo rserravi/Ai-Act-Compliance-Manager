@@ -44,6 +44,8 @@ export class TeamMemberForm extends LocalizedElement {
     };
     this.isOwner = false;
     this.isReviewer = false;
+    const form = this.renderRoot.querySelector('form');
+    form?.reset();
   }
 
   private handleSubmit(event: Event) {
