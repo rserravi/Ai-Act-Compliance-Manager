@@ -448,6 +448,11 @@ export class AppShell extends LocalizedElement {
                     tabindex="0"
                     class="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
                   >
+                    <li class="menu-title px-2">
+                      <span class="text-sm font-semibold">
+                        ${user?.full_name?.trim() || user?.email || t('app.guestUser')}
+                      </span>
+                    </li>
                     <li>
                       <button type="button" class="justify-between" @click=${this.handlePendingActions}>
                         ${t('app.userMenu.pendingActions')}
