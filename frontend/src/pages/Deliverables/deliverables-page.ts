@@ -18,6 +18,11 @@ export class DeliverablesPage extends LocalizedElement {
   @state() private selectedDoc: DocumentRef | null = null;
   @state() private assignee = '';
   @state() private dueDate = '';
+  @state() private isLoading = false;
+  @state() private loadError: string | null = null;
+
+  #lastLoadedProjectId: string | null = null;
+  #loadingFor: string | null = null;
 
   protected createRenderRoot(): HTMLElement {
     return this;
@@ -45,6 +50,24 @@ export class DeliverablesPage extends LocalizedElement {
     } else if (this.projects.activeProjectId !== null) {
       this.projects.value.setActiveProjectId(null);
     }
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>): void {
+    super.updated(changedProperties);
+    const activeProjectId = this.activeProjectId;
+    if (!activeProjectId) {
+      this.#lastLoadedProjectId = null;
+      this.loadError = null;
+      this.isLoading = false;
+      return;
+    }
+
+    if (activeProjectId === this.#lastLoadedProjectId && !changedProperties.has('projectId')) {
+      return;
+    }
+
+    this.#lastLoadedProjectId = activeProjectId;
+    void this.#loadDeliverables(activeProjectId);
   }
 
   private translateStatus(status: DocumentRef['status']): string {
@@ -78,6 +101,30 @@ export class DeliverablesPage extends LocalizedElement {
     if (!projectId || !this.selectedDoc || !this.assignee || !this.dueDate) return;
     this.viewModel.createAssignment(projectId, this.selectedDoc, this.assignee, this.dueDate);
     this.closeAssignModal();
+  }
+
+  private async #loadDeliverables(projectId: string): Promise<void> {
+    this.#loadingFor = projectId;
+    this.isLoading = true;
+    this.loadError = null;
+    try {
+      await this.viewModel.refreshDocuments(projectId);
+      if (this.#loadingFor !== projectId) {
+        return;
+      }
+      this.loadError = null;
+    } catch (error) {
+      if (this.#loadingFor !== projectId) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : 'Error al cargar entregables';
+      this.loadError = message;
+    } finally {
+      if (this.#loadingFor === projectId) {
+        this.isLoading = false;
+        this.#loadingFor = null;
+      }
+    }
   }
 
   private renderModal(projectTeam: Array<{ id: string; name: string }>) {
@@ -127,6 +174,14 @@ export class DeliverablesPage extends LocalizedElement {
           <p class="text-base-content/70">${t('deliverables.subtitle')}</p>
         </header>
 
+        ${this.loadError
+          ? html`<div class="alert alert-error"><span>${this.loadError}</span></div>`
+          : null}
+
+        ${this.isLoading
+          ? html`<progress class="progress progress-primary w-full"></progress>`
+          : null}
+
         <div class="overflow-x-auto bg-base-100 shadow rounded-box">
           <table class="table">
             <thead>
@@ -147,10 +202,10 @@ export class DeliverablesPage extends LocalizedElement {
                     <button class="btn btn-xs" ?disabled=${!doc.link} @click=${() => window.open(doc.link ?? '#', '_blank')}>
                       ${t('common.view')}
                     </button>
-                    <button class="btn btn-xs btn-outline" @click=${() => this.handleUpload(doc)}>
+                    <button class="btn btn-xs btn-outline" ?disabled=${this.isLoading} @click=${() => this.handleUpload(doc)}>
                       ${t('deliverables.actions.upload')}
                     </button>
-                    <button class="btn btn-xs btn-primary" @click=${() => this.openAssignModal(doc)}>
+                    <button class="btn btn-xs btn-primary" ?disabled=${this.isLoading} @click=${() => this.openAssignModal(doc)}>
                       ${t('deliverables.actions.assign')}
                     </button>
                   </td>

@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from .project import InitialRiskAssessment
+
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
@@ -10,3 +12,7 @@ class ProjectUpdate(BaseModel):
     documentation_status: Optional[str] = None
     business_units: Optional[List[str]] = None
     team: Optional[List[str]] = None
+    purpose: Optional[str] = None
+    owner: Optional[str] = None
+    deployments: Optional[List[str]] = None
+    initial_risk_assessment: Optional[InitialRiskAssessment] = None

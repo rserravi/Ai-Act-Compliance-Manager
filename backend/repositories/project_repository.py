@@ -1,23 +1,37 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from backend.models import ProjectModel, RiskAssessmentModel
-from backend.schemas import Project, ProjectUpdate, RiskAssessment
+from backend.schemas import (
+    InitialRiskAssessment,
+    Project,
+    ProjectCreate,
+    ProjectUpdate,
+    RiskAssessment,
+)
 
 
 def _project_model_to_schema(model: ProjectModel) -> Project:
+    initial_assessment = _initial_risk_assessment_from_dict(
+        model.initial_risk_assessment
+    )
     return Project(
         id=model.id,
         name=model.name,
         role=model.role,
         risk=model.risk,
         documentation_status=model.documentation_status,
+        purpose=model.purpose,
+        owner=model.owner,
         business_units=model.business_units,
         team=model.team,
+        deployments=model.deployments or [],
+        initial_risk_assessment=initial_assessment,
     )
 
 
@@ -65,15 +79,25 @@ def list_projects(
     return [_project_model_to_schema(model) for model in results]
 
 
-def create_project(db: Session, payload: Project) -> Project:
+def create_project(db: Session, payload: ProjectCreate) -> Project:
+    project_id = payload.id or str(uuid4())
+    initial_assessment_dict = (
+        payload.initial_risk_assessment.dict()
+        if payload.initial_risk_assessment
+        else None
+    )
     project_model = ProjectModel(
-        id=payload.id,
+        id=project_id,
         name=payload.name,
         role=payload.role,
         risk=payload.risk,
         documentation_status=payload.documentation_status,
+        purpose=payload.purpose,
+        owner=payload.owner,
         business_units=payload.business_units,
         team=payload.team,
+        deployments=payload.deployments or None,
+        initial_risk_assessment=initial_assessment_dict,
     )
     db.add(project_model)
     db.commit()
@@ -83,6 +107,11 @@ def create_project(db: Session, payload: Project) -> Project:
 
 def update_project(db: Session, project_model: ProjectModel, payload: ProjectUpdate) -> Project:
     update_data = payload.dict(exclude_unset=True)
+    if "initial_risk_assessment" in update_data:
+        initial_assessment = update_data.pop("initial_risk_assessment")
+        project_model.initial_risk_assessment = _serialize_initial_risk_assessment(
+            initial_assessment
+        )
     for field, value in update_data.items():
         setattr(project_model, field, value)
 
@@ -110,3 +139,27 @@ def create_risk_assessment(db: Session, payload: RiskAssessment) -> RiskAssessme
     db.commit()
     db.refresh(model)
     return _risk_assessment_model_to_schema(model)
+
+
+def _initial_risk_assessment_from_dict(
+    data: Optional[Dict[str, Any]]
+) -> Optional[InitialRiskAssessment]:
+    if not data:
+        return None
+    try:
+        return InitialRiskAssessment(**data)
+    except (TypeError, ValueError):
+        return None
+
+
+def _serialize_initial_risk_assessment(
+    data: Any,
+) -> Optional[Dict[str, Any]]:
+    if data is None:
+        return None
+    if isinstance(data, InitialRiskAssessment):
+        return data.dict()
+    if isinstance(data, dict):
+        assessment = _initial_risk_assessment_from_dict(data)
+        return assessment.dict() if assessment else None
+    return None

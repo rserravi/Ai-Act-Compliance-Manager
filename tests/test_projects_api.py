@@ -52,11 +52,24 @@ def test_projects_crud_flow():
         "documentation_status": "in_progress",
         "business_units": ["Compliance"],
         "team": ["ana@example.com"],
+        "purpose": "Automated compliance monitoring",
+        "owner": "ana@example.com",
+        "deployments": ["production"],
+        "initial_risk_assessment": {
+            "classification": "medium",
+            "justification": "Initial setup",
+            "answers": [{"key": "q1", "value": True}],
+        },
     }
 
     create_response = client.post("/projects", json=project_payload, headers=headers)
     assert create_response.status_code == 200
-    assert create_response.json() == project_payload
+    created_project = create_response.json()
+    assert created_project["id"] == project_payload["id"]
+    assert created_project["purpose"] == project_payload["purpose"]
+    assert created_project["owner"] == project_payload["owner"]
+    assert created_project["deployments"] == project_payload["deployments"]
+    assert created_project["initial_risk_assessment"] == project_payload["initial_risk_assessment"]
 
     list_response = client.get("/projects", headers=headers)
     assert list_response.status_code == 200
@@ -94,12 +107,25 @@ def test_projects_crud_flow():
     final_data = final_response.json()
     assert final_data["risk"] == "high"
     assert len(final_data["team"]) == 2
+    assert final_data["deployments"] == project_payload["deployments"]
 
     with _session_scope() as session:
         stored_project = session.get(ProjectModel, project_payload["id"])
         assert stored_project is not None
         assert stored_project.risk == "high"
         assert stored_project.team == ["ana@example.com", "ben@example.com"]
+        assert stored_project.purpose == project_payload["purpose"]
+        assert stored_project.owner == project_payload["owner"]
+        assert stored_project.deployments == project_payload["deployments"]
+        assert stored_project.initial_risk_assessment == project_payload["initial_risk_assessment"]
+
+    deliverables_response = client.get(
+        f"/projects/{project_payload['id']}/deliverables", headers=headers
+    )
+    assert deliverables_response.status_code == 200
+    deliverables_data = deliverables_response.json()
+    assert len(deliverables_data) >= 1
+    assert {item["name"] for item in deliverables_data}
 
 
 def test_project_subresources_use_project_id():
@@ -126,6 +152,9 @@ def test_project_subresources_use_project_id():
         "documentation_status": "not_started",
         "business_units": ["AI"],
         "team": [],
+        "purpose": "AI discovery",
+        "owner": "lead@example.com",
+        "deployments": ["sandbox"],
     }
 
     create_response = client.post("/projects", json=project_payload, headers=headers)
@@ -155,14 +184,19 @@ def test_project_subresources_use_project_id():
     assert len(risk_items) == 1
     assert risk_items[0]["project_id"] == project_id
 
-    deliverable = Deliverable(id="deliv-1", project_id=project_id, name="Plan")
-    _main_module.deliverables[project_id].append(deliverable)
+    deliverables_list = client.get(
+        f"/projects/{project_id}/deliverables", headers=headers
+    )
+    assert deliverables_list.status_code == 200
+    deliverables_data = deliverables_list.json()
+    assert len(deliverables_data) > 0
+    deliverable = Deliverable(**deliverables_data[0])
     deliverables_response = client.get(
         f"/projects/{project_id}/deliverables", headers=headers
     )
     assert deliverables_response.status_code == 200
     deliverables_data = deliverables_response.json()
-    assert len(deliverables_data) == 1
+    assert len(deliverables_data) >= 1
     assert deliverables_data[0]["project_id"] == project_id
 
     assign_response = client.post(

@@ -98,8 +98,12 @@ class ProjectModel(Base):
     role: Mapped[str] = mapped_column(String(50), nullable=False)
     risk: Mapped[str | None] = mapped_column(String(50), nullable=True)
     documentation_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    purpose: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    owner: Mapped[str | None] = mapped_column(String(255), nullable=True)
     business_units: Mapped[List[str] | None] = mapped_column(JSON, nullable=True)
     team: Mapped[List[str] | None] = mapped_column(JSON, nullable=True)
+    deployments: Mapped[List[str] | None] = mapped_column(JSON, nullable=True)
+    initial_risk_assessment: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
