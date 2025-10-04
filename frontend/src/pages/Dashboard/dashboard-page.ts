@@ -202,7 +202,7 @@ export class DashboardPage extends LocalizedElement {
   private renderPendingActions() {
     const items = this.model.pendingActions;
     return html`
-      <div class="card bg-base-100 shadow">
+      <section id="pending-actions" class="card bg-base-100 shadow">
         <div class="card-body space-y-4">
           <header>
             <h2 class="card-title">${t('dashboard.actions.title')}</h2>
@@ -250,7 +250,7 @@ export class DashboardPage extends LocalizedElement {
                 </div>
               `}
         </div>
-      </div>
+      </section>
     `;
   }
 
