@@ -377,7 +377,7 @@ export class ProjectsWizardViewModel implements ReactiveController {
 
       this.#clearDraft(true);
       this.#resetWizardState();
-      navigateTo(`/projects/${projectId}/deliverables`, { replace: true });
+      navigateTo(`/projects/${projectId}/deliverables?wizard=schedule`, { replace: true });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error inesperado';
       this.#setSubmitError(message);

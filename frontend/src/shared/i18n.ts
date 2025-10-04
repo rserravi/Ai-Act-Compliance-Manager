@@ -152,6 +152,8 @@ const resources = {
           name: "Entregable",
           status: "Estado",
           version: "Versión",
+          assignee: "Responsable",
+          dueDate: "Plazo",
           actions: "Acciones"
         },
         actions: {
@@ -169,6 +171,31 @@ const resources = {
           assignee: "Asignar a",
           dueDate: "Fecha de entrega",
           placeholder: "Selecciona un contacto"
+        },
+        labels: {
+          unassigned: "Sin asignar",
+          noDueDate: "Sin fecha"
+        },
+        wizard: {
+          title: "Planifica la calendarización",
+          description: "Define responsable y fecha objetivo para cada entregable clave de {{project}}.",
+          progress: "Paso {{current}} de {{total}}",
+          remaining: "Pendientes: {{count}}",
+          queueTitle: "Próximos entregables",
+          instructions: "Selecciona la persona responsable y la fecha objetivo para continuar.",
+          assigneeLabel: "Responsable",
+          assigneePlaceholder: "Selecciona un miembro del equipo",
+          dueDateLabel: "Fecha objetivo",
+          createTask: "Crear tarea de seguimiento en el calendario",
+          confirm: "Confirmar asignación",
+          completedTitle: "¡Todo listo!",
+          completedDescription: "Todos los entregables del proyecto {{project}} tienen responsable y fecha comprometida.",
+          close: "Cerrar asistente"
+        },
+        notifications: {
+          assignmentCreated: "Asignación guardada para {{deliverable}}",
+          assignmentFailed: "No se pudo guardar la asignación",
+          assignmentsComplete: "Todos los entregables tienen responsable y fecha"
         }
       },
       languages: {
@@ -1034,6 +1061,8 @@ const resources = {
           name: "Deliverable",
           status: "Status",
           version: "Version",
+          assignee: "Owner",
+          dueDate: "Target date",
           actions: "Actions"
         },
         actions: {
@@ -1051,6 +1080,31 @@ const resources = {
           assignee: "Assign to",
           dueDate: "Due date",
           placeholder: "Select a contact"
+        },
+        labels: {
+          unassigned: "Unassigned",
+          noDueDate: "No date"
+        },
+        wizard: {
+          title: "Schedule the upcoming work",
+          description: "Choose an owner and a target date for each key deliverable in {{project}}.",
+          progress: "Step {{current}} of {{total}}",
+          remaining: "Remaining: {{count}}",
+          queueTitle: "Next deliverables",
+          instructions: "Pick the responsible person and deadline to continue.",
+          assigneeLabel: "Owner",
+          assigneePlaceholder: "Select a team member",
+          dueDateLabel: "Target date",
+          createTask: "Create a follow-up task on the calendar",
+          confirm: "Confirm assignment",
+          completedTitle: "All set!",
+          completedDescription: "Every deliverable in {{project}} now has an owner and a target date.",
+          close: "Close assistant"
+        },
+        notifications: {
+          assignmentCreated: "Assignment saved for {{deliverable}}",
+          assignmentFailed: "We couldn't save the assignment",
+          assignmentsComplete: "Every deliverable has an owner and a date"
         }
       },
       calendarWorkflows: {
@@ -1780,6 +1834,8 @@ const resources = {
           name: "Lliurable",
           status: "Estat",
           version: "Versió",
+          assignee: "Responsable",
+          dueDate: "Data límit",
           actions: "Accions"
         },
         actions: {
@@ -1797,6 +1853,31 @@ const resources = {
           assignee: "Assignar a",
           dueDate: "Data de lliurament",
           placeholder: "Selecciona un contacte"
+        },
+        labels: {
+          unassigned: "Sense assignar",
+          noDueDate: "Sense data"
+        },
+        wizard: {
+          title: "Planifica el seguiment",
+          description: "Defineix responsable i data objectiu per a cada lliurable clau de {{project}}.",
+          progress: "Pas {{current}} de {{total}}",
+          remaining: "Pendents: {{count}}",
+          queueTitle: "Lliurables pendents",
+          instructions: "Selecciona la persona responsable i la data objectiu per continuar.",
+          assigneeLabel: "Responsable",
+          assigneePlaceholder: "Selecciona un membre de l'equip",
+          dueDateLabel: "Data objectiu",
+          createTask: "Crear una tasca de seguiment al calendari",
+          confirm: "Confirmar assignació",
+          completedTitle: "Tot a punt!",
+          completedDescription: "Tots els lliurables de {{project}} tenen responsable i data comprometuda.",
+          close: "Tanca l'assistent"
+        },
+        notifications: {
+          assignmentCreated: "Assignació guardada per a {{deliverable}}",
+          assignmentFailed: "No s'ha pogut guardar l'assignació",
+          assignmentsComplete: "Tots els lliurables tenen responsable i data"
         }
       },
       calendarWorkflows: {
@@ -2526,6 +2607,8 @@ const resources = {
           name: "Livrable",
           status: "Statut",
           version: "Version",
+          assignee: "Responsable",
+          dueDate: "Échéance",
           actions: "Actions"
         },
         actions: {
@@ -2543,6 +2626,31 @@ const resources = {
           assignee: "Assigner à",
           dueDate: "Date d'échéance",
           placeholder: "Sélectionnez un contact"
+        },
+        labels: {
+          unassigned: "Non attribué",
+          noDueDate: "Sans date"
+        },
+        wizard: {
+          title: "Planifier le suivi",
+          description: "Définissez un responsable et une date cible pour chaque livrable clé de {{project}}.",
+          progress: "Étape {{current}} sur {{total}}",
+          remaining: "Restants : {{count}}",
+          queueTitle: "Livrables en attente",
+          instructions: "Sélectionnez la personne responsable et la date cible pour continuer.",
+          assigneeLabel: "Responsable",
+          assigneePlaceholder: "Sélectionnez un membre de l'équipe",
+          dueDateLabel: "Date cible",
+          createTask: "Créer une tâche de suivi dans le calendrier",
+          confirm: "Confirmer l'assignation",
+          completedTitle: "C'est fait !",
+          completedDescription: "Tous les livrables de {{project}} ont un responsable et une date cible.",
+          close: "Fermer l'assistant"
+        },
+        notifications: {
+          assignmentCreated: "Assignation enregistrée pour {{deliverable}}",
+          assignmentFailed: "Impossible d'enregistrer l'assignation",
+          assignmentsComplete: "Tous les livrables ont un responsable et une date"
         }
       },
       calendarWorkflows: {

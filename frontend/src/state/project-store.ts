@@ -124,12 +124,38 @@ export class ProjectStore {
     );
   }
 
+  updateDeliverableAssignment(
+    deliverableId: string,
+    assignment: { assignee: string; dueDate?: string | null }
+  ): void {
+    this.documents.update((docs) =>
+      docs.map((doc) =>
+        doc.id === deliverableId
+          ? { ...doc, assignee: assignment.assignee, dueDate: assignment.dueDate ?? undefined }
+          : doc
+      )
+    );
+  }
+
+  upsertTask(task: Task): void {
+    this.tasks.update((prev) => {
+      const next = [...prev];
+      const index = next.findIndex((existing) => existing.id === task.id);
+      if (index >= 0) {
+        next[index] = { ...task };
+        return next;
+      }
+      next.push({ ...task });
+      return next;
+    });
+  }
+
   createTask(taskInput: Omit<Task, 'id'>): Task {
     const newTask: Task = {
       id: `task-${Math.random().toString(36).slice(2, 8)}`,
       ...taskInput
     };
-    this.tasks.update((prev) => [...prev, newTask]);
+    this.upsertTask(newTask);
     return newTask;
   }
 
