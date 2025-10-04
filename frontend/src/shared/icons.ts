@@ -93,6 +93,23 @@ export function evidencesIcon(): TemplateResult {
   </svg>`;
 }
 
+export function tasksIcon(): TemplateResult {
+  return html`<svg
+    class="w-5 h-5"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke-width="1.5"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
+    <rect x="4.5" y="5.25" width="15" height="13.5" rx="2" />
+    <path d="M9 9h6" />
+    <path d="M9 12h6" />
+    <path d="M9 15h3.75" />
+  </svg>`;
+}
+
 export function teamsIcon(): TemplateResult {
   return html`<svg
     class="w-5 h-5"
