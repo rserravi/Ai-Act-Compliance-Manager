@@ -1084,14 +1084,19 @@ export class ProjectsWizardPage extends LocalizedElement {
     }
   }
 
+  private canContinueToNextStep(): boolean {
+    if (this.step === 0) {
+      const hasName = this.name.trim().length > 0;
+      const hasOwner = this.owner.trim().length > 0;
+      const hasDeployments = this.deployments.length > 0;
+      return hasName && hasOwner && hasDeployments;
+    }
+
+    return true;
+  }
+
   protected render() {
-    const canContinue =
-      this.step === 0
-        ? this.name.trim().length > 0 &&
-          this.purpose.trim().length > 0 &&
-          this.owner.trim().length > 0 &&
-          this.deployments.length > 0
-        : true;
+    const canContinue = this.canContinueToNextStep();
 
     return html`
       <section class="space-y-6">
