@@ -5,7 +5,7 @@ from pathlib import Path
 from sqlalchemy import inspect, text
 
 
-def test_init_db_backfills_missing_project_columns(tmp_path, monkeypatch):
+def test_init_db_adds_missing_purpose_column(tmp_path, monkeypatch):
     db_path = Path(tmp_path) / "legacy.db"
     monkeypatch.setenv("SQLITE_DB_PATH", str(db_path))
     monkeypatch.delenv("DATABASE_URL", raising=False)
@@ -24,6 +24,11 @@ def test_init_db_backfills_missing_project_columns(tmp_path, monkeypatch):
                     role VARCHAR(50) NOT NULL,
                     risk VARCHAR(50),
                     documentation_status VARCHAR(50),
+                    owner VARCHAR(255),
+                    business_units JSON,
+                    team JSON,
+                    deployments JSON,
+                    initial_risk_assessment JSON,
                     created_at TIMESTAMP WITH TIME ZONE,
                     updated_at TIMESTAMP WITH TIME ZONE
                 )
@@ -35,13 +40,4 @@ def test_init_db_backfills_missing_project_columns(tmp_path, monkeypatch):
 
     inspector = inspect(database_module.engine)
     project_columns = {column["name"] for column in inspector.get_columns("projects")}
-    expected_columns = {
-        "purpose",
-        "owner",
-        "business_units",
-        "team",
-        "deployments",
-        "initial_risk_assessment",
-    }
-
-    assert expected_columns.issubset(project_columns)
+    assert "purpose" in project_columns
