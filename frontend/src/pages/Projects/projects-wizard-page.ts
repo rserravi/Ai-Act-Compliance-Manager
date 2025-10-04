@@ -1,8 +1,7 @@
 import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
-import type { AISystem } from '../../domain/models';
-import type { Contact } from '../../domain/models';
+import type { AISystem, ProjectTeamMember } from '../../domain/models';
 import { navigateTo } from '../../navigation';
 import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
@@ -13,6 +12,8 @@ import {
   type RiskWizardResult,
   type RiskWizardHelp
 } from './ProjectRiskWizard.viewmodel';
+import './team-member-form';
+import type { TeamMemberFormSubmitDetail } from './team-member-form';
 
 const DEPLOYMENT_OPTIONS = ['sandbox', 'pilot', 'production', 'internal_only'] as const;
 type DeploymentOption = (typeof DEPLOYMENT_OPTIONS)[number];
@@ -31,7 +32,9 @@ export class ProjectsWizardPage extends LocalizedElement {
   @state() private owner = '';
   @state() private businessUnit = '';
   @state() private deployments: DeploymentOption[] = [];
-  @state() private team: Contact[] = [];
+  @state() private team: ProjectTeamMember[] = [];
+  @state() private pendingInvites: string[] = [];
+  @state() private inviteEmail = '';
   @state() private riskStepIndex = this.riskWizard.stepIndex;
   @state() private riskResult: RiskWizardResult = this.riskWizard.result;
   @state() private riskAnswers: Record<string, unknown> = this.riskWizard.answers;
@@ -50,24 +53,198 @@ export class ProjectsWizardPage extends LocalizedElement {
     ];
   }
 
-  private addTeamMember() {
-    const name = prompt(t('projects.wizard.contact.name'));
-    if (!name) return;
-    const role = prompt(t('projects.wizard.contact.role')) ?? '';
-    const email = prompt(t('projects.wizard.contact.email')) ?? '';
-    const member: Contact = {
-      id: `contact-${Date.now()}`,
-      name,
-      role,
-      email,
+  private handleMemberAdded(event: CustomEvent<TeamMemberFormSubmitDetail>) {
+    const detail = event.detail;
+    const member: ProjectTeamMember = {
+      id: `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      name: detail.name,
+      role: detail.role,
+      email: detail.email,
       phone: '',
-      notification: 'email'
+      notification: 'email',
+      raci: { ...detail.raci },
+      isOwner: detail.isOwner,
+      isReviewer: detail.isReviewer
     };
+
     this.team = [...this.team, member];
+  }
+
+  private handleInviteInput(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    this.inviteEmail = input.value;
+  }
+
+  private addPendingInvite(event: Event) {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    if (!form.reportValidity()) {
+      return;
+    }
+    const email = this.inviteEmail.trim();
+    if (!email) {
+      return;
+    }
+    if (this.pendingInvites.includes(email)) {
+      this.inviteEmail = '';
+      return;
+    }
+    this.pendingInvites = [...this.pendingInvites, email];
+    this.inviteEmail = '';
+  }
+
+  private removePendingInvite(email: string) {
+    this.pendingInvites = this.pendingInvites.filter((value) => value !== email);
   }
 
   private removeTeamMember(id: string) {
     this.team = this.team.filter((member) => member.id !== id);
+  }
+
+  private renderRaciBadges(member: ProjectTeamMember) {
+    const labels: Array<Parameters<typeof t>[0]> = [];
+    if (member.raci.responsible) {
+      labels.push('projects.wizard.team.raci.responsible');
+    }
+    if (member.raci.accountable) {
+      labels.push('projects.wizard.team.raci.accountable');
+    }
+    if (member.raci.consulted) {
+      labels.push('projects.wizard.team.raci.consulted');
+    }
+    if (member.raci.informed) {
+      labels.push('projects.wizard.team.raci.informed');
+    }
+
+    if (labels.length === 0) {
+      return html`<span class="text-sm text-base-content/70">${t('projects.wizard.team.raci.none')}</span>`;
+    }
+
+    return html`<div class="flex flex-wrap gap-1">
+      ${labels.map((label) => html`<span class="badge badge-outline">${t(label)}</span>`) }
+    </div>`;
+  }
+
+  private renderTeamTable() {
+    return html`
+      <div class="card border border-base-300 shadow-sm">
+        <div class="card-body space-y-4">
+          <header class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-lg font-semibold">${t('projects.wizard.fields.team')}</h3>
+            <span class="badge badge-neutral">${t('projects.wizard.summary.teamCount', { count: this.team.length })}</span>
+          </header>
+          ${this.team.length === 0
+            ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.empty')}</p>`
+            : html`
+                <div class="overflow-x-auto">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>${t('projects.wizard.contact.name')}</th>
+                        <th>${t('projects.wizard.contact.role')}</th>
+                        <th>${t('projects.wizard.contact.email')}</th>
+                        <th>${t('projects.wizard.team.table.responsibilities')}</th>
+                        <th>${t('projects.wizard.team.table.owner')}</th>
+                        <th>${t('projects.wizard.team.table.reviewer')}</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${this.team.map(
+                        (member) => html`
+                          <tr>
+                            <td>${member.name}</td>
+                            <td>${member.role}</td>
+                            <td>${member.email}</td>
+                            <td>${this.renderRaciBadges(member)}</td>
+                            <td>${member.isOwner
+                              ? t('projects.wizard.team.owner.yes')
+                              : t('projects.wizard.team.owner.no')}</td>
+                            <td>${member.isReviewer
+                              ? t('projects.wizard.team.reviewer.yes')
+                              : t('projects.wizard.team.reviewer.no')}</td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-ghost btn-xs"
+                                @click=${() => this.removeTeamMember(member.id)}
+                              >
+                                ${t('common.remove')}
+                              </button>
+                            </td>
+                          </tr>
+                        `
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderPendingInvitesSection() {
+    return html`
+      <div class="card border border-base-300 shadow-sm">
+        <div class="card-body space-y-4">
+          <header>
+            <h3 class="text-lg font-semibold">${t('projects.wizard.team.invites.title')}</h3>
+            <p class="text-sm text-base-content/70">${t('projects.wizard.team.invites.description')}</p>
+          </header>
+          <form class="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]" @submit=${this.addPendingInvite}>
+            <label class="form-control">
+              <span class="label"><span class="label-text">${t('projects.wizard.contact.email')}</span></span>
+              <input
+                class="input input-bordered"
+                type="email"
+                .value=${this.inviteEmail}
+                required
+                placeholder=${t('projects.wizard.team.invites.placeholder')}
+                @input=${this.handleInviteInput}
+              >
+            </label>
+            <div class="flex items-end">
+              <button class="btn btn-sm" type="submit">${t('projects.wizard.team.invites.add')}</button>
+            </div>
+          </form>
+          ${this.pendingInvites.length === 0
+            ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.invites.empty')}</p>`
+            : html`
+                <div class="overflow-x-auto">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>${t('projects.wizard.contact.email')}</th>
+                        <th>${t('projects.wizard.team.invites.status')}</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${this.pendingInvites.map(
+                        (email) => html`
+                          <tr>
+                            <td>${email}</td>
+                            <td><span class="badge badge-outline">${t('projects.wizard.team.invites.pending')}</span></td>
+                            <td>
+                              <button
+                                type="button"
+                                class="btn btn-ghost btn-xs"
+                                @click=${() => this.removePendingInvite(email)}
+                              >
+                                ${t('projects.wizard.team.invites.remove')}
+                              </button>
+                            </td>
+                          </tr>
+                        `
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              `}
+        </div>
+      </div>
+    `;
   }
 
   private nextStep() {
@@ -243,38 +420,14 @@ export class ProjectsWizardPage extends LocalizedElement {
 
   private renderTeamStep() {
     return html`
-      <div class="space-y-4">
-        <button class="btn btn-sm" @click=${this.addTeamMember}>${t('projects.wizard.addContact')}</button>
-        ${this.team.length === 0
-          ? html`<p class="text-sm text-base-content/70">${t('projects.wizard.team.empty')}</p>`
-          : html`
-              <div class="overflow-x-auto">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>${t('projects.wizard.contact.name')}</th>
-                      <th>${t('projects.wizard.contact.role')}</th>
-                      <th>${t('projects.wizard.contact.email')}</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${this.team.map((member) => html`
-                      <tr>
-                        <td>${member.name}</td>
-                        <td>${member.role}</td>
-                        <td>${member.email}</td>
-                        <td>
-                          <button class="btn btn-ghost btn-xs" @click=${() => this.removeTeamMember(member.id)}>
-                            ${t('common.remove')}
-                          </button>
-                        </td>
-                      </tr>
-                    `)}
-                  </tbody>
-                </table>
-              </div>
-            `}
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <team-member-form
+          @member-added=${(event: CustomEvent<TeamMemberFormSubmitDetail>) => this.handleMemberAdded(event)}
+        ></team-member-form>
+        <div class="space-y-6">
+          ${this.renderTeamTable()}
+          ${this.renderPendingInvitesSection()}
+        </div>
       </div>
     `;
   }
@@ -590,6 +743,11 @@ export class ProjectsWizardPage extends LocalizedElement {
             'projects.wizard.summary.teamCount',
             { count: this.team.length }
           )}</p>
+          <p><strong>${t('projects.wizard.team.invites.summaryLabel')}:</strong> ${
+            this.pendingInvites.length
+              ? t('projects.wizard.team.invites.summary', { count: this.pendingInvites.length })
+              : t('projects.wizard.team.invites.empty')
+          }</p>
           <p><strong>${t('projects.wizard.fields.notes')}:</strong> ${
             this.notes || t('projects.wizard.summary.noNotes')
           }</p>
