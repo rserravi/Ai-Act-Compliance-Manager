@@ -45,6 +45,8 @@ type WizardState = {
   inviteEmail: string;
   riskStepIndex: number;
   riskResult?: RiskWizardResult;
+  isRiskEvaluating: boolean;
+  riskError?: string;
   riskAnswers: Record<string, unknown>;
   notes: string;
 };
@@ -54,7 +56,7 @@ export class ProjectsWizardViewModel implements ReactiveController {
 
   #host: ReactiveElement;
   #projects: ProjectController;
-  #riskWizard = new ProjectRiskWizardViewModel();
+  #riskWizard: ProjectRiskWizardViewModel;
   #state: WizardState = {
     step: 0,
     name: '',
@@ -68,6 +70,8 @@ export class ProjectsWizardViewModel implements ReactiveController {
     inviteEmail: '',
     riskStepIndex: 0,
     riskResult: undefined,
+    isRiskEvaluating: false,
+    riskError: undefined,
     riskAnswers: {},
     notes: ''
   };
@@ -78,6 +82,7 @@ export class ProjectsWizardViewModel implements ReactiveController {
     this.#host = host;
     host.addController(this);
     this.#projects = new ProjectController(host);
+    this.#riskWizard = this.#createRiskWizard();
     this.#syncRiskState();
   }
 
@@ -135,6 +140,14 @@ export class ProjectsWizardViewModel implements ReactiveController {
     return this.#state.riskResult;
   }
 
+  get isRiskEvaluationLoading(): boolean {
+    return this.#state.isRiskEvaluating;
+  }
+
+  get riskEvaluationError(): string | undefined {
+    return this.#state.riskError;
+  }
+
   get riskAnswers(): Record<string, unknown> {
     return this.#state.riskAnswers;
   }
@@ -161,6 +174,10 @@ export class ProjectsWizardViewModel implements ReactiveController {
 
   get riskAnswersList() {
     return this.#riskWizard.answersList;
+  }
+
+  retryRiskEvaluation(): void {
+    this.#riskWizard.retryEvaluation();
   }
 
   setName(value: string): void {
@@ -270,15 +287,31 @@ export class ProjectsWizardViewModel implements ReactiveController {
       const hasDeployments = this.#state.deployments.length > 0;
       return hasName && hasPurpose && hasOwner && hasDeployments;
     }
+    if (this.#state.step === 2) {
+      if (!this.#riskWizard.isComplete) {
+        return true;
+      }
+      if (this.#riskWizard.isEvaluating || !!this.#riskWizard.error) {
+        return false;
+      }
+      return Boolean(this.#riskWizard.result);
+    }
     return true;
   }
 
   goNext(): void {
-    if (this.#state.step === 2 && !this.#riskWizard.isComplete) {
-      this.#riskWizard.nextStep();
-      this.#syncRiskState();
-      this.#notifyStateChanged();
-      return;
+    if (this.#state.step === 2) {
+      if (!this.#riskWizard.isComplete) {
+        this.#riskWizard.nextStep();
+        this.#syncRiskState();
+        this.#notifyStateChanged();
+        return;
+      }
+      if (this.#riskWizard.isEvaluating || !this.#riskWizard.result || this.#riskWizard.error) {
+        this.#syncRiskState();
+        this.#notifyStateChanged({ persist: false });
+        return;
+      }
     }
 
     if (this.#state.step < this.steps.length - 1) {
@@ -408,7 +441,18 @@ export class ProjectsWizardViewModel implements ReactiveController {
   #syncRiskState(): void {
     this.#state.riskStepIndex = this.#riskWizard.stepIndex;
     this.#state.riskResult = this.#riskWizard.result;
+    this.#state.isRiskEvaluating = this.#riskWizard.isEvaluating;
+    this.#state.riskError = this.#riskWizard.error;
     this.#state.riskAnswers = this.#riskWizard.answers;
+  }
+
+  #createRiskWizard(): ProjectRiskWizardViewModel {
+    const wizard = new ProjectRiskWizardViewModel();
+    wizard.setOnStateChange(() => {
+      this.#syncRiskState();
+      this.#notifyStateChanged();
+    });
+    return wizard;
   }
 
   #withPersistenceSuspended(mutator: () => void): void {
@@ -554,7 +598,7 @@ export class ProjectsWizardViewModel implements ReactiveController {
   }
 
   #restoreRiskWizard(risk?: ProjectWizardDraft['risk']): void {
-    this.#riskWizard = new ProjectRiskWizardViewModel();
+    this.#riskWizard = this.#createRiskWizard();
     if (!risk || typeof risk !== 'object') {
       this.#syncRiskState();
       return;
@@ -619,10 +663,12 @@ export class ProjectsWizardViewModel implements ReactiveController {
         inviteEmail: '',
         riskStepIndex: 0,
         riskResult: undefined,
+        isRiskEvaluating: false,
+        riskError: undefined,
         riskAnswers: {},
         notes: ''
       };
-      this.#riskWizard = new ProjectRiskWizardViewModel();
+      this.#riskWizard = this.#createRiskWizard();
       this.#syncRiskState();
     });
   }

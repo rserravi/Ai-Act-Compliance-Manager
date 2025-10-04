@@ -1,42 +1,39 @@
 import riskWizardConfig from '../../configs/risk-wizard.json';
 import type { RiskAnswer } from '../../domain/models';
-import type {
-  RiskWizardQuestion,
-  RiskWizardRuleConditionValue,
-  RiskWizardResult,
-  RiskWizardStep
-} from './Model';
+import { RiskEvaluationService } from './Service/risk-evaluation.service';
+import type { RiskWizardResult, RiskWizardStep } from './Model';
 
 type RiskWizardState = {
   stepIndex: number;
   answers: Record<string, unknown>;
-  result: RiskWizardResult;
+  result?: RiskWizardResult;
+  isEvaluating: boolean;
+  error?: string;
 };
 
 const wizardDefinition = riskWizardConfig.wizard;
 
-function isNonEmpty(value: unknown): boolean {
-  if (Array.isArray(value)) {
-    return value.length > 0;
-  }
-  if (typeof value === 'string') {
-    return value.trim().length > 0;
-  }
-  return Boolean(value);
-}
+type StateChangeListener = () => void;
 
 export class ProjectRiskWizardViewModel {
   readonly steps: RiskWizardStep[];
   #state: RiskWizardState;
+  #service = new RiskEvaluationService();
+  #onChange?: StateChangeListener;
+  #evaluationToken = 0;
   constructor() {
     this.steps = wizardDefinition.steps as RiskWizardStep[];
-    const answers: Record<string, unknown> = {};
-    const result = this.#evaluate(answers);
     this.#state = {
       stepIndex: 0,
-      answers,
-      result
+      answers: {},
+      result: undefined,
+      isEvaluating: false,
+      error: undefined
     };
+  }
+
+  setOnStateChange(listener: StateChangeListener | undefined): void {
+    this.#onChange = listener;
   }
 
   get stepIndex(): number {
@@ -63,8 +60,16 @@ export class ProjectRiskWizardViewModel {
     return Object.entries(this.#state.answers).map(([key, value]) => ({ key, value }));
   }
 
-  get result(): RiskWizardResult {
+  get result(): RiskWizardResult | undefined {
     return this.#state.result;
+  }
+
+  get isEvaluating(): boolean {
+    return this.#state.isEvaluating;
+  }
+
+  get error(): string | undefined {
+    return this.#state.error;
   }
 
   nextStep(): void {
@@ -73,9 +78,11 @@ export class ProjectRiskWizardViewModel {
     }
     this.#state = {
       ...this.#state,
-      stepIndex: this.#state.stepIndex + 1,
-      result: this.#evaluate()
+      stepIndex: this.#state.stepIndex + 1
     };
+    if (this.isComplete) {
+      this.#requestEvaluation();
+    }
   }
 
   previousStep(): void {
@@ -84,8 +91,7 @@ export class ProjectRiskWizardViewModel {
     }
     this.#state = {
       ...this.#state,
-      stepIndex: this.#state.stepIndex - 1,
-      result: this.#evaluate()
+      stepIndex: this.#state.stepIndex - 1
     };
   }
 
@@ -93,8 +99,13 @@ export class ProjectRiskWizardViewModel {
     this.#state = {
       ...this.#state,
       answers: { ...this.#state.answers, [questionId]: value },
-      result: this.#evaluate({ ...this.#state.answers, [questionId]: value })
+      result: this.#state.result,
+      error: undefined
     };
+    this.#resetEvaluationState();
+    if (this.isComplete) {
+      this.#requestEvaluation();
+    }
   }
 
   clearAnswer(questionId: string): void {
@@ -103,39 +114,68 @@ export class ProjectRiskWizardViewModel {
     this.#state = {
       ...this.#state,
       answers: rest,
-      result: this.#evaluate(rest)
+      result: this.#state.result,
+      error: undefined
+    };
+    this.#resetEvaluationState();
+    if (this.isComplete) {
+      this.#requestEvaluation();
+    }
+  }
+
+  retryEvaluation(): void {
+    if (this.isComplete) {
+      this.#requestEvaluation();
+    }
+  }
+
+  #resetEvaluationState(): void {
+    this.#evaluationToken += 1;
+    this.#state = {
+      ...this.#state,
+      result: undefined,
+      isEvaluating: false,
+      error: undefined
     };
   }
 
-  #evaluate(answers: Record<string, unknown> = this.#state.answers): RiskWizardResult {
-    const resultStep = this.steps.find((step) => step.rules && step.default);
-    if (!resultStep || !resultStep.rules || !resultStep.default) {
-      return { classification: 'limitado', justification: '' };
-    }
+  async #requestEvaluation(): Promise<void> {
+    const answers = { ...this.#state.answers };
+    const token = ++this.#evaluationToken;
+    this.#state = {
+      ...this.#state,
+      isEvaluating: true,
+      error: undefined
+    };
+    this.#notifyStateChanged();
 
-    for (const rule of resultStep.rules) {
-      if (this.#matchesRule(rule.if, answers)) {
-        return { classification: rule.classification, justification: rule.justification };
+    try {
+      const result = await this.#service.evaluate({ answers });
+      if (token !== this.#evaluationToken) {
+        return;
       }
+      this.#state = {
+        ...this.#state,
+        result,
+        isEvaluating: false
+      };
+      this.#notifyStateChanged();
+    } catch (error) {
+      if (token !== this.#evaluationToken) {
+        return;
+      }
+      const message = error instanceof Error ? error.message : 'Unable to evaluate risk';
+      this.#state = {
+        ...this.#state,
+        isEvaluating: false,
+        error: message
+      };
+      this.#notifyStateChanged();
     }
-
-    return resultStep.default;
   }
 
-  #matchesRule(conditions: Record<string, RiskWizardRuleConditionValue>, answers: Record<string, unknown>): boolean {
-    return Object.entries(conditions).every(([questionId, expected]) => {
-      const answer = answers[questionId];
-      if (expected === 'not_empty') {
-        return isNonEmpty(answer);
-      }
-      if (Array.isArray(expected)) {
-        if (Array.isArray(answer)) {
-          return expected.some((value) => answer.includes(value));
-        }
-        return expected.includes(answer as string);
-      }
-      return answer === expected;
-    });
+  #notifyStateChanged(): void {
+    this.#onChange?.();
   }
 }
 

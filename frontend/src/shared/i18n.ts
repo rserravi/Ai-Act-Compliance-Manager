@@ -187,7 +187,8 @@ const resources = {
         loading: "Cargando…",
         notFound: "No encontrado",
         notAvailable: "N/D",
-        remove: "Eliminar"
+        remove: "Eliminar",
+        retry: "Reintentar"
       },
       dashboard: {
         pageTitle: "Panel de control",
@@ -557,10 +558,15 @@ const resources = {
               internal_only: "Uso interno únicamente"
             }
           },
-          risk: {
-            description: "Selecciona la clasificación de riesgo identificada tras la evaluación inicial.",
-            option: "Riesgo {{risk}}"
-          },
+        risk: {
+          description: "Selecciona la clasificación de riesgo identificada tras la evaluación inicial.",
+          option: "Riesgo {{risk}}",
+          evaluation: {
+            loading: "Calculando clasificación de riesgo...",
+            error: "No se pudo obtener la clasificación. Vuelve a intentarlo.",
+            awaiting: "Completa el cuestionario para obtener la clasificación."
+          }
+        },
           team: {
             empty: "Todavía no hay contactos asignados.",
             form: {
@@ -1119,7 +1125,8 @@ const resources = {
         loading: "Loading…",
         notFound: "Not found",
         notAvailable: "N/A",
-        remove: "Remove"
+        remove: "Remove",
+        retry: "Retry"
       },
       dashboard: {
         pageTitle: "Dashboard",
@@ -1299,7 +1306,12 @@ const resources = {
           },
           risk: {
             description: "Select the risk classification identified after the initial assessment.",
-            option: "{{risk}} risk"
+            option: "{{risk}} risk",
+            evaluation: {
+              loading: "Evaluating risk classification...",
+              error: "We couldn't retrieve the classification. Please try again.",
+              awaiting: "Complete the questionnaire to get the classification."
+            }
           },
           team: {
             empty: "No contacts added yet.",
@@ -1859,7 +1871,8 @@ const resources = {
         loading: "Carregant…",
         notFound: "No s'ha trobat",
         notAvailable: "N/D",
-        remove: "Elimina"
+        remove: "Elimina",
+        retry: "Torna a provar"
       },
       dashboard: {
         pageTitle: "Quadre de control",
@@ -2039,7 +2052,12 @@ const resources = {
           },
           risk: {
             description: "Selecciona la classificació de risc identificada després de l'avaluació inicial.",
-            option: "Risc {{risk}}"
+            option: "Risc {{risk}}",
+            evaluation: {
+              loading: "Calculant la classificació de risc...",
+              error: "No s'ha pogut obtenir la classificació. Torna-ho a intentar.",
+              awaiting: "Completa el qüestionari per obtenir la classificació."
+            }
           },
           team: {
             empty: "Encara no hi ha contactes assignats.",
@@ -2599,7 +2617,8 @@ const resources = {
         loading: "Chargement…",
         notFound: "Introuvable",
         notAvailable: "N/D",
-        remove: "Supprimer"
+        remove: "Supprimer",
+        retry: "Réessayer"
       },
       dashboard: {
         pageTitle: "Tableau de bord",
@@ -2779,7 +2798,12 @@ const resources = {
           },
           risk: {
             description: "Sélectionnez la classification de risque identifiée après l'évaluation initiale.",
-            option: "Risque {{risk}}"
+            option: "Risque {{risk}}",
+            evaluation: {
+              loading: "Calcul de la classification de risque...",
+              error: "Impossible de récupérer la classification. Veuillez réessayer.",
+              awaiting: "Complétez le questionnaire pour obtenir la classification."
+            }
           },
           team: {
             empty: "Aucun contact ajouté pour le moment.",
