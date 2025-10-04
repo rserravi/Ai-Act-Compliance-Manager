@@ -202,15 +202,17 @@ const resources = {
           tasksPending_one: "{{count}} pendiente",
           tasksPending_other: "{{count}} pendientes"
         },
-        compliance: {
-          title: "Semáforo de cumplimiento",
-          subtitle: "Estado de la documentación por unidad de negocio",
-          legendTitle: "Leyenda",
-          units: {
-            noData: "Sin datos de cumplimiento disponibles"
+        riskOverview: {
+          title: "Proyectos de IA por riesgo",
+          subtitle: "Distribución de sistemas según clasificación de riesgo del Reglamento UE",
+          levels: {
+            high: "Alto riesgo",
+            limited: "Riesgo limitado",
+            minimal: "Riesgo mínimo"
           },
-          totalLabel_one: "1 sistema",
-          totalLabel_other: "{{count}} sistemas"
+          systemsLabel_one: "{{count}} sistema",
+          systemsLabel_other: "{{count}} sistemas",
+          progressLabel: "{{level}}: {{percentage}}%"
         },
         timeline: {
           title: "Eventos recientes",
@@ -1068,15 +1070,17 @@ const resources = {
           tasksPending_one: "{{count}} pending task",
           tasksPending_other: "{{count}} pending tasks"
         },
-        compliance: {
-          title: "Compliance traffic light",
-          subtitle: "Documentation status by business unit",
-          legendTitle: "Legend",
-          units: {
-            noData: "No compliance data available"
+        riskOverview: {
+          title: "AI projects by risk",
+          subtitle: "Distribution of systems by EU AI Act risk classification",
+          levels: {
+            high: "High risk",
+            limited: "Limited risk",
+            minimal: "Minimal risk"
           },
-          totalLabel_one: "1 system",
-          totalLabel_other: "{{count}} systems"
+          systemsLabel_one: "{{count}} system",
+          systemsLabel_other: "{{count}} systems",
+          progressLabel: "{{level}}: {{percentage}}%"
         },
         timeline: {
           title: "Recent activity",
@@ -1742,15 +1746,17 @@ const resources = {
           tasksPending_one: "{{count}} tasca pendent",
           tasksPending_other: "{{count}} tasques pendents"
         },
-        compliance: {
-          title: "Semàfor de compliment",
-          subtitle: "Estat de la documentació per unitat de negoci",
-          legendTitle: "Llegenda",
-          units: {
-            noData: "Sense dades de compliment disponibles"
+        riskOverview: {
+          title: "Projectes d'IA per risc",
+          subtitle: "Distribució de sistemes segons la classificació de risc del Reglament UE",
+          levels: {
+            high: "Alt risc",
+            limited: "Risc limitat",
+            minimal: "Risc mínim"
           },
-          totalLabel_one: "1 sistema",
-          totalLabel_other: "{{count}} sistemes"
+          systemsLabel_one: "{{count}} sistema",
+          systemsLabel_other: "{{count}} sistemes",
+          progressLabel: "{{level}}: {{percentage}}%"
         },
         timeline: {
           title: "Activitat recent",
@@ -2416,15 +2422,17 @@ const resources = {
           tasksPending_one: "{{count}} tâche en attente",
           tasksPending_other: "{{count}} tâches en attente"
         },
-        compliance: {
-          title: "Feu de conformité",
-          subtitle: "Statut de la documentation par unité",
-          legendTitle: "Légende",
-          units: {
-            noData: "Aucune donnée de conformité disponible"
+        riskOverview: {
+          title: "Projets d'IA par risque",
+          subtitle: "Répartition des systèmes selon la classification de risque du Règlement UE",
+          levels: {
+            high: "Risque élevé",
+            limited: "Risque limité",
+            minimal: "Risque minimal"
           },
-          totalLabel_one: "1 système",
-          totalLabel_other: "{{count}} systèmes"
+          systemsLabel_one: "{{count}} système",
+          systemsLabel_other: "{{count}} systèmes",
+          progressLabel: "{{level}} : {{percentage}}%"
         },
         timeline: {
           title: "Activité récente",

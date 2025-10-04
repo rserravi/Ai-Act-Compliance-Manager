@@ -1,10 +1,11 @@
 import { systems } from '../../mocks/data';
-import type { DocStatus } from '../../domain/models';
 
-export type ComplianceEntry = {
-  businessUnit: string;
-  totals: Record<DocStatus, number> & Record<'na', number>;
-  total: number;
+export type RiskLevel = 'high' | 'limited' | 'minimal';
+
+export type RiskDistributionEntry = {
+  level: RiskLevel;
+  systems: number;
+  percentage: number;
 };
 
 export type TimelineEvent = {
@@ -26,12 +27,6 @@ export type PendingAction = {
   priority: 'high' | 'medium' | 'low';
 };
 
-export const DOC_STATUS_ORDER: ReadonlyArray<DocStatus | 'na'> = ['vigente', 'borrador', 'obsoleta', 'na'];
-
-function normalizeBusinessUnit(raw?: string): string {
-  return raw && raw.trim().length > 0 ? raw : 'Otros';
-}
-
 function isDueToday(iso: string): boolean {
   const due = new Date(iso);
   const today = new Date();
@@ -42,25 +37,14 @@ function isDueToday(iso: string): boolean {
   );
 }
 
-function buildComplianceByBusinessUnit(): ComplianceEntry[] {
-  const map = new Map<string, ComplianceEntry>();
+const RISK_DISTRIBUTION: RiskDistributionEntry[] = [
+  { level: 'high', systems: 8, percentage: 33 },
+  { level: 'limited', systems: 10, percentage: 42 },
+  { level: 'minimal', systems: 6, percentage: 25 }
+];
 
-  systems.forEach((sys) => {
-    const unit = normalizeBusinessUnit(sys.businessUnit);
-    if (!map.has(unit)) {
-      map.set(unit, {
-        businessUnit: unit,
-        totals: { vigente: 0, borrador: 0, obsoleta: 0, na: 0 },
-        total: 0
-      });
-    }
-    const entry = map.get(unit)!;
-    const status = (sys.docStatus ?? 'na') as DocStatus | 'na';
-    entry.totals[status] = (entry.totals[status] ?? 0) + 1;
-    entry.total += 1;
-  });
-
-  return Array.from(map.values()).sort((a, b) => b.total - a.total);
+function buildRiskDistribution(): RiskDistributionEntry[] {
+  return RISK_DISTRIBUTION.map((entry) => ({ ...entry }));
 }
 
 function buildTimeline(): TimelineEvent[] {
@@ -245,10 +229,9 @@ export type DashboardViewModel = {
     pendingEvidencesThisWeek: number;
     tasksToday: number;
   };
-  complianceByBusinessUnit: ComplianceEntry[];
+  riskDistribution: RiskDistributionEntry[];
   timeline: TimelineEvent[];
   pendingActions: PendingAction[];
-  docStatusOrder: ReadonlyArray<DocStatus | 'na'>;
 };
 
 export function createDashboardViewModel(): DashboardViewModel {
@@ -266,9 +249,8 @@ export function createDashboardViewModel(): DashboardViewModel {
       pendingEvidencesThisWeek,
       tasksToday
     },
-    complianceByBusinessUnit: buildComplianceByBusinessUnit(),
+    riskDistribution: buildRiskDistribution(),
     timeline: buildTimeline(),
-    pendingActions,
-    docStatusOrder: DOC_STATUS_ORDER
+    pendingActions
   };
 }
