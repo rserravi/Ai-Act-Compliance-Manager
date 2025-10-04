@@ -4,6 +4,7 @@ import type {
   DocumentRef,
   RiskAnswer,
   RiskLevel,
+  Task,
 } from '../../../domain/models'
 import { systems } from '../../../mocks/data'
 import { api, tryApi } from '../../../services/api'
@@ -36,6 +37,24 @@ type DeliverableApi = {
   status?: string | null
   link?: string | null
   updated_at?: string | null
+  assignee?: string | null
+  due_date?: string | null
+}
+
+type DeliverableAssignmentApi = {
+  project_id: string
+  deliverable_id: string
+  assignee: string
+  due_date?: string | null
+}
+
+type TaskApi = {
+  id: string
+  project_id: string
+  title: string
+  status: string
+  assignee?: string | null
+  due_date?: string | null
 }
 
 export type CreateProjectRequest = {
@@ -155,6 +174,8 @@ function mapDeliverableFromApi(data: DeliverableApi): DocumentRef {
   const version = typeof data.version === 'number' ? data.version : 0
   const type = (data.type as DeliverableType | undefined) ?? 'other'
   const status = (data.status as DocumentRef['status'] | undefined) ?? DEFAULT_DELIVERABLE_STATUS
+  const dueDate = data.due_date ?? undefined
+  const assignee = data.assignee ?? undefined
   return {
     id: data.id,
     systemId: data.project_id,
@@ -164,6 +185,31 @@ function mapDeliverableFromApi(data: DeliverableApi): DocumentRef {
     status,
     updatedAt: data.updated_at ?? new Date().toISOString(),
     link: data.link ?? undefined,
+    assignee,
+    dueDate,
+  }
+}
+
+function mapTaskFromApi(data: TaskApi): Task {
+  const status = (data.status as Task['status'] | undefined) ?? 'todo'
+  return {
+    id: data.id,
+    systemId: data.project_id,
+    title: data.title,
+    status,
+    assignee: data.assignee ?? undefined,
+    due: data.due_date ?? undefined,
+  }
+}
+
+function mapTaskToApi(projectId: string, task: Task): TaskApi {
+  return {
+    id: task.id,
+    project_id: projectId,
+    title: task.title,
+    status: task.status,
+    assignee: task.assignee ?? null,
+    due_date: task.due ?? null,
   }
 }
 
@@ -221,6 +267,41 @@ export async function fetchProjectDeliverables(projectId: string): Promise<Docum
     async () => [],
   )
   return deliverables.map(mapDeliverableFromApi)
+}
+
+export type DeliverableAssignmentRequest = {
+  assignee: string
+  dueDate?: string
+}
+
+export async function assignProjectDeliverable(
+  projectId: string,
+  deliverableId: string,
+  request: DeliverableAssignmentRequest,
+): Promise<DeliverableAssignmentApi> {
+  const payload = {
+    assignee: request.assignee,
+    due_date: request.dueDate ?? null,
+  }
+  return await api<DeliverableAssignmentApi>(
+    `/projects/${projectId}/deliverables/${deliverableId}/assign`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  )
+}
+
+export async function createProjectTask(
+  projectId: string,
+  task: Task,
+): Promise<Task> {
+  const payload = mapTaskToApi(projectId, task)
+  const response = await api<TaskApi>(`/projects/${projectId}/tasks`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return mapTaskFromApi(response)
 }
 
 export async function createProject(

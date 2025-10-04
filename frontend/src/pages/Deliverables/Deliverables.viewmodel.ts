@@ -1,6 +1,10 @@
 import type { DocumentRef, Task } from '../../domain/models';
 import type { ProjectStore } from '../../state/project-store';
-import { fetchProjectDeliverables } from '../Projects/Service/projects.service';
+import {
+  assignProjectDeliverable,
+  createProjectTask,
+  fetchProjectDeliverables
+} from '../Projects/Service/projects.service';
 
 export class DeliverablesViewModel {
   constructor(private readonly store: ProjectStore) {}
@@ -26,14 +30,40 @@ export class DeliverablesViewModel {
     this.store.updateDocument(docId, nextVersion, 'En Revisión');
   }
 
-  createAssignment(projectId: string, document: DocumentRef, assignee: string, dueDate: string): Task {
-    const task: Omit<Task, 'id'> = {
-      systemId: projectId,
-      title: `Preparar entregable: ${document.name}`,
-      assignee,
-      due: dueDate,
-      status: 'todo'
-    };
-    return this.store.createTask(task);
+  async assignDeliverable(
+    projectId: string,
+    document: DocumentRef,
+    assignee: string,
+    dueDate: string,
+    options: { createTask: boolean }
+  ): Promise<void> {
+    await assignProjectDeliverable(projectId, document.id, { assignee, dueDate });
+    this.store.updateDeliverableAssignment(document.id, { assignee, dueDate });
+
+    if (options.createTask) {
+      const task: Task = {
+        id: this.#generateId('task'),
+        systemId: projectId,
+        title: `Preparar entregable: ${document.name}`,
+        assignee,
+        due: dueDate,
+        status: 'todo'
+      };
+      const createdTask = await createProjectTask(projectId, task);
+      this.store.upsertTask(createdTask);
+    }
+
+    try {
+      await this.refreshDocuments(projectId);
+    } finally {
+      this.store.updateDeliverableAssignment(document.id, { assignee, dueDate });
+    }
+  }
+
+  #generateId(prefix: string): string {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return `${prefix}-${crypto.randomUUID()}`;
+    }
+    return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
   }
 }

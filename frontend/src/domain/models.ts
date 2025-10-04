@@ -101,6 +101,8 @@ export interface DocumentRef {
   status: DeliverableStatus
   updatedAt: string
   link?: string
+  assignee?: string
+  dueDate?: string
 }
 
 export interface Incident {
