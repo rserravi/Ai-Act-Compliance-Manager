@@ -3,8 +3,8 @@ import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import {
   createDashboardViewModel,
-  DOC_STATUS_ORDER,
   type PendingAction,
+  type RiskDistributionEntry,
   type TimelineEvent
 } from './Dashboard.viewmodel';
 import styles from '../../styles.css?inline';
@@ -12,11 +12,13 @@ import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
 import { evidencesIcon, incidentsIcon, projectsIcon, tasksIcon } from '../../shared/icons';
 
-const STATUS_COLOR_MAP: Record<string, string> = {
-  vigente: 'var(--su)',
-  borrador: 'var(--wa)',
-  obsoleta: 'var(--er)',
-  na: 'var(--bc)'
+const RISK_STYLE_MAP: Record<
+  RiskDistributionEntry['level'],
+  { badge: string; progress: string; percent: string }
+> = {
+  high: { badge: 'badge badge-error badge-lg font-semibold text-error-content', progress: 'progress-error', percent: 'text-error' },
+  limited: { badge: 'badge badge-warning badge-lg font-semibold text-warning-content', progress: 'progress-warning', percent: 'text-warning' },
+  minimal: { badge: 'badge badge-success badge-lg font-semibold text-success-content', progress: 'progress-success', percent: 'text-success' }
 };
 
 @customElement('dashboard-page')
@@ -117,67 +119,51 @@ export class DashboardPage extends LocalizedElement {
     `;
   }
 
-  private renderCompliance() {
-    const entries = this.model.complianceByBusinessUnit;
+  private renderRiskOverview() {
+    const entries = this.model.riskDistribution;
     return html`
       <div class="card bg-base-100 shadow">
-        <div class="card-body space-y-4">
-          <header>
-            <h2 class="card-title">${t('dashboard.compliance.title')}</h2>
-            <p class="text-sm text-base-content/60">${t('dashboard.compliance.subtitle')}</p>
+        <div class="card-body space-y-6">
+          <header class="space-y-1">
+            <h2 class="card-title">${t('dashboard.riskOverview.title')}</h2>
+            <p class="text-sm text-base-content/60">${t('dashboard.riskOverview.subtitle')}</p>
           </header>
-          <div class="flex flex-wrap gap-2">
-            ${DOC_STATUS_ORDER.map(
-              (status) => html`<span class="badge badge-neutral badge-outline capitalize">
-                ${t(`docStatus.${status}`)}
-              </span>`
-            )}
+          <div class="space-y-4">
+            ${entries.map((entry) => {
+              const styles = RISK_STYLE_MAP[entry.level];
+              return html`
+                <article class="space-y-2" aria-label=${t(
+                  `dashboard.riskOverview.levels.${entry.level}` as const
+                )}>
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                      <span class=${styles.badge}>
+                        ${t(`dashboard.riskOverview.levels.${entry.level}` as const)}
+                      </span>
+                      <span class="text-sm text-base-content/70">
+                        ${t('dashboard.riskOverview.systemsLabel', { count: entry.systems })}
+                      </span>
+                    </div>
+                    <span class=${`text-sm font-semibold ${styles.percent}`}>
+                      ${entry.percentage}%
+                    </span>
+                  </div>
+                  <progress
+                    class=${`progress ${styles.progress} w-full`}
+                    value=${entry.percentage}
+                    max="100"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow=${entry.percentage}
+                    aria-label=${t(`dashboard.riskOverview.progressLabel`, {
+                      level: t(`dashboard.riskOverview.levels.${entry.level}` as const),
+                      percentage: entry.percentage
+                    })}
+                  ></progress>
+                </article>
+              `;
+            })}
           </div>
-          ${entries.length === 0
-            ? html`<p class="text-sm text-base-content/60">${t('dashboard.compliance.units.noData')}</p>`
-            : html`
-                <div class="space-y-4">
-                  ${entries.map((entry) => {
-                    const segments = DOC_STATUS_ORDER.map((status) => {
-                      const count = entry.totals[status as keyof typeof entry.totals] ?? 0;
-                      const percent = entry.total ? Math.round((count / entry.total) * 100) : 0;
-                      return { status, count, percent };
-                    }).filter((segment) => segment.count > 0);
-                    return html`
-                      <article class="space-y-2" aria-label=${`Indicadores para ${entry.businessUnit}`}>
-                        <div class="flex items-center justify-between">
-                          <h3 class="font-semibold">${entry.businessUnit}</h3>
-                          <span class="text-xs text-base-content/60">
-                            ${entry.total === 1
-                              ? t('dashboard.compliance.totalLabel_one', { count: entry.total })
-                              : t('dashboard.compliance.totalLabel_other', { count: entry.total })}
-                          </span>
-                        </div>
-                        <div class="w-full h-3 rounded bg-base-200 overflow-hidden flex">
-                          ${segments.length
-                            ? segments.map(
-                                (segment) => html`<div
-                                  class="h-full"
-                                  style="width:${segment.percent}%; background-color:${
-                                    STATUS_COLOR_MAP[segment.status as string] ?? 'var(--bc)'
-                                  }"
-                                  title=${`${t(`docStatus.${segment.status}`)}: ${segment.count}`}
-                                ></div>`
-                              )
-                            : html`<div class="flex-1 bg-base-300"></div>`}
-                        </div>
-                        <div class="flex flex-wrap gap-2 text-xs">
-                          ${segments.map(
-                            (segment) => html`<span class="badge badge-ghost capitalize">
-                              ${t(`docStatus.${segment.status}`)} · ${segment.count}
-                            </span>`
-                          )}
-                        </div>
-                      </article>
-                    `;
-                  })}
-                </div>
-              `}
         </div>
       </div>
     `;
@@ -287,7 +273,7 @@ export class DashboardPage extends LocalizedElement {
         </header>
         ${this.renderKpis()}
         <div class="grid gap-6 lg:grid-cols-2">
-          ${this.renderCompliance()}
+          ${this.renderRiskOverview()}
           ${this.renderTimeline()}
         </div>
         ${this.renderPendingActions()}
