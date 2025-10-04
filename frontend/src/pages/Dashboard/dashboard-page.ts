@@ -68,13 +68,84 @@ export class DashboardPage extends LocalizedElement {
   private renderKpis() {
     const { kpis } = this.model;
     const metrics = [
-      { label: t('dashboard.metrics.registeredSystems'), value: kpis.registeredSystems },
-      { label: t('dashboard.metrics.highRiskSystems'), value: kpis.highRiskSystems },
       {
-        label: t('dashboard.metrics.pendingEvidencesThisWeek'),
-        value: kpis.pendingEvidencesThisWeek
+        label: t('dashboard.metrics.registeredProjects'),
+        value: kpis.registeredSystems,
+        subtitle: t('dashboard.metrics.registeredProjectsSubtitle'),
+        icon: html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-5 w-5"
+        >
+          <path d="M4.75 6.75h6.5l1.5 2.5h6.5a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H4.75a1.5 1.5 0 0 1-1.5-1.5v-9a1.5 1.5 0 0 1 1.5-1.5Z" />
+          <path d="M12 12v4.5" />
+          <path d="M9.75 14.25h4.5" />
+        </svg>`
       },
-      { label: t('dashboard.metrics.tasksToday'), value: kpis.tasksToday }
+      {
+        label: t('dashboard.metrics.highRiskProjects'),
+        value: kpis.highRiskSystems,
+        subtitle: t('dashboard.metrics.highRiskProjectsSubtitle'),
+        icon: html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-5 w-5"
+        >
+          <path d="M3.75 18.75h16.5L12 3.75 3.75 18.75Z" />
+          <path d="M12 9.75v3.75" />
+          <circle cx="12" cy="16.5" r=".75" fill="currentColor" stroke="none" />
+        </svg>`
+      },
+      {
+        label: t('dashboard.metrics.pendingEvidences'),
+        value: kpis.pendingEvidencesThisWeek,
+        subtitle: t('dashboard.metrics.pendingEvidencesSubtitle'),
+        icon: html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-5 w-5"
+        >
+          <path d="M8.25 4.5h7.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-7.5a1.5 1.5 0 0 1-1.5-1.5v-12a1.5 1.5 0 0 1 1.5-1.5Z" />
+          <path d="M9.75 8.25h4.5" />
+          <path d="M9.75 11.25h4.5" />
+          <path d="M9.75 14.25h3" />
+        </svg>`
+      },
+      {
+        label: t('dashboard.metrics.pendingTasks'),
+        value: kpis.tasksToday,
+        subtitle: t('dashboard.metrics.pendingTasksSubtitle'),
+        icon: html`<svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-5 w-5"
+        >
+          <rect x="4.5" y="5.25" width="15" height="13.5" rx="2" />
+          <path d="M9 9h6" />
+          <path d="M9 12h6" />
+          <path d="M9 15h3.75" />
+        </svg>`
+      }
     ];
 
     return html`
@@ -82,9 +153,15 @@ export class DashboardPage extends LocalizedElement {
         ${metrics.map(
           (metric) => html`
             <div class="card bg-base-100 shadow">
-              <div class="card-body">
-                <span class="text-xs uppercase text-base-content/60">${metric.label}</span>
-                <span class="text-3xl font-semibold">${metric.value}</span>
+              <div class="card-body space-y-4">
+                <div class="flex items-start justify-between gap-4">
+                  <span class="text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                    ${metric.label}
+                  </span>
+                  <span class="rounded-full bg-primary/10 p-2 text-primary">${metric.icon}</span>
+                </div>
+                <span class="text-3xl font-semibold text-base-content">${metric.value}</span>
+                <span class="text-sm text-secondary">${metric.subtitle}</span>
               </div>
             </div>
           `
