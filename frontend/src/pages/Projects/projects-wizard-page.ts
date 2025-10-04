@@ -14,6 +14,9 @@ import {
   type RiskWizardHelp
 } from './ProjectRiskWizard.viewmodel';
 
+const DEPLOYMENT_OPTIONS = ['sandbox', 'pilot', 'production', 'internal_only'] as const;
+type DeploymentOption = (typeof DEPLOYMENT_OPTIONS)[number];
+
 @customElement('projects-wizard-page')
 export class ProjectsWizardPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
@@ -24,7 +27,10 @@ export class ProjectsWizardPage extends LocalizedElement {
   @state() private step = 0;
   @state() private name = '';
   @state() private projectRole: AISystem['role'] = 'provider';
+  @state() private purpose = '';
+  @state() private owner = '';
   @state() private businessUnit = '';
+  @state() private deployments: DeploymentOption[] = [];
   @state() private team: Contact[] = [];
   @state() private riskStepIndex = this.riskWizard.stepIndex;
   @state() private riskResult: RiskWizardResult = this.riskWizard.result;
@@ -80,8 +86,11 @@ export class ProjectsWizardPage extends LocalizedElement {
     const project = this.projects.value.createProject({
       name: this.name,
       role: this.projectRole,
+      purpose: this.purpose,
+      owner: this.owner,
       team: this.team,
       businessUnit: this.businessUnit,
+      deployments: this.deployments,
       risk: result?.classification,
       riskAssessment: result
         ? {
@@ -108,6 +117,16 @@ export class ProjectsWizardPage extends LocalizedElement {
     this.riskStepIndex = this.riskWizard.stepIndex;
     this.riskResult = this.riskWizard.result;
     this.riskAnswers = this.riskWizard.answers;
+  }
+
+  private handleDeploymentToggle(option: DeploymentOption, checked: boolean) {
+    if (checked) {
+      if (!this.deployments.includes(option)) {
+        this.deployments = [...this.deployments, option];
+      }
+      return;
+    }
+    this.deployments = this.deployments.filter((deployment) => deployment !== option);
   }
 
   private renderStepIndicator() {
@@ -152,6 +171,33 @@ export class ProjectsWizardPage extends LocalizedElement {
           </select>
         </label>
         <label class="form-control md:col-span-2">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.purpose')}</span></span>
+          <textarea
+            class="textarea textarea-bordered"
+            rows="3"
+            .value=${this.purpose}
+            placeholder=${t('projects.wizard.placeholders.purpose')}
+            @input=${(event: Event) => {
+              const textarea = event.currentTarget as HTMLTextAreaElement;
+              this.purpose = textarea.value;
+            }}
+            required
+          ></textarea>
+        </label>
+        <label class="form-control">
+          <span class="label"><span class="label-text">${t('projects.wizard.fields.owner')}</span></span>
+          <input
+            class="input input-bordered"
+            .value=${this.owner}
+            placeholder=${t('projects.wizard.placeholders.owner')}
+            @input=${(event: Event) => {
+              const input = event.currentTarget as HTMLInputElement;
+              this.owner = input.value;
+            }}
+            required
+          >
+        </label>
+        <label class="form-control md:col-span-2">
           <span class="label"><span class="label-text">${t('projects.wizard.fields.businessUnit')}</span></span>
           <input
             class="input input-bordered"
@@ -162,6 +208,34 @@ export class ProjectsWizardPage extends LocalizedElement {
             }}
             placeholder=${t('projects.wizard.placeholders.businessUnit')}
           >
+        </label>
+        <label class="form-control md:col-span-2">
+          <span class="label">
+            <span class="label-text">${t('projects.wizard.fields.deployments')}</span>
+            <span class="label-text-alt">${t('projects.wizard.deployments.helper')}</span>
+          </span>
+          <div class="space-y-2 rounded-lg border border-base-300 p-4">
+            ${DEPLOYMENT_OPTIONS.map((option) => {
+              const selected = this.deployments.includes(option);
+              return html`
+                <label class="label cursor-pointer justify-start gap-3">
+                  <input
+                    class="checkbox checkbox-sm"
+                    type="checkbox"
+                    .checked=${selected}
+                    @change=${(event: Event) => {
+                      const input = event.currentTarget as HTMLInputElement;
+                      this.handleDeploymentToggle(option, input.checked);
+                    }}
+                  >
+                  <span>${t(`projects.wizard.deployments.options.${option}` as const)}</span>
+                </label>
+              `;
+            })}
+          </div>
+          ${this.deployments.length === 0
+            ? html`<span class="mt-2 text-sm text-error">${t('projects.wizard.validations.deployments')}</span>`
+            : null}
         </label>
       </div>
     `;
@@ -490,8 +564,21 @@ export class ProjectsWizardPage extends LocalizedElement {
           <h2>${t('projects.wizard.summary.title')}</h2>
           <p><strong>${t('projects.wizard.fields.name')}:</strong> ${this.name}</p>
           <p><strong>${t('projects.wizard.fields.role')}:</strong> ${t(`roles.${this.projectRole}` as const)}</p>
+          <p><strong>${t('projects.wizard.fields.purpose')}:</strong> ${
+            this.purpose || t('projects.wizard.summary.unset')
+          }</p>
+          <p><strong>${t('projects.wizard.fields.owner')}:</strong> ${
+            this.owner || t('projects.wizard.summary.unset')
+          }</p>
           <p><strong>${t('projects.wizard.fields.businessUnit')}:</strong> ${
             this.businessUnit || t('projects.wizard.summary.unset')
+          }</p>
+          <p><strong>${t('projects.wizard.fields.deployments')}:</strong> ${
+            this.deployments.length
+              ? this.deployments
+                  .map((deployment) => t(`projects.wizard.deployments.options.${deployment}` as const))
+                  .join(', ')
+              : t('projects.wizard.summary.unset')
           }</p>
           <p><strong>${t('projects.wizard.fields.risk')}:</strong> ${
             this.riskResult ? t(`riskLevels.${this.riskResult.classification}` as const) : t('projects.wizard.summary.unclassifiedRisk')
@@ -525,7 +612,13 @@ export class ProjectsWizardPage extends LocalizedElement {
   }
 
   protected render() {
-    const canContinue = this.step === 0 ? this.name.trim().length > 0 : true;
+    const canContinue =
+      this.step === 0
+        ? this.name.trim().length > 0 &&
+          this.purpose.trim().length > 0 &&
+          this.owner.trim().length > 0 &&
+          this.deployments.length > 0
+        : true;
 
     return html`
       <section class="space-y-6">

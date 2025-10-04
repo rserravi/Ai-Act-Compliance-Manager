@@ -41,6 +41,7 @@ export interface AISystem {
   purpose?: string
   owner?: string
   businessUnit?: string
+  deployments?: string[]
   team?: Contact[]
   risk?: RiskLevel
   docStatus?: DocStatus

@@ -521,7 +521,10 @@ const resources = {
           fields: {
             name: "Nombre del proyecto",
             role: "Rol en la cadena de valor",
+            purpose: "Propósito del sistema",
+            owner: "Propietario responsable",
             businessUnit: "Unidad de negocio (opcional)",
+            deployments: "Despliegues previstos",
             team: "Miembros del equipo",
             risk: "Riesgo identificado",
             notes: "Notas adicionales"
@@ -539,7 +542,18 @@ const resources = {
           placeholders: {
             team: "p.ej. ada.lovelace@example.com, grace.hopper@example.com",
             notes: "Anotaciones sobre el alcance, el contexto o los próximos pasos...",
-            businessUnit: "Unidad o departamento principal"
+            businessUnit: "Unidad o departamento principal",
+            purpose: "Describe la finalidad principal del sistema",
+            owner: "Nombre de la persona responsable"
+          },
+          deployments: {
+            helper: "Selecciona los entornos previstos para el despliegue.",
+            options: {
+              sandbox: "Sandbox / entorno controlado",
+              pilot: "Piloto con usuarios reales",
+              production: "Producción",
+              internal_only: "Uso interno únicamente"
+            }
           },
           risk: {
             description: "Selecciona la clasificación de riesgo identificada tras la evaluación inicial.",
@@ -547,6 +561,9 @@ const resources = {
           },
           team: {
             empty: "Todavía no hay contactos asignados."
+          },
+          validations: {
+            deployments: "Selecciona al menos un despliegue previsto."
           },
           summary: {
             title: "Resumen del Proyecto",
@@ -1201,7 +1218,10 @@ const resources = {
           fields: {
             name: "Project name",
             role: "Role in the value chain",
+            purpose: "System purpose",
+            owner: "Project owner",
             businessUnit: "Business unit (optional)",
+            deployments: "Planned deployments",
             team: "Team members",
             risk: "Identified risk",
             notes: "Additional notes"
@@ -1219,7 +1239,18 @@ const resources = {
           placeholders: {
             team: "e.g. ada.lovelace@example.com, grace.hopper@example.com",
             notes: "Notes about scope, context, or next steps...",
-            businessUnit: "Primary unit or department"
+            businessUnit: "Primary unit or department",
+            purpose: "Describe the primary intended purpose",
+            owner: "Name of the accountable owner"
+          },
+          deployments: {
+            helper: "Select the environments where the system will be deployed.",
+            options: {
+              sandbox: "Sandbox / controlled environment",
+              pilot: "Pilot with real users",
+              production: "Production",
+              internal_only: "Internal use only"
+            }
           },
           risk: {
             description: "Select the risk classification identified after the initial assessment.",
@@ -1227,6 +1258,9 @@ const resources = {
           },
           team: {
             empty: "No contacts added yet."
+          },
+          validations: {
+            deployments: "Select at least one planned deployment."
           },
           summary: {
             title: "Project Summary",
@@ -1881,7 +1915,10 @@ const resources = {
           fields: {
             name: "Nom del projecte",
             role: "Rol a la cadena de valor",
+            purpose: "Finalitat del sistema",
+            owner: "Responsable del projecte",
             businessUnit: "Unitat de negoci (opcional)",
+            deployments: "Desplegaments previstos",
             team: "Membres de l'equip",
             risk: "Risc identificat",
             notes: "Notes addicionals"
@@ -1899,7 +1936,18 @@ const resources = {
           placeholders: {
             team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
             notes: "Anotacions sobre l'abast, el context o els propers passos...",
-            businessUnit: "Unitat o departament principal"
+            businessUnit: "Unitat o departament principal",
+            purpose: "Descriu la finalitat principal del sistema",
+            owner: "Nom de la persona responsable"
+          },
+          deployments: {
+            helper: "Selecciona els entorns previstos per al desplegament.",
+            options: {
+              sandbox: "Sandbox / entorn controlat",
+              pilot: "Pilot amb usuaris reals",
+              production: "Producció",
+              internal_only: "Ús intern només"
+            }
           },
           risk: {
             description: "Selecciona la classificació de risc identificada després de l'avaluació inicial.",
@@ -1907,6 +1955,9 @@ const resources = {
           },
           team: {
             empty: "Encara no hi ha contactes assignats."
+          },
+          validations: {
+            deployments: "Selecciona almenys un desplegament previst."
           },
           summary: {
             title: "Resum del Projecte",
@@ -2561,7 +2612,10 @@ const resources = {
           fields: {
             name: "Nom du projet",
             role: "Rôle dans la chaîne de valeur",
+            purpose: "Finalité du système",
+            owner: "Responsable du projet",
             businessUnit: "Unité commerciale (optionnel)",
+            deployments: "Déploiements prévus",
             team: "Membres de l'équipe",
             risk: "Risque identifié",
             notes: "Notes supplémentaires"
@@ -2579,7 +2633,18 @@ const resources = {
           placeholders: {
             team: "p.ex. ada.lovelace@example.com, grace.hopper@example.com",
             notes: "Notes sur le périmètre, le contexte ou les prochaines étapes...",
-            businessUnit: "Unité ou département principal"
+            businessUnit: "Unité ou département principal",
+            purpose: "Décrivez la finalité principale du système",
+            owner: "Nom du responsable"
+          },
+          deployments: {
+            helper: "Sélectionnez les environnements prévus pour le déploiement.",
+            options: {
+              sandbox: "Sandbox / environnement contrôlé",
+              pilot: "Pilote avec des utilisateurs réels",
+              production: "Production",
+              internal_only: "Usage interne uniquement"
+            }
           },
           risk: {
             description: "Sélectionnez la classification de risque identifiée après l'évaluation initiale.",
@@ -2587,6 +2652,9 @@ const resources = {
           },
           team: {
             empty: "Aucun contact ajouté pour le moment."
+          },
+          validations: {
+            deployments: "Sélectionnez au moins un déploiement prévu."
           },
           summary: {
             title: "Résumé du Projet",
