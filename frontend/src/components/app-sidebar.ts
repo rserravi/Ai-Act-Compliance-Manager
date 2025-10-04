@@ -5,6 +5,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import type { AISystem } from '../domain/models';
 import { t } from '../shared/i18n';
 import { LocalizedElement } from '../shared/localized-element';
+import sharedStyles from '../styles.css?inline';
 import {
   auditsIcon,
   dashboardIcon,
@@ -60,7 +61,7 @@ const PROJECT_NAV_ITEMS: ReadonlyArray<ProjectNavigationItem> = [
 
 @customElement('app-sidebar')
 export class AppSidebar extends LocalizedElement {
-  static styles = [baseStyles];
+  static override styles = [css([sharedStyles] as any), baseStyles];
 
   @property({ type: Boolean }) mobileMenuOpen = false;
   @property({ attribute: false }) activeProject: AISystem | null = null;

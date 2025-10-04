@@ -5,6 +5,7 @@ import type { AISystem } from '../domain/models';
 import type { SupportedLanguage } from '../shared/i18n';
 import { t } from '../shared/i18n';
 import { LocalizedElement } from '../shared/localized-element';
+import sharedStyles from '../styles.css?inline';
 
 const styles = css`
   :host {
@@ -14,7 +15,7 @@ const styles = css`
 
 @customElement('app-header')
 export class AppHeader extends LocalizedElement {
-  static override styles = [styles];
+  static override styles = [css([sharedStyles] as any), styles];
 
   @property({ attribute: false }) activeProject: AISystem | null = null;
   @property({ type: String }) language: SupportedLanguage = 'en';
