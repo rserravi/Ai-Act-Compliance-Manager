@@ -61,7 +61,7 @@ function isProjectRole(value: unknown): value is AISystem['role'] {
 export class ProjectsWizardPage extends LocalizedElement {
   declare renderRoot: HTMLElement;
 
-  private static readonly PERSISTED_STATE_KEYS: Array<keyof ProjectsWizardPage> = [
+  private static readonly PERSISTED_STATE_KEYS = [
     'step',
     'name',
     'projectRole',
@@ -76,7 +76,7 @@ export class ProjectsWizardPage extends LocalizedElement {
     'riskAnswers',
     'riskResult',
     'notes'
-  ];
+  ] as const satisfies ReadonlyArray<PropertyKey>;
 
   private readonly projects = new ProjectController(this);
   private riskWizard = new ProjectRiskWizardViewModel();
@@ -148,7 +148,8 @@ export class ProjectsWizardPage extends LocalizedElement {
     if (this.persistenceSuspendedCount > 0) {
       return false;
     }
-    return ProjectsWizardPage.PERSISTED_STATE_KEYS.some((key) => changedProperties.has(key));
+    const changed = changedProperties as Map<PropertyKey, unknown>;
+    return ProjectsWizardPage.PERSISTED_STATE_KEYS.some((key) => changed.has(key));
   }
 
   private persistDraft(): void {
