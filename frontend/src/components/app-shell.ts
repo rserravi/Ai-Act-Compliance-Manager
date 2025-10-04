@@ -79,7 +79,31 @@ export class AppShell extends LocalizedElement {
   }
 
   private handleProjectChange(projectId: string | null) {
+    const currentPath = getCurrentPath();
+    const isProjectContextRoute = /^\/projects\/[^/]+(?:\/.*)?$/.test(currentPath);
+
     this.projects.value.setActiveProjectId(projectId);
+
+    if (!projectId) {
+      if (isProjectContextRoute) {
+        navigateTo('/projects');
+        this.syncActivePath();
+      }
+      return;
+    }
+
+    if (isProjectContextRoute) {
+      const segments = currentPath.split('/');
+      if (segments.length > 2) {
+        segments[2] = projectId;
+        const newPath = segments.join('/');
+
+        if (newPath !== currentPath) {
+          navigateTo(newPath, { replace: true });
+          this.syncActivePath();
+        }
+      }
+    }
   }
 
   private logout() {
