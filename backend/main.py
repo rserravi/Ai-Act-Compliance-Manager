@@ -181,6 +181,9 @@ def get_current_user(
     if credentials.scheme.lower() != "bearer":
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         payload = _decode_token(credentials.credentials)
     except HTTPException as exc:
