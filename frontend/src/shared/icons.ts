@@ -128,6 +128,24 @@ export function teamsIcon(): TemplateResult {
   </svg>`;
 }
 
+export function infoCircleIcon(): TemplateResult {
+  return html`<svg
+    class="h-4 w-4"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke-width="1.5"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      d="M11.25 11.25h1.5v3m-0.75-8.25h.008v.008H11.25V6Zm9 6a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+    />
+  </svg>`;
+}
+
 export function auditsIcon(): TemplateResult {
   return html`<svg
     class="w-5 h-5"
