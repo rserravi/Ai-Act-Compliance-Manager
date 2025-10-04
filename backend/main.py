@@ -125,6 +125,31 @@ def _generate_verification_code(length: int = 8) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+def _resolve_user_from_payload(payload: Dict[str, Any], db: Session) -> Optional[User]:
+    """Return the authenticated user given a decoded JWT payload."""
+
+    candidate_ids = [
+        payload.get("sub"),
+        payload.get("user_id"),
+        payload.get("uid"),
+        payload.get("id"),
+    ]
+    for candidate in candidate_ids:
+        if not candidate:
+            continue
+        user = get_user_by_id(db, candidate)
+        if user:
+            return user
+
+    email = payload.get("email")
+    if email:
+        user_model = get_user_model_by_email(db, email)
+        if user_model:
+            return model_to_schema(user_model)
+
+    return None
+
+
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Session = Depends(get_db),
@@ -133,11 +158,7 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     payload = _decode_token(credentials.credentials)
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-
-    user = get_user_by_id(db, user_id)
+    user = _resolve_user_from_payload(payload, db)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
