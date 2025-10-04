@@ -21,6 +21,19 @@ const RISK_STYLE_MAP: Record<
   minimal: { badge: 'badge badge-success badge-lg font-semibold text-success-content', progress: 'progress-success', percent: 'text-success' }
 };
 
+const PRIORITY_BADGE_MAP: Record<PendingAction['priority'], string> = {
+  high: 'badge badge-error badge-sm font-medium text-error-content capitalize',
+  medium: 'badge badge-warning badge-sm font-medium text-warning-content capitalize',
+  low: 'badge badge-info badge-sm font-medium text-info-content capitalize'
+};
+
+const STATUS_BADGE_MAP = {
+  todo: 'badge badge-error badge-sm font-medium text-error-content capitalize',
+  in_review: 'badge badge-info badge-sm font-medium text-info-content capitalize',
+  in_progress: 'badge badge-warning badge-sm font-medium text-warning-content capitalize',
+  approved: 'badge badge-success badge-sm font-medium text-success-content capitalize'
+} as const satisfies Record<PendingAction['status'] | 'in_progress', string>;
+
 @customElement('dashboard-page')
 export class DashboardPage extends LocalizedElement {
   static styles = [css([styles] as any)];
@@ -243,12 +256,12 @@ export class DashboardPage extends LocalizedElement {
                             <td>${action.owner}</td>
                             <td>${dueDate.toLocaleDateString(this.currentLanguage)}</td>
                             <td>
-                              <span class="badge badge-outline capitalize">
+                              <span class=${PRIORITY_BADGE_MAP[action.priority]}>
                                 ${t(`dashboard.actions.priority.${action.priority}` as const)}
                               </span>
                             </td>
                             <td>
-                              <span class="badge badge-neutral capitalize">
+                              <span class=${STATUS_BADGE_MAP[action.status]}>
                                 ${t(`dashboard.actions.status.${action.status}` as const)}
                               </span>
                             </td>
