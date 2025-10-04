@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 from importlib import import_module, reload
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,6 +11,7 @@ if str(ROOT_DIR) not in sys.path:
 
 import httpx  # noqa: F401 - ensure the local stub is registered before importing TestClient
 from fastapi.testclient import TestClient
+from jose import jwt
 
 # Configure an isolated database and deterministic JWT secret for the test run
 _TEMP_DIR = TemporaryDirectory()
@@ -69,3 +71,35 @@ def test_full_authentication_flow():
     assert me_response.status_code == 200
     me_data = me_response.json()
     assert me_data["email"] == payload["email"].lower()
+
+
+def test_legacy_token_without_sub_claim_is_accepted():
+    client = TestClient(_main_module.app)
+
+    login_response = client.post(
+        "/auth/login/sso",
+        json={
+            "email": "legacy@test.example",
+            "provider": "test",
+            "company": "Legacy Co",
+        },
+    )
+    assert login_response.status_code == 200
+    login_data = login_response.json()
+
+    user = login_data["user"]
+    legacy_payload = {
+        "user_id": user["id"],
+        "email": user["email"],
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+    }
+    legacy_token = jwt.encode(
+        legacy_payload,
+        os.environ["JWT_SECRET"],
+        algorithm=os.environ["JWT_ALGORITHM"],
+    )
+
+    headers = {"Authorization": f"Bearer {legacy_token}"}
+    response = client.post("/risk-evaluations", json={"answers": {}}, headers=headers)
+
+    assert response.status_code == 200
