@@ -55,7 +55,7 @@ export class DeliverablesPage extends LocalizedElement {
     this.#toastTimeouts.clear();
   }
 
-  private #readWizardFlag(): boolean {
+  #readWizardFlag(): boolean {
     try {
       const params = new URLSearchParams(window.location.search);
       return params.get('wizard') === 'schedule';
@@ -65,7 +65,7 @@ export class DeliverablesPage extends LocalizedElement {
     }
   }
 
-  private #clearWizardFlag(): void {
+  #clearWizardFlag(): void {
     try {
       const url = new URL(window.location.href);
       if (!url.searchParams.has('wizard')) {
@@ -80,7 +80,7 @@ export class DeliverablesPage extends LocalizedElement {
     }
   }
 
-  private #maybeOpenWizard(projectId: string): void {
+  #maybeOpenWizard(projectId: string): void {
     if (!this.#wizardAutoStart) {
       return;
     }
@@ -252,7 +252,7 @@ export class DeliverablesPage extends LocalizedElement {
     }
   }
 
-  private async #loadDeliverables(projectId: string): Promise<void> {
+  async #loadDeliverables(projectId: string): Promise<void> {
     this.#loadingFor = projectId;
     this.isLoading = true;
     this.loadError = null;
