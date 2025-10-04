@@ -18,20 +18,24 @@ const RISK_STYLE_MAP: Record<
 > = {
   high: { badge: 'badge badge-error badge-lg font-semibold text-error-content', progress: 'progress-error', percent: 'text-error' },
   limited: { badge: 'badge badge-warning badge-lg font-semibold text-warning-content', progress: 'progress-warning', percent: 'text-warning' },
-  minimal: { badge: 'badge badge-success badge-lg font-semibold text-success-content', progress: 'progress-success', percent: 'text-success' }
+  minimal: {
+    badge: 'badge badge-success badge-lg font-semibold text-white',
+    progress: 'progress-success',
+    percent: 'text-success'
+  }
 };
 
 const PRIORITY_BADGE_MAP: Record<PendingAction['priority'], string> = {
   high: 'badge badge-error badge-sm font-medium text-error-content capitalize',
   medium: 'badge badge-warning badge-sm font-medium text-warning-content capitalize',
-  low: 'badge badge-info badge-sm font-medium text-info-content capitalize'
+  low: 'badge badge-info badge-sm font-medium text-white capitalize'
 };
 
 const STATUS_BADGE_MAP = {
   todo: 'badge badge-error badge-sm font-medium text-error-content capitalize',
-  in_review: 'badge badge-info badge-sm font-medium text-info-content capitalize',
+  in_review: 'badge badge-info badge-sm font-medium text-white capitalize',
   in_progress: 'badge badge-warning badge-sm font-medium text-warning-content capitalize',
-  approved: 'badge badge-success badge-sm font-medium text-success-content capitalize'
+  approved: 'badge badge-success badge-sm font-medium text-white capitalize'
 } as const satisfies Record<PendingAction['status'] | 'in_progress', string>;
 
 @customElement('dashboard-page')
