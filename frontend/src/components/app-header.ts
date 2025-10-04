@@ -97,9 +97,6 @@ export class AppHeader extends LocalizedElement {
                 <h1 class="text-lg font-semibold truncate">
                   ${activeProject?.name ?? t('app.layout.defaultProjectTitle')}
                 </h1>
-                ${activeProject
-                  ? html`<span class="badge badge-outline">${t(`roles.${activeProject.role}` as const)}</span>`
-                  : null}
               </div>
               ${activeProject
                 ? null
