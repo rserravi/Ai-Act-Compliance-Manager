@@ -181,7 +181,16 @@ def get_current_user(
     if credentials.scheme.lower() != "bearer":
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    payload = _decode_token(credentials.credentials)
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        payload = _decode_token(credentials.credentials)
+    except HTTPException as exc:
+        anonymous_user = _resolve_anonymous_user(db)
+        if anonymous_user is not None:
+            return anonymous_user
+        raise exc
     user = _resolve_user_from_payload(payload, db)
     if not user:
         anonymous_user = _resolve_anonymous_user(db)
