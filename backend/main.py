@@ -99,6 +99,8 @@ JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-key")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 VERIFICATION_CODE_TTL_MINUTES = int(os.getenv("SIGN_IN_CODE_TTL_MINUTES", "15"))
+ALLOW_ANONYMOUS_ACCESS = os.getenv("AUTH_ALLOW_ANONYMOUS", "true").lower() in {"1", "true", "yes"}
+ANONYMOUS_USER_EMAIL = os.getenv("AUTH_ANONYMOUS_EMAIL", "rocio.serrano@acme.ai")
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -150,16 +152,47 @@ def _resolve_user_from_payload(payload: Dict[str, Any], db: Session) -> Optional
     return None
 
 
+def _resolve_anonymous_user(db: Session) -> Optional[User]:
+    """Return the default demo user when anonymous access is allowed."""
+
+    if not ALLOW_ANONYMOUS_ACCESS:
+        return None
+
+    if not ANONYMOUS_USER_EMAIL:
+        return None
+
+    user_model = get_user_model_by_email(db, ANONYMOUS_USER_EMAIL)
+    if user_model is None:
+        return None
+
+    return model_to_schema(user_model)
+
+
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    if credentials is None or credentials.scheme.lower() != "bearer":
+    if credentials is None:
+        anonymous_user = _resolve_anonymous_user(db)
+        if anonymous_user is not None:
+            return anonymous_user
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    payload = _decode_token(credentials.credentials)
+    if credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        payload = _decode_token(credentials.credentials)
+    except HTTPException as exc:
+        anonymous_user = _resolve_anonymous_user(db)
+        if anonymous_user is not None:
+            return anonymous_user
+        raise exc
     user = _resolve_user_from_payload(payload, db)
     if not user:
+        anonymous_user = _resolve_anonymous_user(db)
+        if anonymous_user is not None:
+            return anonymous_user
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
