@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class AISystemUpdate(BaseModel):
+class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[str] = None
     risk: Optional[str] = None

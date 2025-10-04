@@ -35,8 +35,6 @@ from backend.repositories.user_repository import (
 from backend.security import verify_password
 
 from backend.schemas import (
-    AISystem,
-    AISystemUpdate,
     Audit,
     Contact,
     ContactMethod,
@@ -53,6 +51,8 @@ from backend.schemas import (
     LoginResult,
     OrgStructure,
     PendingActivity,
+    Project,
+    ProjectUpdate,
     RACIEntry,
     RiskAssessment,
     RiskWizardConfig,
@@ -135,7 +135,9 @@ def get_current_user(
 # In-memory stores (placeholders until real persistence is added)
 # ---------------------------------------------------------------------------
 
-systems: Dict[str, AISystem] = {}
+projects: Dict[str, Project] = {}
+# Temporary alias to keep legacy endpoints functional while routes are migrated
+systems = projects
 risk_assessments = defaultdict(list)
 deliverables = defaultdict(list)
 deliverable_templates: List[DeliverableTemplate] = []
@@ -428,48 +430,50 @@ def sign_up_resend(
 # ---------------------------------------------------------------------------
 
 
-@app.get("/systems", response_model=List[AISystem])
-def list_systems(
+@app.get("/projects", response_model=List[Project])
+def list_projects(
     current_user: User = Depends(get_current_user),
     role: Optional[str] = None,
     risk: Optional[str] = None,
     doc: Optional[str] = None,
     q: Optional[str] = None,
 ):
-    data = list(systems.values())
+    data = list(projects.values())
     if role:
-        data = [sys for sys in data if sys.role == role]
+        data = [project for project in data if project.role == role]
     if risk:
-        data = [sys for sys in data if sys.risk == risk]
+        data = [project for project in data if project.risk == risk]
     if doc:
-        data = [sys for sys in data if sys.documentation_status == doc]
+        data = [project for project in data if project.documentation_status == doc]
     if q:
-        data = [sys for sys in data if q.lower() in sys.name.lower()]
+        data = [project for project in data if q.lower() in project.name.lower()]
     return data
 
 
-@app.post("/systems", response_model=AISystem)
-def create_system(payload: AISystem, current_user: User = Depends(get_current_user)):
-    systems[payload.id] = payload
+@app.post("/projects", response_model=Project)
+def create_project(payload: Project, current_user: User = Depends(get_current_user)):
+    projects[payload.id] = payload
     return payload
 
 
-@app.get("/systems/{system_id}", response_model=AISystem)
-def get_system(system_id: str, current_user: User = Depends(get_current_user)):
-    system = systems.get(system_id)
-    if not system:
-        raise HTTPException(status_code=404, detail="System not found")
-    return system
+@app.get("/projects/{project_id}", response_model=Project)
+def get_project(project_id: str, current_user: User = Depends(get_current_user)):
+    project = projects.get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
 
 
-@app.patch("/systems/{system_id}", response_model=AISystem)
-def update_system(system_id: str, payload: AISystemUpdate, current_user: User = Depends(get_current_user)):
-    system = systems.get(system_id)
-    if not system:
-        raise HTTPException(status_code=404, detail="System not found")
+@app.patch("/projects/{project_id}", response_model=Project)
+def update_project(
+    project_id: str, payload: ProjectUpdate, current_user: User = Depends(get_current_user)
+):
+    project = projects.get(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
     update_data = payload.dict(exclude_unset=True)
-    updated = system.copy(update=update_data)
-    systems[system_id] = updated
+    updated = project.copy(update=update_data)
+    projects[project_id] = updated
     return updated
 
 
@@ -759,5 +763,3 @@ def list_team_members(system_id: str, current_user: User = Depends(get_current_u
 @app.get("/activities/pending", response_model=List[PendingActivity])
 def list_pending_activities(current_user: User = Depends(get_current_user)):
     return pending_activities
-
-
