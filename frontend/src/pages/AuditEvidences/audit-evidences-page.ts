@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import { getAuditDocuments, summarizeEvidences } from './AuditEvidences.viewmodel';
@@ -25,6 +25,22 @@ export class AuditEvidencesPage extends LocalizedElement {
 
   protected createRenderRoot(): HTMLElement {
     return this;
+  }
+
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (!changedProperties.has('projectId')) {
+      return;
+    }
+
+    const newProjectId = this.projectId?.trim();
+    if (newProjectId) {
+      if (this.projects.activeProjectId !== newProjectId) {
+        this.projects.value.setActiveProjectId(newProjectId);
+      }
+    } else if (this.projects.activeProjectId !== null) {
+      this.projects.value.setActiveProjectId(null);
+    }
   }
 
   protected render() {

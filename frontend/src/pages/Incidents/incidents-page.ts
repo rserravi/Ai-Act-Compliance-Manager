@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, type PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { IncidentRow } from './Service/incidents.service';
 import { IncidentsViewModel } from './Incidents.viewmodel';
@@ -44,9 +44,19 @@ export class IncidentsPage extends LocalizedElement {
     super.disconnectedCallback();
   }
 
-  protected updated(changed: Map<string, unknown>): void {
-    if (changed.has('projectId')) {
-      this.requestUpdate();
+  protected override willUpdate(changedProperties: PropertyValues<this>): void {
+    super.willUpdate(changedProperties);
+    if (!changedProperties.has('projectId')) {
+      return;
+    }
+
+    const newProjectId = this.projectId?.trim();
+    if (newProjectId) {
+      if (this.projects.activeProjectId !== newProjectId) {
+        this.projects.value.setActiveProjectId(newProjectId);
+      }
+    } else if (this.projects.activeProjectId !== null) {
+      this.projects.value.setActiveProjectId(null);
     }
   }
 
