@@ -362,7 +362,7 @@ export class ProjectsWizardPage extends LocalizedElement {
   private renderRiskStepHelp(stepId: string, help: RiskWizardHelp) {
     const tooltipId = `risk-help-${stepId}`;
     return html`
-      <div class="relative z-50 inline-flex group">
+      <div class="relative z-[120] inline-flex group">
         <button
           type="button"
           class="btn btn-circle btn-ghost btn-xs"
@@ -374,7 +374,7 @@ export class ProjectsWizardPage extends LocalizedElement {
         <div
           id=${tooltipId}
           role="tooltip"
-          class="pointer-events-none absolute right-0 top-full z-50 mt-2 w-72 max-w-sm rounded-md bg-base-200 p-4 text-sm shadow-lg opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+          class="pointer-events-none absolute right-0 top-full z-[120] mt-2 w-72 max-w-sm rounded-md bg-base-200 p-4 text-sm shadow-lg opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
         >
           <p class="mb-2">${help.text}</p>
           ${help.links && help.links.length
