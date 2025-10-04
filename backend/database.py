@@ -49,6 +49,33 @@ def init_db() -> None:
                 connection.execute(text("ALTER TABLE users ADD COLUMN preferences_language VARCHAR(50)"))
             connection.commit()
 
+    if inspector.has_table("projects"):
+        project_columns = {column["name"] for column in inspector.get_columns("projects")}
+        column_definitions = {
+            "purpose": "VARCHAR(512)",
+            "owner": "VARCHAR(255)",
+            "business_units": "JSON",
+            "team": "JSON",
+            "deployments": "JSON",
+            "initial_risk_assessment": "JSON",
+        }
+
+        missing_columns = [
+            (column_name, column_type)
+            for column_name, column_type in column_definitions.items()
+            if column_name not in project_columns
+        ]
+
+        if missing_columns:
+            with engine.connect() as connection:
+                for column_name, column_type in missing_columns:
+                    connection.execute(
+                        text(
+                            f"ALTER TABLE projects ADD COLUMN {column_name} {column_type}"
+                        )
+                    )
+                connection.commit()
+
 
 def get_db() -> Iterator[Session]:
     db = SessionLocal()
