@@ -185,6 +185,38 @@ export class AppShell extends LocalizedElement {
     this.activePath = getCurrentPath();
   };
 
+  private handlePendingActions() {
+    const scrollToPendingActions = () => {
+      const target = document.getElementById('pending-actions');
+      if (!target) {
+        return false;
+      }
+      target.scrollIntoView({ behavior: 'smooth' });
+      return true;
+    };
+
+    const ensureScroll = (remainingAttempts = 40) => {
+      if (remainingAttempts <= 0) {
+        return;
+      }
+
+      if (getCurrentPath() !== '/') {
+        window.setTimeout(() => ensureScroll(remainingAttempts - 1), 100);
+        return;
+      }
+
+      if (!scrollToPendingActions()) {
+        window.setTimeout(() => ensureScroll(remainingAttempts - 1), 100);
+      }
+    };
+
+    if (getCurrentPath() !== '/') {
+      navigateTo('/');
+    }
+
+    ensureScroll();
+  }
+
   private toggleMenu() {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
@@ -232,6 +264,27 @@ export class AppShell extends LocalizedElement {
       this.language = selectedLanguage;
       changeLanguage(selectedLanguage);
     }
+  }
+
+  private getUserInitials(fullName: string | null | undefined, email: string | null | undefined) {
+    const nameSource = fullName?.trim();
+    if (nameSource) {
+      const parts = nameSource.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+      }
+      return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase();
+    }
+
+    const emailSource = email?.trim();
+    if (emailSource) {
+      const firstLetter = emailSource.replace(/@.*/, '').charAt(0);
+      if (firstLetter) {
+        return firstLetter.toUpperCase();
+      }
+    }
+
+    return '?';
   }
 
   private renderNavigation(activeProject: AISystem | null) {
@@ -336,9 +389,21 @@ export class AppShell extends LocalizedElement {
                   <span class="text-xl leading-none">☰</span>
                 </button>
               </div>
-              <div class="flex items-center gap-3 flex-1 min-w-0">
-                
-                <div class="flex-1 flex justify-end lg:justify-center">
+              <div class="flex-1 min-w-0 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-6">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <h1 class="text-lg font-semibold truncate">
+                      ${activeProject?.name ?? t('app.layout.defaultProjectTitle')}
+                    </h1>
+                    ${activeProject
+                      ? html`<span class="badge badge-outline">${t(`roles.${activeProject.role}` as const)}</span>`
+                      : null}
+                  </div>
+                  ${activeProject
+                    ? null
+                    : html`<p class="text-xs text-base-content/60">${t('app.layout.selectProjectHint')}</p>`}
+                </div>
+                <div class="flex-1 w-full flex justify-start lg:justify-center">
                   <label
                     class="input input-bordered input-sm flex items-center gap-2 w-full max-w-md"
                     aria-label=${t('app.searchAria')}
@@ -351,7 +416,7 @@ export class AppShell extends LocalizedElement {
                   </label>
                 </div>
               </div>
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-4 flex-none">
                 <label class="form-control w-auto min-w-[8rem]">
                   <select
                     id=${languageSelectId}
@@ -369,19 +434,38 @@ export class AppShell extends LocalizedElement {
                     )}
                   </select>
                 </label>
-                <div class="text-right">
-                  <p class="text-sm font-semibold">${user?.full_name ?? t('app.guestUser')}</p>
-                  <p class="text-xs text-base-content/60">${user?.email ?? t('app.noSession')}</p>
+                <div class="dropdown dropdown-end">
+                  <label
+                    tabindex="0"
+                    class="btn btn-ghost btn-circle avatar"
+                    aria-label=${t('app.userMenu.openMenu')}
+                  >
+                    <div class="w-9 rounded-full bg-primary text-primary-content flex items-center justify-center font-semibold uppercase">
+                      ${this.getUserInitials(user?.full_name, user?.email)}
+                    </div>
+                  </label>
+                  <ul
+                    tabindex="0"
+                    class="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+                  >
+                    <li class="menu-title px-2">
+                      <span class="text-sm font-semibold">
+                        ${user?.full_name?.trim() || user?.email || t('app.guestUser')}
+                      </span>
+                    </li>
+                    <li>
+                      <button type="button" class="justify-between" @click=${this.handlePendingActions}>
+                        ${t('app.userMenu.pendingActions')}
+                      </button>
+                    </li>
+                    <li>
+                      <button type="button" class="justify-between" @click=${this.logout}>
+                        ${t('app.logout')}
+                      </button>
+                    </li>
+                  </ul>
                 </div>
-                <button class="btn btn-sm" @click=${this.logout}>${t('app.logout')}</button>
-                <span class="hidden md:inline text-base-content/40">│</span>
               </div>
-            </div>
-            <div class="border-t border-base-300 px-4 py-3 flex flex-col lg:flex-row lg:items-center gap-2">
-              <h1 class="text-xl font-semibold flex-1">${activeProject?.name ?? t('app.layout.defaultProjectTitle')}</h1>
-              ${activeProject
-                ? html`<span class="badge badge-outline">${t(`roles.${activeProject.role}` as const)}</span>`
-                : html`<span class="text-sm text-base-content/60">${t('app.layout.selectProjectHint')}</span>`}
             </div>
           </header>
 

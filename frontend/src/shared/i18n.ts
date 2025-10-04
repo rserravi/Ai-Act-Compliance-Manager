@@ -40,6 +40,10 @@ const resources = {
         guestUser: "Invitado",
         noSession: "Sin sesión",
         logout: "Cerrar sesión",
+        userMenu: {
+          pendingActions: "Mis acciones pendientes",
+          openMenu: "Abrir menú de usuario"
+        },
         footer: {
           online: "Estado de conexión: Conectado",
           offline: "Estado de conexión: Sin conexión",
@@ -842,6 +846,10 @@ const resources = {
         guestUser: "Guest",
         noSession: "No session",
         logout: "Sign out",
+        userMenu: {
+          pendingActions: "My pending actions",
+          openMenu: "Open user menu"
+        },
         footer: {
           online: "Connection status: Online",
           offline: "Connection status: Offline",
@@ -1508,6 +1516,10 @@ const resources = {
         guestUser: "Convidat",
         noSession: "Sense sessió",
         logout: "Tanca la sessió",
+        userMenu: {
+          pendingActions: "Les meves accions pendents",
+          openMenu: "Obre el menú d'usuari"
+        },
         footer: {
           online: "Estat de connexió: Connectat",
           offline: "Estat de connexió: Sense connexió",
@@ -2174,6 +2186,10 @@ const resources = {
         guestUser: "Invité",
         noSession: "Pas de session",
         logout: "Se déconnecter",
+        userMenu: {
+          pendingActions: "Mes actions en attente",
+          openMenu: "Ouvrir le menu utilisateur"
+        },
         footer: {
           online: "Statut de connexion : En ligne",
           offline: "Statut de connexion : Hors ligne",
