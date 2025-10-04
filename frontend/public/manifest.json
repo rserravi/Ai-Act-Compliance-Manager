@@ -1,0 +1,32 @@
+{
+  "name": "AI Act Compliance Manager",
+  "short_name": "AI-Act",
+  "description": "Gestión de proyectos, evidencias y cumplimiento del EU AI Act.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon-64x64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon.ico",
+      "sizes": "16x16 32x32 64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}
