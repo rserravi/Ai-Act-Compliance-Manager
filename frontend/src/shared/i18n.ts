@@ -30,6 +30,7 @@ const resources = {
         menuToggle: "Abrir menú",
         projectSelector: {
           title: "Proyecto activo",
+          placeholder: "Seleccionar Proyecto",
           all: "Todos los proyectos",
           empty: "Sin proyectos activos"
         },
@@ -904,6 +905,7 @@ const resources = {
         menuToggle: "Open menu",
         projectSelector: {
           title: "Active project",
+          placeholder: "Select project",
           all: "All projects",
           empty: "No active projects"
         },
@@ -1642,6 +1644,7 @@ const resources = {
         menuToggle: "Obrir menú",
         projectSelector: {
           title: "Projecte actiu",
+          placeholder: "Seleccionar projecte",
           all: "Tots els projectes",
           empty: "Sense projectes actius"
         },
@@ -2380,6 +2383,7 @@ const resources = {
         menuToggle: "Ouvrir le menu",
         projectSelector: {
           title: "Projet actif",
+          placeholder: "Sélectionner un projet",
           all: "Tous les projets",
           empty: "Aucun projet actif"
         },

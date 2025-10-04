@@ -141,13 +141,21 @@ export class AppSidebar extends LocalizedElement {
       return html`<span class="text-sm text-base-content/70">${t('app.projectSelector.empty')}</span>`;
     }
 
+    const emptyOptionLabel = this.activeProjectId
+      ? t('app.projectSelector.all')
+      : t('app.projectSelector.placeholder');
+
     return html`
       <label class="form-control w-full max-w-xs">
         <span class="label">
           <span class="label-text text-sm font-medium">${t('app.projectSelector.title')}</span>
         </span>
-        <select class="select select-bordered select-sm" @change=${this.handleProjectChange}>
-          <option value="">${t('app.projectSelector.all')}</option>
+        <select
+          class="select select-bordered select-sm"
+          @change=${this.handleProjectChange}
+          .value=${this.activeProjectId ?? ''}
+        >
+          <option value="">${emptyOptionLabel}</option>
           ${this.projects.map(
             (project) => html`<option value=${project.id} ?selected=${project.id === this.activeProjectId}>
               ${project.name}
