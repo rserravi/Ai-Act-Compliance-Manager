@@ -36,6 +36,12 @@ export class AppShell extends LocalizedElement {
     this.activePath = getCurrentPath();
   };
 
+  private readonly handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.mobileMenuOpen) {
+      this.mobileMenuOpen = false;
+    }
+  };
+
   private handlePendingActions() {
     const scrollToPendingActions = () => {
       const target = document.getElementById('pending-actions');
@@ -83,6 +89,7 @@ export class AppShell extends LocalizedElement {
     const isProjectContextRoute = /^\/projects\/[^/]+(?:\/.*)?$/.test(currentPath);
 
     this.projects.value.setActiveProjectId(projectId);
+    this.mobileMenuOpen = false;
 
     if (!projectId) {
       if (isProjectContextRoute) {
@@ -118,6 +125,7 @@ export class AppShell extends LocalizedElement {
     window.addEventListener('online', this.updateOnlineStatus);
     window.addEventListener('offline', this.updateOnlineStatus);
     window.addEventListener('popstate', this.syncActivePath);
+    window.addEventListener('keydown', this.handleEscapeKey);
   }
 
   disconnectedCallback(): void {
@@ -125,6 +133,7 @@ export class AppShell extends LocalizedElement {
     window.removeEventListener('online', this.updateOnlineStatus);
     window.removeEventListener('offline', this.updateOnlineStatus);
     window.removeEventListener('popstate', this.syncActivePath);
+    window.removeEventListener('keydown', this.handleEscapeKey);
   }
 
   protected override handleLanguageChanged(language: SupportedLanguage): void {
@@ -141,9 +150,17 @@ export class AppShell extends LocalizedElement {
   protected render() {
     const user = this.auth.user;
     const activeProject = this.projects.activeProject;
+    const showMobileOverlay = this.mobileMenuOpen;
 
     return html`
       <div class="min-h-screen flex bg-base-200 text-base-content">
+        ${showMobileOverlay
+          ? html`<div
+              class="fixed inset-0 bg-base-content/30 backdrop-blur-sm z-20 lg:hidden"
+              role="presentation"
+              @click=${this.toggleMenu}
+            ></div>`
+          : null}
         <app-sidebar
           .mobileMenuOpen=${this.mobileMenuOpen}
           .activeProject=${activeProject}
@@ -159,6 +176,7 @@ export class AppShell extends LocalizedElement {
             .activeProject=${activeProject}
             .language=${this.language}
             .supportedLanguages=${supportedLanguages}
+            .mobileMenuOpen=${this.mobileMenuOpen}
             .userFullName=${user?.full_name ?? null}
             .userEmail=${user?.email ?? null}
             @toggle-menu=${this.toggleMenu}

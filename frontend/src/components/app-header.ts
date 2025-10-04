@@ -22,6 +22,7 @@ export class AppHeader extends LocalizedElement {
   @property({ attribute: false }) supportedLanguages: ReadonlyArray<SupportedLanguage> = [];
   @property({ type: String }) userFullName: string | null = null;
   @property({ type: String }) userEmail: string | null = null;
+  @property({ type: Boolean }) mobileMenuOpen = false;
 
   private getUserInitials() {
     const nameSource = this.userFullName?.trim();
@@ -87,6 +88,8 @@ export class AppHeader extends LocalizedElement {
               class="btn btn-ghost btn-square btn-sm"
               @click=${this.toggleMenu}
               aria-label=${t('app.menuToggle')}
+              aria-expanded=${this.mobileMenuOpen ? 'true' : 'false'}
+              aria-controls="app-main-navigation"
             >
               <span class="text-xl leading-none">☰</span>
             </button>
