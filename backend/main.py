@@ -3,7 +3,7 @@ import secrets
 import string
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, DefaultDict, Dict, List, Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
@@ -138,20 +138,20 @@ def get_current_user(
 projects: Dict[str, Project] = {}
 # Temporary alias to keep legacy endpoints functional while routes are migrated
 systems = projects
-risk_assessments = defaultdict(list)
-deliverables = defaultdict(list)
+risk_assessments: DefaultDict[str, List[RiskAssessment]] = defaultdict(list)
+deliverables: DefaultDict[str, List[Deliverable]] = defaultdict(list)
 deliverable_templates: List[DeliverableTemplate] = []
-tasks = defaultdict(list)
+tasks: DefaultDict[str, List[Task]] = defaultdict(list)
 incidents: Dict[str, Incident] = {}
 audits = defaultdict(list)
-evidences = defaultdict(list)
+evidences: DefaultDict[str, List[Evidence]] = defaultdict(list)
 org_structures: Dict[str, OrgStructure] = {}
 raci_matrices = defaultdict(list)
 contacts = defaultdict(list)
 settings_store = Settings(language="es", theme="light", notifications=["email"], api_key="demo")
 technical_dossier_templates = TechnicalDossierTemplate()
 technical_dossiers: Dict[str, TechnicalDossier] = {}
-teams = defaultdict(list)
+teams: DefaultDict[str, List[TeamMember]] = defaultdict(list)
 pending_activities: List[PendingActivity] = []
 
 
@@ -487,20 +487,20 @@ def get_risk_wizard_config(current_user: User = Depends(get_current_user)):
     return RiskWizardConfig()
 
 
-@app.get("/systems/{system_id}/risk", response_model=List[RiskAssessment])
-def list_risk_assessments(system_id: str, current_user: User = Depends(get_current_user)):
-    return risk_assessments[system_id]
+@app.get("/projects/{project_id}/risk", response_model=List[RiskAssessment])
+def list_risk_assessments(project_id: str, current_user: User = Depends(get_current_user)):
+    return risk_assessments[project_id]
 
 
-@app.post("/systems/{system_id}/risk", response_model=RiskAssessment)
+@app.post("/projects/{project_id}/risk", response_model=RiskAssessment)
 def create_risk_assessment(
-    system_id: str,
+    project_id: str,
     payload: RiskAssessment,
     current_user: User = Depends(get_current_user),
 ):
-    if payload.system_id != system_id:
-        raise HTTPException(status_code=400, detail="system_id mismatch")
-    risk_assessments[system_id].append(payload)
+    if payload.project_id != project_id:
+        raise HTTPException(status_code=400, detail="project_id mismatch")
+    risk_assessments[project_id].append(payload)
     return payload
 
 
@@ -514,9 +514,9 @@ def list_deliverable_templates(current_user: User = Depends(get_current_user)):
     return deliverable_templates
 
 
-@app.get("/systems/{system_id}/deliverables", response_model=List[Deliverable])
-def list_deliverables(system_id: str, current_user: User = Depends(get_current_user)):
-    return deliverables[system_id]
+@app.get("/projects/{project_id}/deliverables", response_model=List[Deliverable])
+def list_deliverables(project_id: str, current_user: User = Depends(get_current_user)):
+    return deliverables[project_id]
 
 
 @app.patch("/deliverables/{deliverable_id}", response_model=Deliverable)
@@ -525,11 +525,11 @@ def update_deliverable(
     payload: DeliverableUpdate,
     current_user: User = Depends(get_current_user),
 ):
-    for system_deliverables in deliverables.values():
-        for idx, deliverable in enumerate(system_deliverables):
+    for project_deliverables in deliverables.values():
+        for idx, deliverable in enumerate(project_deliverables):
             if deliverable.id == deliverable_id:
                 updated = deliverable.copy(update=payload.dict(exclude_unset=True))
-                system_deliverables[idx] = updated
+                project_deliverables[idx] = updated
                 return updated
     raise HTTPException(status_code=404, detail="Deliverable not found")
 
@@ -539,21 +539,21 @@ def add_deliverable_version(
     deliverable_id: str, current_user: User = Depends(get_current_user)
 ):
     # Placeholder endpoint: in a real implementation, file handling would be added
-    for system_deliverables in deliverables.values():
-        for deliverable in system_deliverables:
+    for project_deliverables in deliverables.values():
+        for deliverable in project_deliverables:
             if deliverable.id == deliverable_id:
                 return deliverable
     raise HTTPException(status_code=404, detail="Deliverable not found")
 
 
-@app.post("/systems/{system_id}/deliverables/{deliverable_id}/assign")
+@app.post("/projects/{project_id}/deliverables/{deliverable_id}/assign")
 def assign_deliverable(
-    system_id: str,
+    project_id: str,
     deliverable_id: str,
     payload: DeliverableAssignment,
     current_user: User = Depends(get_current_user),
 ):
-    return {"system_id": system_id, "deliverable_id": deliverable_id, **payload.dict()}
+    return {"project_id": project_id, "deliverable_id": deliverable_id, **payload.dict()}
 
 
 # ---------------------------------------------------------------------------
@@ -561,20 +561,20 @@ def assign_deliverable(
 # ---------------------------------------------------------------------------
 
 
-@app.get("/systems/{system_id}/tasks", response_model=List[Task])
-def list_tasks(system_id: str, current_user: User = Depends(get_current_user)):
-    return tasks[system_id]
+@app.get("/projects/{project_id}/tasks", response_model=List[Task])
+def list_tasks(project_id: str, current_user: User = Depends(get_current_user)):
+    return tasks[project_id]
 
 
-@app.post("/systems/{system_id}/tasks", response_model=Task)
+@app.post("/projects/{project_id}/tasks", response_model=Task)
 def create_task(
-    system_id: str,
+    project_id: str,
     payload: Task,
     current_user: User = Depends(get_current_user),
 ):
-    if payload.system_id != system_id:
-        raise HTTPException(status_code=400, detail="system_id mismatch")
-    tasks[system_id].append(payload)
+    if payload.project_id != project_id:
+        raise HTTPException(status_code=400, detail="project_id mismatch")
+    tasks[project_id].append(payload)
     return payload
 
 
@@ -584,11 +584,11 @@ def update_task(
     payload: TaskUpdate,
     current_user: User = Depends(get_current_user),
 ):
-    for system_tasks in tasks.values():
-        for idx, task in enumerate(system_tasks):
+    for project_tasks in tasks.values():
+        for idx, task in enumerate(project_tasks):
             if task.id == task_id:
                 updated = task.copy(update=payload.dict(exclude_unset=True))
-                system_tasks[idx] = updated
+                project_tasks[idx] = updated
                 return updated
     raise HTTPException(status_code=404, detail="Task not found")
 
@@ -600,12 +600,12 @@ def update_task(
 
 @app.get("/incidents")
 def list_incidents(
-    system_id: Optional[str] = None,
+    project_id: Optional[str] = None,
     current_user: User = Depends(get_current_user),
 ):
     data = list(incidents.values())
-    if system_id:
-        data = [incident for incident in data if incident.system_id == system_id]
+    if project_id:
+        data = [incident for incident in data if incident.project_id == project_id]
     return data
 
 
@@ -729,24 +729,24 @@ def get_technical_dossier_template(current_user: User = Depends(get_current_user
     return technical_dossier_templates
 
 
-@app.get("/systems/{system_id}/technical-dossier", response_model=TechnicalDossier)
-def get_technical_dossier(system_id: str, current_user: User = Depends(get_current_user)):
-    dossier = technical_dossiers.get(system_id)
+@app.get("/projects/{project_id}/technical-dossier", response_model=TechnicalDossier)
+def get_technical_dossier(project_id: str, current_user: User = Depends(get_current_user)):
+    dossier = technical_dossiers.get(project_id)
     if not dossier:
-        dossier = TechnicalDossier(system_id=system_id)
-        technical_dossiers[system_id] = dossier
+        dossier = TechnicalDossier(project_id=project_id)
+        technical_dossiers[project_id] = dossier
     return dossier
 
 
-@app.put("/systems/{system_id}/technical-dossier", response_model=TechnicalDossier)
+@app.put("/projects/{project_id}/technical-dossier", response_model=TechnicalDossier)
 def update_technical_dossier(
-    system_id: str,
+    project_id: str,
     payload: TechnicalDossier,
     current_user: User = Depends(get_current_user),
 ):
-    if payload.system_id != system_id:
-        raise HTTPException(status_code=400, detail="system_id mismatch")
-    technical_dossiers[system_id] = payload
+    if payload.project_id != project_id:
+        raise HTTPException(status_code=400, detail="project_id mismatch")
+    technical_dossiers[project_id] = payload
     return payload
 
 
@@ -755,9 +755,9 @@ def update_technical_dossier(
 # ---------------------------------------------------------------------------
 
 
-@app.get("/systems/{system_id}/team", response_model=List[TeamMember])
-def list_team_members(system_id: str, current_user: User = Depends(get_current_user)):
-    return teams[system_id]
+@app.get("/projects/{project_id}/team", response_model=List[TeamMember])
+def list_team_members(project_id: str, current_user: User = Depends(get_current_user)):
+    return teams[project_id]
 
 
 @app.get("/activities/pending", response_model=List[PendingActivity])

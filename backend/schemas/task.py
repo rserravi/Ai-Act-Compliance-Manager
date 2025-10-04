@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class Task(BaseModel):
     id: str
-    system_id: str
+    project_id: str
     title: str
     status: str
     assignee: Optional[str] = None

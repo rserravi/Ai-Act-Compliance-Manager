@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class RiskAssessment(BaseModel):
     id: str
-    system_id: str
+    project_id: str
     date: str
     classification: str
     justification: Optional[str] = None
