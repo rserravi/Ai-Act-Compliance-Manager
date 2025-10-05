@@ -70,7 +70,13 @@ def list_projects(
     safe_page = max(page, 1)
     safe_page_size = min(max(page_size, 1), 100)
 
-    stmt = select(ProjectModel)
+    # Exclude columns that are in the model but not in the DB
+    columns_to_select = [
+        c
+        for c in ProjectModel.__table__.c
+        if c.name not in ["deployments", "initial_risk_assessment"]
+    ]
+    stmt = select(*columns_to_select)
     count_stmt = select(func.count()).select_from(ProjectModel)
 
     conditions: list[Any] = []
@@ -100,8 +106,24 @@ def list_projects(
     offset = (safe_page - 1) * safe_page_size
     stmt = stmt.offset(offset).limit(safe_page_size)
 
-    results = db.execute(stmt).scalars().all()
+    results = db.execute(stmt).all()
     total = db.execute(count_stmt).scalar_one()
+
+    # The query returns Row objects, not ProjectModel instances.
+    # We create duck-typed objects that have the same attributes as a ProjectModel
+    # to be compatible with _project_model_to_schema.
+    class DuckTypedProjectModel:
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+    models = []
+    for row in results:
+        data = dict(row._mapping)
+        # Add missing attributes back with a default value as it's expected by the schema converter.
+        data["deployments"] = None
+        data["initial_risk_assessment"] = None
+        model = DuckTypedProjectModel(**data)
+        models.append(model)
 
     projects = [_project_model_to_schema(model) for model in results]
     return projects, total, safe_page, safe_page_size
