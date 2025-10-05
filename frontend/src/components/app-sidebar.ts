@@ -63,11 +63,29 @@ const PROJECT_NAV_ITEMS: ReadonlyArray<ProjectNavigationItem> = [
 export class AppSidebar extends LocalizedElement {
   static override styles = [css([sharedStyles] as any), baseStyles];
 
-  @property({ type: Boolean }) mobileMenuOpen = false;
-  @property({ attribute: false }) activeProject: AISystem | null = null;
-  @property({ attribute: false }) projects: ReadonlyArray<AISystem> = [];
-  @property({ attribute: false }) activeProjectId: string | null = null;
-  @property({ type: String }) activePath = '/';
+  @property({ type: Boolean })
+  declare mobileMenuOpen: boolean;
+
+  @property({ attribute: false })
+  declare activeProject: AISystem | null;
+
+  @property({ attribute: false })
+  declare projects: ReadonlyArray<AISystem>;
+
+  @property({ attribute: false })
+  declare activeProjectId: string | null;
+
+  @property({ type: String })
+  declare activePath: string;
+
+  constructor() {
+    super();
+    this.mobileMenuOpen = false;
+    this.activeProject = null;
+    this.projects = [];
+    this.activeProjectId = null;
+    this.activePath = '/';
+  }
 
   private handleNavigate(event: Event, href: string) {
     event.preventDefault();

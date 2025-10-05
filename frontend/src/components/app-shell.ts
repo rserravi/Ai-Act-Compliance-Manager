@@ -23,10 +23,25 @@ export class AppShell extends LocalizedElement {
   private readonly auth = new AuthController(this);
   private readonly projects = new ProjectController(this);
 
-  @state() private mobileMenuOpen = false;
-  @state() private language = getCurrentLanguage();
-  @state() private isOnline = navigator.onLine;
-  @state() private activePath = getCurrentPath();
+  @state()
+  declare private mobileMenuOpen: boolean;
+
+  @state()
+  declare private language: SupportedLanguage;
+
+  @state()
+  declare private isOnline: boolean;
+
+  @state()
+  declare private activePath: string;
+
+  constructor() {
+    super();
+    this.mobileMenuOpen = false;
+    this.language = getCurrentLanguage();
+    this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    this.activePath = getCurrentPath();
+  }
 
   private readonly updateOnlineStatus = () => {
     this.isOnline = navigator.onLine;
