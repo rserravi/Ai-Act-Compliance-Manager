@@ -5,6 +5,7 @@ import {
   resendSignInCode,
   signIn,
   verifySignIn,
+  updateProfile,
   type LoginPayload,
   type LoginResponse,
   type SignInPayload,
@@ -13,6 +14,7 @@ import {
   type SignInVerificationResendPayload,
   type SignInVerificationResponse,
   type SSOLoginPayload,
+  type UpdateProfilePayload,
   type User
 } from '../services/auth';
 import { clearStoredAuth, readStoredAuth, storeAuthState } from '../shared/auth-storage';
@@ -92,6 +94,16 @@ export class AuthStore {
 
   async resendRegistrationCode(payload: SignInVerificationResendPayload): Promise<SignInResponse> {
     return this.#runAuthAction(async () => resendSignInCode(payload));
+  }
+
+  async updateProfile(payload: UpdateProfilePayload): Promise<User> {
+    if (!this.token.value) {
+      throw new Error('Not authenticated');
+    }
+    const user = await updateProfile(payload);
+    this.user.value = user;
+    storeAuthState({ token: this.token.value, user });
+    return user;
   }
 
   logout(): void {

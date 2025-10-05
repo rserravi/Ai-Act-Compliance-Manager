@@ -84,6 +84,14 @@ export interface SignInVerificationResendPayload {
   registration_id: string
 }
 
+export interface UpdateProfilePayload {
+  full_name: string
+  company?: string | null
+  avatar?: string | null
+  contact: ContactPreference
+  preferences: UserPreferences
+}
+
 export function login(payload: LoginPayload) {
   return api<LoginResponse>(LOGIN_ENDPOINT, {
     method: 'POST',
@@ -121,4 +129,11 @@ export function resendSignInCode(payload: SignInVerificationResendPayload) {
 
 export function fetchCurrentUser(token?: string) {
   return api<User>(PROFILE_ENDPOINT, undefined, token)
+}
+
+export function updateProfile(payload: UpdateProfilePayload) {
+  return api<User>(PROFILE_ENDPOINT, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  })
 }
