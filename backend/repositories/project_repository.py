@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from backend.models import ProjectModel, RiskAssessmentModel
@@ -63,20 +63,48 @@ def list_projects(
     risk: Optional[str] = None,
     documentation_status: Optional[str] = None,
     search: Optional[str] = None,
-) -> List[Project]:
-    stmt = select(ProjectModel)
+    owner_values: Optional[Sequence[str]] = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> tuple[List[Project], int, int, int]:
+    safe_page = max(page, 1)
+    safe_page_size = min(max(page_size, 1), 100)
 
+    stmt = select(ProjectModel)
+    count_stmt = select(func.count()).select_from(ProjectModel)
+
+    conditions: list[Any] = []
+
+    if owner_values:
+        conditions.append(ProjectModel.owner.in_(tuple(set(owner_values))))
     if role:
-        stmt = stmt.where(ProjectModel.role == role)
+        conditions.append(ProjectModel.role == role)
     if risk:
-        stmt = stmt.where(ProjectModel.risk == risk)
+        conditions.append(ProjectModel.risk == risk)
     if documentation_status:
-        stmt = stmt.where(ProjectModel.documentation_status == documentation_status)
+        conditions.append(ProjectModel.documentation_status == documentation_status)
     if search:
-        stmt = stmt.where(ProjectModel.name.ilike(f"%{search}%"))
+        pattern = f"%{search}%"
+        conditions.append(
+            or_(
+                ProjectModel.name.ilike(pattern),
+                ProjectModel.purpose.ilike(pattern),
+            )
+        )
+
+    if conditions:
+        stmt = stmt.where(and_(*conditions))
+        count_stmt = count_stmt.where(and_(*conditions))
+
+    stmt = stmt.order_by(ProjectModel.created_at.desc())
+    offset = (safe_page - 1) * safe_page_size
+    stmt = stmt.offset(offset).limit(safe_page_size)
 
     results = db.execute(stmt).scalars().all()
-    return [_project_model_to_schema(model) for model in results]
+    total = db.execute(count_stmt).scalar_one()
+
+    projects = [_project_model_to_schema(model) for model in results]
+    return projects, total, safe_page, safe_page_size
 
 
 def create_project(db: Session, payload: ProjectCreate) -> Project:

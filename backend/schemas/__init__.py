@@ -1,4 +1,4 @@
-from .project import InitialRiskAssessment, Project, ProjectCreate
+from .project import InitialRiskAssessment, Project, ProjectCreate, ProjectListResponse
 from .project_update import ProjectUpdate
 from .audit import Audit
 from .contact import Contact
@@ -39,6 +39,7 @@ __all__ = [
     "InitialRiskAssessment",
     "Project",
     "ProjectCreate",
+    "ProjectListResponse",
     "ProjectUpdate",
     "Audit",
     "Contact",

@@ -53,7 +53,7 @@ def test_projects_crud_flow():
         "business_units": ["Compliance"],
         "team": ["ana@example.com"],
         "purpose": "Automated compliance monitoring",
-        "owner": "ana@example.com",
+        "owner": "projects@test.example",
         "deployments": ["production"],
         "initial_risk_assessment": {
             "classification": "medium",
@@ -74,7 +74,8 @@ def test_projects_crud_flow():
     list_response = client.get("/projects", headers=headers)
     assert list_response.status_code == 200
     projects = list_response.json()
-    assert any(project["id"] == project_payload["id"] for project in projects)
+    assert projects["total"] >= 1
+    assert any(project["id"] == project_payload["id"] for project in projects["items"])
 
     search_response = client.get(
         "/projects",
@@ -83,8 +84,8 @@ def test_projects_crud_flow():
     )
     assert search_response.status_code == 200
     search_results = search_response.json()
-    assert len(search_results) == 1
-    assert search_results[0]["id"] == project_payload["id"]
+    assert search_results["total"] == 1
+    assert search_results["items"][0]["id"] == project_payload["id"]
 
     get_response = client.get(f"/projects/{project_payload['id']}", headers=headers)
     assert get_response.status_code == 200
@@ -153,7 +154,7 @@ def test_project_subresources_use_project_id():
         "business_units": ["AI"],
         "team": [],
         "purpose": "AI discovery",
-        "owner": "lead@example.com",
+        "owner": "projects@test.example",
         "deployments": ["sandbox"],
     }
 
