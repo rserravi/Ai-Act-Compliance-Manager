@@ -412,6 +412,10 @@ const resources = {
             updated: "Última actualización"
           }
         },
+        errors: {
+          empty: "Se ha producido un error al conectar con los datos de evidencias.",
+          loadFailed: "No se pudieron cargar las evidencias. Inténtalo de nuevo más tarde."
+        },
         title: "Auditorías & evidencias",
         tabs: {
           audits: "Auditorías",
@@ -1268,6 +1272,12 @@ const resources = {
           }
         }
       },
+      auditEvidences: {
+        errors: {
+          empty: "An error occurred while connecting to the project's evidence data.",
+          loadFailed: "We couldn't load the evidence records. Please try again later."
+        }
+      },
       projects: {
         pageTitle: "Projects",
         pageSubtitle: "Manage AI systems and their associated documentation.",
@@ -2041,6 +2051,12 @@ const resources = {
           }
         }
       },
+      auditEvidences: {
+        errors: {
+          empty: "S'ha produït un error en connectar amb les dades d'evidències del projecte.",
+          loadFailed: "No s'han pogut carregar els registres d'evidències. Torna-ho a intentar més tard."
+        }
+      },
       projects: {
         pageTitle: "Projectes",
         pageSubtitle: "Gestiona els sistemes d'IA i la seva documentació associada.",
@@ -2812,6 +2828,12 @@ const resources = {
             scheduleAudit: "Planifier l'audit interne de {{system}}",
             validateIncident: "Valider le suivi de l'incident dans {{system}}"
           }
+        }
+      },
+      auditEvidences: {
+        errors: {
+          empty: "Une erreur est survenue lors de la connexion aux données de preuves du projet.",
+          loadFailed: "Impossible de charger les enregistrements de preuves. Veuillez réessayer plus tard."
         }
       },
       projects: {

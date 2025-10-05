@@ -1,5 +1,6 @@
 import type { ProjectStore } from '../../state/project-store';
 import type { DocumentRef } from '../../domain/models';
+import { fetchProjectDeliverables } from '../Projects/Service/projects.service';
 
 export type EvidenceSummary = {
   total: number;
@@ -17,4 +18,13 @@ export function summarizeEvidences(documents: DocumentRef[]): EvidenceSummary {
     summary.byStatus[doc.status] = (summary.byStatus[doc.status] ?? 0) + 1;
   });
   return summary;
+}
+
+export async function refreshAuditDocuments(
+  store: ProjectStore,
+  projectId: string
+): Promise<DocumentRef[]> {
+  const documents = await fetchProjectDeliverables(projectId);
+  store.setDocumentsForProject(projectId, documents);
+  return documents;
 }
