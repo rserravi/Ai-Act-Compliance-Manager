@@ -366,12 +366,12 @@ export class ProjectsWizardViewModel implements ReactiveController {
       };
 
       const { projectId } = await createProjectRequest(requestPayload);
-      const [projects, deliverables] = await Promise.all([
+      const [projectList, deliverables] = await Promise.all([
         fetchProjectsFromApi({}),
         fetchProjectDeliverablesFromApi(projectId)
       ]);
 
-      this.#projects.value.replaceProjects(projects);
+      this.#projects.value.replaceProjects(projectList.items);
       this.#projects.value.setDocumentsForProject(projectId, deliverables);
       this.#projects.value.setActiveProjectId(projectId);
 
