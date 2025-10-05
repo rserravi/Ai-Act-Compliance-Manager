@@ -6,11 +6,13 @@ import { LocalizedElement } from '../../shared/localized-element';
 import { supportedLanguages, t } from '../../shared/i18n';
 import type { ContactPreference, User } from '../../services/auth';
 import type { SupportedLanguage } from '../../shared/i18n';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 type ContactMethod = ContactPreference['method'];
 
 const MAX_AVATAR_MB = 2;
 const MAX_AVATAR_BYTES = MAX_AVATAR_MB * 1024 * 1024;
+const PHONE_INPUT_PATTERN = '^\\+?[0-9\\s().-]{7,}$';
 
 @customElement('settings-page')
 export class SettingsPage extends LocalizedElement {
@@ -121,8 +123,86 @@ export class SettingsPage extends LocalizedElement {
     return labels[this.contactMethod];
   }
 
+  private get contactValueType(): string {
+    switch (this.contactMethod) {
+      case 'email':
+        return 'email';
+      case 'sms':
+      case 'whatsapp':
+        return 'tel';
+      default:
+        return 'text';
+    }
+  }
+
+  private get contactValueInputMode(): string | undefined {
+    switch (this.contactMethod) {
+      case 'email':
+        return 'email';
+      case 'sms':
+      case 'whatsapp':
+        return 'tel';
+      default:
+        return undefined;
+    }
+  }
+
+  private get contactValueAutoComplete(): string | undefined {
+    switch (this.contactMethod) {
+      case 'email':
+        return 'email';
+      case 'sms':
+      case 'whatsapp':
+        return 'tel';
+      default:
+        return 'off';
+    }
+  }
+
+  private get contactValuePattern(): string | undefined {
+    switch (this.contactMethod) {
+      case 'sms':
+      case 'whatsapp':
+        return PHONE_INPUT_PATTERN;
+      default:
+        return undefined;
+    }
+  }
+
+  private get contactValueTitle(): string | undefined {
+    switch (this.contactMethod) {
+      case 'email':
+        return t('settings.account.validations.email');
+      case 'sms':
+      case 'whatsapp':
+        return t('settings.account.validations.phone');
+      default:
+        return undefined;
+    }
+  }
+
+  private get contactValuePlaceholder(): string | undefined {
+    switch (this.contactMethod) {
+      case 'email':
+        return t('settings.account.placeholders.email');
+      case 'sms':
+        return t('settings.account.placeholders.sms');
+      case 'whatsapp':
+        return t('settings.account.placeholders.whatsapp');
+      case 'slack':
+        return t('settings.account.placeholders.slack');
+      default:
+        return undefined;
+    }
+  }
+
   private async handleAccountSubmit(event: Event): Promise<void> {
     event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    if (!form.reportValidity()) {
+      return;
+    }
+
     const user = this.auth.user;
     if (!user) {
       return;
@@ -133,6 +213,12 @@ export class SettingsPage extends LocalizedElement {
     const trimmedContactValue = this.contactValue.trim();
     const trimmedWorkspace = this.contactWorkspace.trim();
     const trimmedChannel = this.contactChannel.trim();
+
+    this.fullName = trimmedName;
+    this.company = trimmedCompany;
+    this.contactValue = trimmedContactValue;
+    this.contactWorkspace = trimmedWorkspace;
+    this.contactChannel = trimmedChannel;
 
     const contact: ContactPreference = {
       method: this.contactMethod,
@@ -167,12 +253,14 @@ export class SettingsPage extends LocalizedElement {
         }
       }
 
-      await this.auth.value.updateProfile({
+      const updatedUser = await this.auth.value.updateProfile({
         full_name: trimmedName,
         company: trimmedCompany || null,
         contact,
         preferences: { language: this.language }
       });
+      this.syncFormWithUser(updatedUser);
+      this.syncedUser = updatedUser;
       this.saveStatus = 'success';
     } catch (error) {
       console.error('Failed to update profile', error);
@@ -299,6 +387,7 @@ export class SettingsPage extends LocalizedElement {
                   @input=${(event: Event) => {
                     const input = event.currentTarget as HTMLInputElement;
                     this.fullName = input.value;
+                    this.saveStatus = null;
                   }}
                 >
               </label>
@@ -311,6 +400,7 @@ export class SettingsPage extends LocalizedElement {
                   @input=${(event: Event) => {
                     const input = event.currentTarget as HTMLInputElement;
                     this.company = input.value;
+                    this.saveStatus = null;
                   }}
                 >
               </label>
@@ -373,7 +463,16 @@ export class SettingsPage extends LocalizedElement {
                   ?disabled=${!hasUser || this.isSaving}
                   @change=${(event: Event) => {
                     const select = event.currentTarget as HTMLSelectElement;
-                    this.contactMethod = select.value as ContactMethod;
+                    const nextMethod = select.value as ContactMethod;
+                    if (this.contactMethod !== nextMethod) {
+                      this.contactMethod = nextMethod;
+                      this.contactValue = '';
+                      if (nextMethod !== 'slack') {
+                        this.contactWorkspace = '';
+                        this.contactChannel = '';
+                      }
+                      this.saveStatus = null;
+                    }
                   }}
                 >
                   <option value="email">${t('auth.contactMethods.email')}</option>
@@ -389,9 +488,16 @@ export class SettingsPage extends LocalizedElement {
                   .value=${this.contactValue}
                   ?disabled=${!hasUser || this.isSaving}
                   required
+                  type=${this.contactValueType}
+                  inputmode=${ifDefined(this.contactValueInputMode)}
+                  autocomplete=${ifDefined(this.contactValueAutoComplete)}
+                  pattern=${ifDefined(this.contactValuePattern)}
+                  title=${ifDefined(this.contactValueTitle)}
+                  placeholder=${ifDefined(this.contactValuePlaceholder)}
                   @input=${(event: Event) => {
                     const input = event.currentTarget as HTMLInputElement;
                     this.contactValue = input.value;
+                    this.saveStatus = null;
                   }}
                 >
               </label>
@@ -406,6 +512,7 @@ export class SettingsPage extends LocalizedElement {
                         @input=${(event: Event) => {
                           const input = event.currentTarget as HTMLInputElement;
                           this.contactWorkspace = input.value;
+                          this.saveStatus = null;
                         }}
                       >
                     </label>
@@ -418,6 +525,7 @@ export class SettingsPage extends LocalizedElement {
                         @input=${(event: Event) => {
                           const input = event.currentTarget as HTMLInputElement;
                           this.contactChannel = input.value;
+                          this.saveStatus = null;
                         }}
                       >
                     </label>
