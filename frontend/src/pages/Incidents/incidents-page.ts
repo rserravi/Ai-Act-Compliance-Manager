@@ -22,10 +22,21 @@ export class IncidentsPage extends LocalizedElement {
     return t(`incident.status.${status}` as const);
   }
 
-  @property({ type: String, attribute: 'project-id' }) projectId = '';
+  @property({ type: String, attribute: 'project-id' })
+  declare projectId: string | null;
 
-  @state() private incidents: IncidentRow[] = [];
-  @state() private loading = false;
+  @state()
+  declare private incidents: IncidentRow[];
+
+  @state()
+  declare private loading: boolean;
+
+  constructor() {
+    super();
+    this.projectId = null;
+    this.incidents = [];
+    this.loading = false;
+  }
 
   protected createRenderRoot(): HTMLElement {
     return this;

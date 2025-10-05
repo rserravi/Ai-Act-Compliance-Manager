@@ -17,12 +17,33 @@ const styles = css`
 export class AppHeader extends LocalizedElement {
   static override styles = [css([sharedStyles] as any), styles];
 
-  @property({ attribute: false }) activeProject: AISystem | null = null;
-  @property({ type: String }) language: SupportedLanguage = 'en';
-  @property({ attribute: false }) supportedLanguages: ReadonlyArray<SupportedLanguage> = [];
-  @property({ type: String }) userFullName: string | null = null;
-  @property({ type: String }) userEmail: string | null = null;
-  @property({ type: Boolean }) mobileMenuOpen = false;
+  @property({ attribute: false })
+  declare activeProject: AISystem | null;
+
+  @property({ type: String })
+  declare language: SupportedLanguage;
+
+  @property({ attribute: false })
+  declare supportedLanguages: ReadonlyArray<SupportedLanguage>;
+
+  @property({ type: String })
+  declare userFullName: string | null;
+
+  @property({ type: String })
+  declare userEmail: string | null;
+
+  @property({ type: Boolean })
+  declare mobileMenuOpen: boolean;
+
+  constructor() {
+    super();
+    this.activeProject = null;
+    this.language = 'en';
+    this.supportedLanguages = [];
+    this.userFullName = null;
+    this.userEmail = null;
+    this.mobileMenuOpen = false;
+  }
 
   private getUserInitials() {
     const nameSource = this.userFullName?.trim();
@@ -68,7 +89,7 @@ export class AppHeader extends LocalizedElement {
     this.dispatchEvent(new CustomEvent('logout', { bubbles: true, composed: true }));
   }
 
-    private toggleMenu() {
+  private toggleMenu() {
     this.dispatchEvent(new CustomEvent('toggle-menu', { bubbles: true, composed: true }));
   }
 
