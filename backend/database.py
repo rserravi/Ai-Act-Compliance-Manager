@@ -51,6 +51,13 @@ def init_db() -> None:
 
     if inspector.has_table("projects"):
         project_columns = {column["name"] for column in inspector.get_columns("projects")}
+        if "owner" not in project_columns:
+            with engine.connect() as connection:
+                if is_sqlite:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN owner VARCHAR(255)"))
+                else:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN owner VARCHAR(255)"))
+                connection.commit()
         if "purpose" not in project_columns:
             with engine.connect() as connection:
                 if is_sqlite:
