@@ -34,17 +34,62 @@ def _model_to_schema(model: UserModel) -> User:
 
 
 def get_user_by_id(db: Session, user_id: str) -> Optional[User]:
-    statement = select(UserModel).where(UserModel.id == user_id)
-    result = db.execute(statement).scalar_one_or_none()
+    result = get_user_model_by_id(db, user_id)
     if result is None:
         return None
     return _model_to_schema(result)
+
+
+def get_user_model_by_id(db: Session, user_id: str) -> Optional[UserModel]:
+    statement = select(UserModel).where(UserModel.id == user_id)
+    return db.execute(statement).scalar_one_or_none()
 
 
 def get_user_model_by_email(db: Session, email: str) -> Optional[UserModel]:
     normalized = email.lower()
     statement = select(UserModel).where(UserModel.email == normalized)
     return db.execute(statement).scalar_one_or_none()
+
+
+def update_user_profile(
+    db: Session,
+    user: UserModel,
+    *,
+    full_name: str,
+    company: Optional[str],
+    contact: ContactPreference,
+    preferences: UserPreferences,
+) -> UserModel:
+    user.full_name = full_name
+    user.company = company
+    user.preferences_language = preferences.language if preferences else None
+
+    contact_model = user.contact
+    if contact_model is None:
+        contact_model = ContactPreferenceModel()
+        user.contact = contact_model
+
+    contact_model.method = contact.method.value
+    contact_model.value_encrypted = encrypt_value(contact.value) or ""
+    contact_model.workspace_encrypted = encrypt_value(contact.workspace)
+    contact_model.channel_encrypted = encrypt_value(contact.channel)
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_user_avatar(
+    db: Session,
+    user: UserModel,
+    avatar_data_url: Optional[str],
+) -> UserModel:
+    user.avatar = avatar_data_url
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 def create_user(

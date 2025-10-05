@@ -1,3 +1,5 @@
+import base64
+import io
 import os
 import secrets
 import string
@@ -7,11 +9,12 @@ from typing import Any, DefaultDict, Dict, List, Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 load_dotenv()
 
@@ -30,8 +33,11 @@ from backend.repositories.user_repository import (
     create_user,
     get_user_by_id,
     get_user_model_by_email,
+    get_user_model_by_id,
     model_to_schema,
     update_user_company,
+    update_user_avatar,
+    update_user_profile,
 )
 from backend.repositories.project_repository import (
     create_project as create_project_record,
@@ -83,6 +89,7 @@ from backend.schemas import (
     TechnicalDossier,
     TechnicalDossierTemplate,
     User,
+    UserProfileUpdate,
     UserPreferences,
 )
 
@@ -219,6 +226,30 @@ org_structures: Dict[str, OrgStructure] = {}
 raci_matrices = defaultdict(list)
 contacts = defaultdict(list)
 settings_store = Settings(language="es", theme="light", notifications=["email"], api_key="demo")
+
+AVATAR_SIZE = (64, 64)
+MAX_AVATAR_SIZE_MB = 2
+MAX_AVATAR_SIZE_BYTES = MAX_AVATAR_SIZE_MB * 1024 * 1024
+ALLOWED_AVATAR_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp"}
+
+
+def _encode_avatar_image(contents: bytes) -> str:
+    try:
+        with Image.open(io.BytesIO(contents)) as image:
+            image = image.convert("RGBA")
+            resample_filter = (
+                Image.Resampling.LANCZOS
+                if hasattr(Image, "Resampling")
+                else Image.LANCZOS
+            )
+            fitted = ImageOps.fit(image, AVATAR_SIZE, method=resample_filter)
+            buffer = io.BytesIO()
+            fitted.save(buffer, format="PNG")
+    except (UnidentifiedImageError, OSError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid image file") from exc
+
+    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
 technical_dossier_templates = TechnicalDossierTemplate()
 technical_dossiers: Dict[str, TechnicalDossier] = {}
 teams: DefaultDict[str, List[TeamMember]] = defaultdict(list)
@@ -337,6 +368,95 @@ def login_sso(payload: SSOLoginPayload, db: Session = Depends(get_db)):
 @app.get("/auth/me", response_model=User)
 def get_current_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@app.patch("/auth/me", response_model=User)
+def update_current_user_profile(
+    payload: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_model = get_user_model_by_id(db, current_user.id)
+    if user_model is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    full_name = payload.full_name.strip()
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Full name cannot be empty")
+
+    contact_value = payload.contact.value.strip()
+    if not contact_value:
+        raise HTTPException(status_code=400, detail="Contact value cannot be empty")
+
+    contact_workspace = (
+        payload.contact.workspace.strip() if payload.contact.workspace else None
+    )
+    contact_channel = (
+        payload.contact.channel.strip() if payload.contact.channel else None
+    )
+
+    contact = ContactPreference(
+        method=payload.contact.method,
+        value=contact_value,
+        workspace=contact_workspace,
+        channel=contact_channel,
+    )
+
+    company = payload.company.strip() if payload.company else None
+
+    updated_user = update_user_profile(
+        db,
+        user_model,
+        full_name=full_name,
+        company=company,
+        contact=contact,
+        preferences=payload.preferences,
+    )
+    return model_to_schema(updated_user)
+
+
+@app.post("/auth/me/avatar", response_model=User)
+async def upload_current_user_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if file.content_type not in ALLOWED_AVATAR_CONTENT_TYPES:
+        raise HTTPException(status_code=400, detail="Unsupported image format")
+
+    contents = await file.read()
+    await file.close()
+
+    if not contents:
+        raise HTTPException(status_code=400, detail="Avatar image is empty")
+
+    if len(contents) > MAX_AVATAR_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Avatar image must be at most {MAX_AVATAR_SIZE_MB} MB",
+        )
+
+    encoded_avatar = _encode_avatar_image(contents)
+
+    user_model = get_user_model_by_id(db, current_user.id)
+    if user_model is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    updated_user = update_user_avatar(db, user_model, encoded_avatar)
+    return model_to_schema(updated_user)
+
+
+@app.delete("/auth/me/avatar", response_model=User)
+def delete_current_user_avatar(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_model = get_user_model_by_id(db, current_user.id)
+    if user_model is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    updated_user = update_user_avatar(db, user_model, None)
+    return model_to_schema(updated_user)
 
 
 def _initiate_registration(

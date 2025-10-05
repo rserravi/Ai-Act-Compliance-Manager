@@ -12,6 +12,7 @@ const LOGIN_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_ENDPOINT')
 const LOGIN_SSO_ENDPOINT = requiredEnv('VITE_AUTH_LOGIN_SSO_ENDPOINT')
 const REGISTRATION_INIT_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_INIT_ENDPOINT')
 const PROFILE_ENDPOINT = requiredEnv('VITE_AUTH_PROFILE_ENDPOINT')
+const AVATAR_ENDPOINT = requiredEnv('VITE_AUTH_AVATAR_ENDPOINT')
 const REGISTRATION_VERIFY_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_VERIFY_ENDPOINT')
 const REGISTRATION_RESEND_ENDPOINT = requiredEnv('VITE_AUTH_REGISTRATION_RESEND_ENDPOINT')
 
@@ -87,7 +88,6 @@ export interface SignInVerificationResendPayload {
 export interface UpdateProfilePayload {
   full_name: string
   company?: string | null
-  avatar?: string | null
   contact: ContactPreference
   preferences: UserPreferences
 }
@@ -135,5 +135,20 @@ export function updateProfile(payload: UpdateProfilePayload) {
   return api<User>(PROFILE_ENDPOINT, {
     method: 'PATCH',
     body: JSON.stringify(payload)
+  })
+}
+
+export function uploadAvatar(file: File) {
+  const body = new FormData()
+  body.append('file', file)
+  return api<User>(AVATAR_ENDPOINT, {
+    method: 'POST',
+    body
+  })
+}
+
+export function deleteAvatar() {
+  return api<User>(AVATAR_ENDPOINT, {
+    method: 'DELETE'
   })
 }

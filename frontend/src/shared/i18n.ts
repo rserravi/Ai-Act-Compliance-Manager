@@ -473,18 +473,25 @@ const resources = {
             fullName: "Nombre completo",
             company: "Empresa",
             email: "Correo de acceso",
-            avatar: "Avatar (URL)",
-            avatarHint: "Pega la URL de una imagen cuadrada o deja vacío para usar las iniciales.",
+            avatar: "Avatar",
+            avatarHint:
+              "Sube una imagen cuadrada (máx. {{maxMb}} MB). La redimensionaremos a 64x64 px.",
             contactMethod: "Canal preferido",
             language: "Idioma de la interfaz"
           },
           actions: {
             save: "Guardar cambios",
-            saving: "Guardando…"
+            saving: "Guardando…",
+            clearAvatarSelection: "Cancelar selección",
+            removeAvatar: "Quitar avatar"
           },
           feedback: {
             success: "Perfil actualizado correctamente.",
             error: "No se pudieron guardar los cambios."
+          },
+          errors: {
+            avatarTooLarge: "La imagen supera el tamaño máximo de {{maxMb}} MB.",
+            avatarUploadFailed: "No se pudo actualizar el avatar. Vuelve a intentarlo."
           }
         },
         preferences: {
@@ -1163,18 +1170,24 @@ const resources = {
             fullName: "Full name",
             company: "Company",
             email: "Login email",
-            avatar: "Avatar (URL)",
-            avatarHint: "Paste the URL of a square image or leave empty to use initials.",
+            avatar: "Avatar",
+            avatarHint: "Upload a square image (max {{maxMb}} MB). It will be resized to 64x64 px.",
             contactMethod: "Preferred channel",
             language: "Interface language"
           },
           actions: {
             save: "Save changes",
-            saving: "Saving…"
+            saving: "Saving…",
+            clearAvatarSelection: "Clear selection",
+            removeAvatar: "Remove avatar"
           },
           feedback: {
             success: "Profile updated successfully.",
             error: "We couldn't save your changes."
+          },
+          errors: {
+            avatarTooLarge: "The image exceeds the maximum size of {{maxMb}} MB.",
+            avatarUploadFailed: "We couldn't update the avatar. Please try again."
           }
         },
         preferences: {
@@ -1969,18 +1982,25 @@ const resources = {
             fullName: "Nom complet",
             company: "Empresa",
             email: "Correu d'accés",
-            avatar: "Avatar (URL)",
-            avatarHint: "Enganxa l'URL d'una imatge quadrada o deixa-ho buit per usar les inicials.",
+            avatar: "Avatar",
+            avatarHint:
+              "Puja una imatge quadrada (màx. {{maxMb}} MB). Es redimensionarà a 64x64 px.",
             contactMethod: "Canal preferit",
             language: "Llengua de la interfície"
           },
           actions: {
             save: "Desa els canvis",
-            saving: "Desant…"
+            saving: "Desant…",
+            clearAvatarSelection: "Cancel·la la selecció",
+            removeAvatar: "Elimina l'avatar"
           },
           feedback: {
             success: "Perfil actualitzat correctament.",
             error: "No s'han pogut desar els canvis."
+          },
+          errors: {
+            avatarTooLarge: "La imatge supera la mida màxima de {{maxMb}} MB.",
+            avatarUploadFailed: "No s'ha pogut actualitzar l'avatar. Torna-ho a intentar."
           }
         },
         preferences: {
@@ -2775,18 +2795,25 @@ const resources = {
             fullName: "Nom complet",
             company: "Entreprise",
             email: "E-mail de connexion",
-            avatar: "Avatar (URL)",
-            avatarHint: "Collez l'URL d'une image carrée ou laissez vide pour utiliser les initiales.",
+            avatar: "Avatar",
+            avatarHint:
+              "Téléchargez une image carrée (max. {{maxMb}} Mo). Elle sera redimensionnée en 64x64 px.",
             contactMethod: "Canal préféré",
             language: "Langue de l'interface"
           },
           actions: {
             save: "Enregistrer les modifications",
-            saving: "Enregistrement…"
+            saving: "Enregistrement…",
+            clearAvatarSelection: "Annuler la sélection",
+            removeAvatar: "Supprimer l'avatar"
           },
           feedback: {
             success: "Profil mis à jour avec succès.",
             error: "Impossible d'enregistrer les modifications."
+          },
+          errors: {
+            avatarTooLarge: "L'image dépasse la taille maximale de {{maxMb}} Mo.",
+            avatarUploadFailed: "Impossible de mettre à jour l'avatar. Veuillez réessayer."
           }
         },
         preferences: {

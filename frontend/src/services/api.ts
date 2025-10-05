@@ -23,7 +23,9 @@ function resolveUrl(path: string) {
 export async function api<T>(path: string, init?: RequestInit, authToken?: string): Promise<T> {
   const storedToken = getStoredToken()
   const headers = new Headers(init?.headers ?? {})
-  if (!headers.has('Content-Type')) {
+  const body = init?.body
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  if (!headers.has('Content-Type') && !isFormData) {
     headers.set('Content-Type', 'application/json')
   }
   if (authToken) {

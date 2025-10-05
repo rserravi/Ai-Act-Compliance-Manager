@@ -32,7 +32,7 @@ from .task_update import TaskUpdate
 from .team_member import TeamMember
 from .technical_dossier import TechnicalDossier
 from .technical_dossier_template import TechnicalDossierTemplate
-from .user import User
+from .user import User, UserProfileUpdate
 from .user_preferences import UserPreferences
 
 __all__ = [
@@ -75,5 +75,6 @@ __all__ = [
     "TechnicalDossier",
     "TechnicalDossierTemplate",
     "User",
+    "UserProfileUpdate",
     "UserPreferences",
 ]
