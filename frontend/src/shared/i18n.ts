@@ -215,7 +215,13 @@ const resources = {
         notFound: "No encontrado",
         notAvailable: "N/D",
         remove: "Eliminar",
-        retry: "Reintentar"
+        retry: "Reintentar",
+        pagination: {
+          previous: "Anterior",
+          next: "Siguiente",
+          pageStatus: "Página {{page}} de {{total}}",
+          range: "Mostrando {{from}}-{{to}} de {{total}} resultados"
+        }
       },
       dashboard: {
         pageTitle: "Panel de control",
@@ -519,6 +525,7 @@ const resources = {
             placeholder: "Nombre del proyecto"
           }
         },
+        emptyState: "No hay proyectos disponibles. Cree un nuevo proyecto.",
         columns: {
           name: "Proyecto",
           role: "Rol",
@@ -1180,7 +1187,13 @@ const resources = {
         notFound: "Not found",
         notAvailable: "N/A",
         remove: "Remove",
-        retry: "Retry"
+        retry: "Retry",
+        pagination: {
+          previous: "Previous",
+          next: "Next",
+          pageStatus: "Page {{page}} of {{total}}",
+          range: "Showing {{from}}–{{to}} of {{total}} results"
+        }
       },
       dashboard: {
         pageTitle: "Dashboard",
@@ -1292,6 +1305,7 @@ const resources = {
             placeholder: "Project name"
           }
         },
+        emptyState: "No projects available. Create a new project.",
         columns: {
           name: "Project",
           role: "Role",
@@ -1953,7 +1967,13 @@ const resources = {
         notFound: "No s'ha trobat",
         notAvailable: "N/D",
         remove: "Elimina",
-        retry: "Torna a provar"
+        retry: "Torna a provar",
+        pagination: {
+          previous: "Anterior",
+          next: "Següent",
+          pageStatus: "Pàgina {{page}} de {{total}}",
+          range: "Mostrant {{from}}-{{to}} de {{total}} resultats"
+        }
       },
       dashboard: {
         pageTitle: "Quadre de control",
@@ -2065,6 +2085,7 @@ const resources = {
             placeholder: "Nom del projecte"
           }
         },
+        emptyState: "No hi ha projectes disponibles. Crea un projecte nou.",
         columns: {
           name: "Projecte",
           role: "Rol",
@@ -2726,7 +2747,13 @@ const resources = {
         notFound: "Introuvable",
         notAvailable: "N/D",
         remove: "Supprimer",
-        retry: "Réessayer"
+        retry: "Réessayer",
+        pagination: {
+          previous: "Précédent",
+          next: "Suivant",
+          pageStatus: "Page {{page}} sur {{total}}",
+          range: "Affichage de {{from}}-{{to}} sur {{total}} résultats"
+        }
       },
       dashboard: {
         pageTitle: "Tableau de bord",
@@ -2838,6 +2865,7 @@ const resources = {
             placeholder: "Nom du projet"
           }
         },
+        emptyState: "Aucun projet disponible. Créez un nouveau projet.",
         columns: {
           name: "Projet",
           role: "Rôle",

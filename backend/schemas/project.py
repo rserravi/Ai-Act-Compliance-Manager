@@ -34,3 +34,10 @@ class Project(ProjectBase):
 class ProjectCreate(ProjectBase):
     id: Optional[str] = None
     initial_risk_assessment: Optional[InitialRiskAssessment] = None
+
+
+class ProjectListResponse(BaseModel):
+    items: List[Project]
+    total: int
+    page: int
+    page_size: int

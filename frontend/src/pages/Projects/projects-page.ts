@@ -1,18 +1,19 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { ProjectController } from '../../state/controllers';
 import { navigateTo } from '../../navigation';
 import type { ProjectFilter } from './Model';
 import {
   DOC_FILTER_VALUES,
-  filterProjects,
   getProjectStateLabel,
+  mapProjectsToRows,
   RISK_FILTER_VALUES,
   ROLE_FILTER_VALUES,
   type ProjectRow
 } from './Projects.viewmodel';
 import { LocalizedElement } from '../../shared/localized-element';
 import { t } from '../../shared/i18n';
+import { fetchProjects } from './Service/projects.service';
 
 @customElement('projects-page')
 export class ProjectsPage extends LocalizedElement {
@@ -21,6 +22,14 @@ export class ProjectsPage extends LocalizedElement {
   private readonly projectsStore = new ProjectController(this);
 
   @state() private filter: ProjectFilter = {};
+  @state() private page = 1;
+  @state() private pageSize = 10;
+  @state() private totalProjects = 0;
+  @state() private isLoading = false;
+  @state() private rows: ProjectRow[] = [];
+
+  private refreshTimeout?: number;
+  private requestToken = 0;
 
   protected createRenderRoot(): HTMLElement {
     return this;
@@ -33,6 +42,8 @@ export class ProjectsPage extends LocalizedElement {
   private handleSearch(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     this.updateFilter('q', input.value);
+    this.page = 1;
+    this.scheduleRefresh(300);
   }
 
   private goToWizard() {
@@ -42,6 +53,67 @@ export class ProjectsPage extends LocalizedElement {
   private openProject(project: ProjectRow) {
     this.projectsStore.value.setActiveProjectId(project.id);
     navigateTo(`/projects/${project.id}/deliverables`);
+  }
+
+  private scheduleRefresh(delay = 0) {
+    if (this.refreshTimeout) {
+      window.clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = undefined;
+    }
+
+    if (delay > 0) {
+      this.refreshTimeout = window.setTimeout(() => {
+        this.refreshTimeout = undefined;
+        void this.refreshProjects();
+      }, delay);
+      return;
+    }
+
+    void this.refreshProjects();
+  }
+
+  private async refreshProjects() {
+    this.isLoading = true;
+    const currentRequest = ++this.requestToken;
+
+    try {
+      const result = await fetchProjects({
+        filter: this.filter,
+        page: this.page,
+        pageSize: this.pageSize
+      });
+
+      if (currentRequest !== this.requestToken) {
+        return;
+      }
+
+      this.page = result.page;
+      this.pageSize = result.pageSize;
+      this.totalProjects = result.total;
+      this.rows = mapProjectsToRows(result.items);
+      this.projectsStore.value.replaceProjects(result.items);
+    } catch (error) {
+      if (currentRequest !== this.requestToken) {
+        return;
+      }
+      console.error('Failed to load projects', error);
+      this.rows = [];
+      this.totalProjects = 0;
+    } finally {
+      if (currentRequest === this.requestToken) {
+        this.isLoading = false;
+      }
+    }
+  }
+
+  protected firstUpdated(): void {
+    this.scheduleRefresh();
+  }
+
+  private handleFilterChange(field: keyof ProjectFilter, value: string) {
+    this.updateFilter(field, value);
+    this.page = 1;
+    this.scheduleRefresh();
   }
 
   private renderFilterSelect(
@@ -58,7 +130,7 @@ export class ProjectsPage extends LocalizedElement {
           .value=${this.filter[field] ?? ''}
           @change=${(event: Event) => {
             const select = event.currentTarget as HTMLSelectElement;
-            this.updateFilter(field, select.value);
+            this.handleFilterChange(field, select.value);
           }}
         >
           ${values.map((value) => html`<option value=${value}>${formatOption(value)}</option>`)}
@@ -67,45 +139,128 @@ export class ProjectsPage extends LocalizedElement {
     `;
   }
 
+  private get totalPages(): number {
+    if (this.totalProjects === 0) {
+      return 1;
+    }
+    return Math.max(1, Math.ceil(this.totalProjects / this.pageSize));
+  }
+
+  private changePage(delta: number) {
+    const nextPage = Math.min(Math.max(this.page + delta, 1), this.totalPages);
+    if (nextPage !== this.page) {
+      this.page = nextPage;
+      this.scheduleRefresh();
+    }
+  }
+
   private renderTable() {
-    const rows = filterProjects(this.projectsStore.projects, this.filter);
+    if (!this.rows.length) {
+      if (this.isLoading) {
+        return html`
+          <div class="flex justify-center py-12">
+            <span class="loading loading-spinner text-primary"></span>
+          </div>
+        `;
+      }
+
+      return html`
+        <div class="alert alert-info shadow">
+          <span>${t('projects.emptyState')}</span>
+        </div>
+      `;
+    }
 
     return html`
-      <div class="overflow-x-auto bg-base-100 shadow rounded-box">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>${t('projects.columns.name')}</th>
-              <th>${t('projects.columns.role')}</th>
-              <th>${t('projects.columns.risk')}</th>
-              <th>${t('projects.columns.docStatus')}</th>
-              <th>${t('projects.columns.state')}</th>
-              <th>${t('projects.columns.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map((row) => html`
+      <div class="relative">
+        <div class="overflow-x-auto bg-base-100 shadow rounded-box">
+          <table class="table">
+            <thead>
               <tr>
-                <td class="font-medium">${row.name}</td>
-                <td class="capitalize">
-                  ${row.role ? t(`roles.${row.role}` as const) : t('common.notAvailable')}
-                </td>
-                <td class="capitalize">
-                  ${row.risk ? t(`riskLevels.${row.risk}` as const) : t('common.notAvailable')}
-                </td>
-                <td class="capitalize">
-                  ${row.docStatus ? t(`docStatus.${row.docStatus}` as const) : t('common.notAvailable')}
-                </td>
-                <td>${getProjectStateLabel(row.projectState)}</td>
-                <td>
-                  <button class="btn btn-sm" @click=${() => this.openProject(row)}>
-                    ${t('common.view')}
-                  </button>
-                </td>
+                <th>${t('projects.columns.name')}</th>
+                <th>${t('projects.columns.role')}</th>
+                <th>${t('projects.columns.risk')}</th>
+                <th>${t('projects.columns.docStatus')}</th>
+                <th>${t('projects.columns.state')}</th>
+                <th>${t('projects.columns.actions')}</th>
               </tr>
-            `)}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${this.rows.map((row) => html`
+                <tr>
+                  <td class="font-medium">${row.name}</td>
+                  <td class="capitalize">
+                    ${row.role ? t(`roles.${row.role}` as const) : t('common.notAvailable')}
+                  </td>
+                  <td class="capitalize">
+                    ${row.risk ? t(`riskLevels.${row.risk}` as const) : t('common.notAvailable')}
+                  </td>
+                  <td class="capitalize">
+                    ${row.docStatus
+                      ? t(`docStatus.${row.docStatus}` as const)
+                      : t('common.notAvailable')}
+                  </td>
+                  <td>${getProjectStateLabel(row.projectState)}</td>
+                  <td>
+                    <button class="btn btn-sm" @click=${() => this.openProject(row)}>
+                      ${t('common.view')}
+                    </button>
+                  </td>
+                </tr>
+              `)}
+            </tbody>
+          </table>
+        </div>
+        ${this.isLoading
+          ? html`
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-box bg-base-100/80"
+              >
+                <span class="loading loading-spinner text-primary"></span>
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
+  private renderPagination() {
+    if (this.totalProjects === 0) {
+      return nothing;
+    }
+
+    const totalPages = this.totalPages;
+    const hasRows = this.rows.length > 0;
+    const from = hasRows ? (this.page - 1) * this.pageSize + 1 : 0;
+    const to = hasRows ? Math.min(this.totalProjects, from + this.rows.length - 1) : 0;
+
+    return html`
+      <div
+        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        aria-live="polite"
+      >
+        <span class="text-sm text-base-content/70">
+          ${t('common.pagination.range', { from, to, total: this.totalProjects })}
+        </span>
+        <div class="join">
+          <button
+            class="join-item btn btn-sm"
+            ?disabled=${this.page <= 1}
+            @click=${() => this.changePage(-1)}
+          >
+            ${t('common.pagination.previous')}
+          </button>
+          <span class="join-item btn btn-ghost btn-sm pointer-events-none">
+            ${t('common.pagination.pageStatus', { page: this.page, total: totalPages })}
+          </span>
+          <button
+            class="join-item btn btn-sm"
+            ?disabled=${this.page >= totalPages}
+            @click=${() => this.changePage(1)}
+          >
+            ${t('common.pagination.next')}
+          </button>
+        </div>
       </div>
     `;
   }
@@ -158,6 +313,7 @@ export class ProjectsPage extends LocalizedElement {
         </div>
 
         ${this.renderTable()}
+        ${this.renderPagination()}
       </section>
     `;
   }

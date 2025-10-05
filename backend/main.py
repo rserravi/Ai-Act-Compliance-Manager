@@ -7,7 +7,7 @@ from typing import Any, DefaultDict, Dict, List, Optional
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -63,6 +63,7 @@ from backend.schemas import (
     PendingActivity,
     Project,
     ProjectCreate,
+    ProjectListResponse,
     ProjectUpdate,
     RACIEntry,
     RiskAssessment,
@@ -499,21 +500,39 @@ def sign_up_resend(
 # ---------------------------------------------------------------------------
 
 
-@app.get("/projects", response_model=List[Project])
+@app.get("/projects", response_model=ProjectListResponse)
 def list_projects(
     current_user: User = Depends(get_current_user),
     role: Optional[str] = None,
     risk: Optional[str] = None,
     doc: Optional[str] = None,
     q: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    return list_project_records(
+    owner_candidates = {
+        value
+        for value in (current_user.id, current_user.email, current_user.company)
+        if value
+    }
+
+    projects, total, resolved_page, resolved_page_size = list_project_records(
         db,
         role=role,
         risk=risk,
         documentation_status=doc,
         search=q,
+        owner_values=list(owner_candidates) if owner_candidates else None,
+        page=page,
+        page_size=page_size,
+    )
+
+    return ProjectListResponse(
+        items=projects,
+        total=total,
+        page=resolved_page,
+        page_size=resolved_page_size,
     )
 
 

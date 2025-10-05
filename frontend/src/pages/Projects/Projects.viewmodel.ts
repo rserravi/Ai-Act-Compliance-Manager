@@ -1,5 +1,4 @@
 import type { AISystem } from '../../domain/models';
-import type { ProjectFilter } from './Model';
 import { t } from '../../shared/i18n';
 
 export type ProjectState = 'initial' | 'in_progress' | 'maintenance';
@@ -18,21 +17,11 @@ export function resolveProjectState(system: AISystem): ProjectState {
   return 'in_progress';
 }
 
-export function filterProjects(projects: AISystem[], filter: ProjectFilter): ProjectRow[] {
-  return projects
-    .filter((project) => {
-      const byRole = filter.role ? project.role === filter.role : true;
-      const byRisk = filter.risk ? project.risk === filter.risk : true;
-      const byDoc = filter.doc ? project.docStatus === filter.doc : true;
-      const bySearch = filter.q
-        ? project.name.toLowerCase().includes(filter.q.toLowerCase())
-        : true;
-      return byRole && byRisk && byDoc && bySearch;
-    })
-    .map((project) => ({
-      ...project,
-      projectState: resolveProjectState(project)
-    }));
+export function mapProjectsToRows(projects: AISystem[]): ProjectRow[] {
+  return projects.map((project) => ({
+    ...project,
+    projectState: resolveProjectState(project)
+  }));
 }
 
 export function getProjectStateLabel(state: ProjectState): string {
