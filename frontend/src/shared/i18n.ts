@@ -479,6 +479,16 @@ const resources = {
             contactMethod: "Canal preferido",
             language: "Idioma de la interfaz"
           },
+          placeholders: {
+            email: "persona@empresa.com",
+            sms: "+34 600 123 456",
+            whatsapp: "+34 600 123 456",
+            slack: "@persona o #canal"
+          },
+          validations: {
+            email: "Introduce un correo electrónico válido.",
+            phone: "Introduce un número de teléfono válido (incluye el prefijo internacional si aplica)."
+          },
           actions: {
             save: "Guardar cambios",
             saving: "Guardando…",
@@ -1174,6 +1184,16 @@ const resources = {
             avatarHint: "Upload a square image (max {{maxMb}} MB). It will be resized to 64x64 px.",
             contactMethod: "Preferred channel",
             language: "Interface language"
+          },
+          placeholders: {
+            email: "person@company.com",
+            sms: "+1 202 555 0147",
+            whatsapp: "+1 202 555 0147",
+            slack: "@teammate or #channel"
+          },
+          validations: {
+            email: "Enter a valid email address.",
+            phone: "Enter a valid phone number (include country code when needed)."
           },
           actions: {
             save: "Save changes",
@@ -1988,6 +2008,16 @@ const resources = {
             contactMethod: "Canal preferit",
             language: "Llengua de la interfície"
           },
+          placeholders: {
+            email: "persona@empresa.com",
+            sms: "+34 600 123 456",
+            whatsapp: "+34 600 123 456",
+            slack: "@persona o #canal"
+          },
+          validations: {
+            email: "Introdueix un correu electrònic vàlid.",
+            phone: "Introdueix un número de telèfon vàlid (inclou el prefix internacional si cal)."
+          },
           actions: {
             save: "Desa els canvis",
             saving: "Desant…",
@@ -2800,6 +2830,16 @@ const resources = {
               "Téléchargez une image carrée (max. {{maxMb}} Mo). Elle sera redimensionnée en 64x64 px.",
             contactMethod: "Canal préféré",
             language: "Langue de l'interface"
+          },
+          placeholders: {
+            email: "personne@entreprise.com",
+            sms: "+33 6 12 34 56 78",
+            whatsapp: "+33 6 12 34 56 78",
+            slack: "@personne ou #canal"
+          },
+          validations: {
+            email: "Saisissez une adresse e-mail valide.",
+            phone: "Saisissez un numéro de téléphone valide (incluez l'indicatif international si nécessaire)."
           },
           actions: {
             save: "Enregistrer les modifications",
