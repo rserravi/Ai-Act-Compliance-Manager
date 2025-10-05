@@ -3,7 +3,7 @@ from functools import partial
 from typing import List, Optional
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -23,7 +23,7 @@ class UserModel(Base):
     company: Mapped[str | None] = mapped_column(String(255), nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-    avatar: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(Text, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     preferences_language: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -70,7 +70,7 @@ class PendingUserRegistrationModel(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     company: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    avatar: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    avatar: Mapped[str | None] = mapped_column(Text, nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     contact_method: Mapped[str] = mapped_column(String(50), nullable=False)
     contact_value_encrypted: Mapped[str] = mapped_column(String(1024), nullable=False)

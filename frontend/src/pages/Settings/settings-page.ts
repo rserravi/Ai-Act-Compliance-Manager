@@ -1,5 +1,5 @@
 import { html, type PropertyValues } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { AuthController } from '../../state/controllers';
 import { getNotificationSettings, type NotificationSetting } from './Settings.viewmodel';
 import { LocalizedElement } from '../../shared/localized-element';
@@ -8,6 +8,9 @@ import type { ContactPreference, User } from '../../services/auth';
 import type { SupportedLanguage } from '../../shared/i18n';
 
 type ContactMethod = ContactPreference['method'];
+
+const MAX_AVATAR_MB = 2;
+const MAX_AVATAR_BYTES = MAX_AVATAR_MB * 1024 * 1024;
 
 @customElement('settings-page')
 export class SettingsPage extends LocalizedElement {
@@ -19,6 +22,9 @@ export class SettingsPage extends LocalizedElement {
   @state() private fullName = '';
   @state() private company = '';
   @state() private avatar = '';
+  @state() private avatarPreview: string | null = null;
+  @state() private avatarFileName = '';
+  @state() private avatarError: string | null = null;
   @state() private contactMethod: ContactMethod = 'email';
   @state() private contactValue = '';
   @state() private contactWorkspace = '';
@@ -27,10 +33,25 @@ export class SettingsPage extends LocalizedElement {
   @state() private isSaving = false;
   @state() private saveStatus: 'success' | 'error' | null = null;
 
+  @query('#avatar-input') private avatarInputElement?: HTMLInputElement;
+
   private syncedUser: User | null = null;
+  private pendingAvatarFile: File | null = null;
 
   protected createRenderRoot(): HTMLElement {
     return this;
+  }
+
+  public override disconnectedCallback(): void {
+    this.revokeAvatarPreview();
+    super.disconnectedCallback();
+  }
+
+  private revokeAvatarPreview(): void {
+    if (this.avatarPreview) {
+      URL.revokeObjectURL(this.avatarPreview);
+      this.avatarPreview = null;
+    }
   }
 
   private toggleSetting(setting: NotificationSetting) {
@@ -53,6 +74,10 @@ export class SettingsPage extends LocalizedElement {
 
   private syncFormWithUser(user: User | null): void {
     if (!user) {
+      this.revokeAvatarPreview();
+      this.pendingAvatarFile = null;
+      this.avatarFileName = '';
+      this.avatarError = null;
       this.fullName = '';
       this.company = '';
       this.avatar = '';
@@ -66,6 +91,10 @@ export class SettingsPage extends LocalizedElement {
     }
 
     const isDifferentUser = !this.syncedUser || this.syncedUser.id !== user.id;
+    this.revokeAvatarPreview();
+    this.pendingAvatarFile = null;
+    this.avatarFileName = '';
+    this.avatarError = null;
     this.fullName = user.full_name ?? '';
     this.company = user.company ?? '';
     this.avatar = user.avatar ?? '';
@@ -101,7 +130,6 @@ export class SettingsPage extends LocalizedElement {
 
     const trimmedName = this.fullName.trim();
     const trimmedCompany = this.company.trim();
-    const trimmedAvatar = this.avatar.trim();
     const trimmedContactValue = this.contactValue.trim();
     const trimmedWorkspace = this.contactWorkspace.trim();
     const trimmedChannel = this.contactChannel.trim();
@@ -122,11 +150,26 @@ export class SettingsPage extends LocalizedElement {
 
     this.isSaving = true;
     this.saveStatus = null;
+    this.avatarError = null;
     try {
+      if (this.pendingAvatarFile) {
+        try {
+          const updatedUser = await this.auth.value.uploadAvatar(this.pendingAvatarFile);
+          this.avatar = updatedUser.avatar ?? '';
+          this.pendingAvatarFile = null;
+          this.avatarFileName = '';
+          this.avatarInputElement && (this.avatarInputElement.value = '');
+          this.revokeAvatarPreview();
+        } catch (error) {
+          console.error('Failed to upload avatar', error);
+          this.avatarError = t('settings.account.errors.avatarUploadFailed');
+          throw error;
+        }
+      }
+
       await this.auth.value.updateProfile({
         full_name: trimmedName,
         company: trimmedCompany || null,
-        avatar: trimmedAvatar || null,
         contact,
         preferences: { language: this.language }
       });
@@ -139,10 +182,72 @@ export class SettingsPage extends LocalizedElement {
     }
   }
 
+  private clearPendingAvatarSelection(): void {
+    this.pendingAvatarFile = null;
+    this.avatarFileName = '';
+    this.revokeAvatarPreview();
+    if (this.avatarInputElement) {
+      this.avatarInputElement.value = '';
+    }
+  }
+
+  private handleAvatarChange(event: Event): void {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    this.saveStatus = null;
+    this.avatarError = null;
+    this.revokeAvatarPreview();
+
+    if (!file) {
+      this.clearPendingAvatarSelection();
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_BYTES) {
+      this.clearPendingAvatarSelection();
+      this.avatarError = t('settings.account.errors.avatarTooLarge', {
+        maxMb: MAX_AVATAR_MB
+      });
+      return;
+    }
+
+    this.pendingAvatarFile = file;
+    this.avatarFileName = file.name;
+    this.avatarPreview = URL.createObjectURL(file);
+    if (this.avatarInputElement) {
+      this.avatarInputElement.value = '';
+    }
+  }
+
+  private async removeAvatar(): Promise<void> {
+    const user = this.auth.user;
+    if (!user) {
+      return;
+    }
+    this.isSaving = true;
+    this.saveStatus = null;
+    this.avatarError = null;
+    try {
+      const updatedUser = await this.auth.value.removeAvatar();
+      this.avatar = updatedUser.avatar ?? '';
+      this.saveStatus = 'success';
+    } catch (error) {
+      console.error('Failed to remove avatar', error);
+      this.saveStatus = 'error';
+    } finally {
+      this.isSaving = false;
+      this.clearPendingAvatarSelection();
+    }
+  }
+
   protected render() {
     const user = this.auth.user;
     const notifications = getNotificationSettings();
     const hasUser = Boolean(user);
+    const avatarSource = this.avatarPreview ?? this.avatar;
+    const hasPendingAvatar = Boolean(this.pendingAvatarFile);
+    const canRemoveStoredAvatar = Boolean(this.avatar && !hasPendingAvatar);
 
     return html`
       <section class="space-y-6">
@@ -156,8 +261,8 @@ export class SettingsPage extends LocalizedElement {
             <header class="flex flex-col gap-4 md:flex-row md:items-center">
               <div class="avatar">
                 <div class="w-20 rounded-full ring ring-primary/20 ring-offset-base-100 ring-offset-2 overflow-hidden bg-base-200">
-                  ${this.avatar
-                    ? html`<img src=${this.avatar} alt=${t('settings.account.avatarAlt', { name: this.fullName || user?.full_name || '' })} />`
+                  ${avatarSource
+                    ? html`<img src=${avatarSource} alt=${t('settings.account.avatarAlt', { name: this.fullName || user?.full_name || '' })} />`
                     : html`<div class="w-full h-full flex items-center justify-center text-2xl font-semibold text-base-content/60 bg-base-300">
                         ${(this.fullName || user?.full_name || '?').slice(0, 1).toUpperCase()}
                       </div>`}
@@ -216,16 +321,46 @@ export class SettingsPage extends LocalizedElement {
               <label class="form-control">
                 <span class="label"><span class="label-text">${t('settings.account.fields.avatar')}</span></span>
                 <input
-                  class="input input-bordered"
-                  .value=${this.avatar}
+                  id="avatar-input"
+                  class="file-input file-input-bordered"
+                  type="file"
+                  accept="image/*"
                   ?disabled=${!hasUser || this.isSaving}
-                  placeholder="https://"
-                  @input=${(event: Event) => {
-                    const input = event.currentTarget as HTMLInputElement;
-                    this.avatar = input.value;
-                  }}
+                  @change=${this.handleAvatarChange}
                 >
-                <span class="label"><span class="label-text-alt text-xs">${t('settings.account.fields.avatarHint')}</span></span>
+                ${this.avatarFileName
+                  ? html`<span class="label-text-alt text-xs truncate">${this.avatarFileName}</span>`
+                  : null}
+                <span class="label"><span class="label-text-alt text-xs">${t('settings.account.fields.avatarHint', { maxMb: MAX_AVATAR_MB })}</span></span>
+                ${this.avatarError
+                  ? html`<span class="text-sm text-error">${this.avatarError}</span>`
+                  : null}
+                <div class="mt-2 flex flex-wrap gap-2">
+                  ${hasPendingAvatar
+                    ? html`<button
+                        type="button"
+                        class="btn btn-ghost btn-sm"
+                        ?disabled=${this.isSaving}
+                        @click=${() => {
+                          this.avatarError = null;
+                          this.saveStatus = null;
+                          this.clearPendingAvatarSelection();
+                        }}
+                      >
+                        ${t('settings.account.actions.clearAvatarSelection')}
+                      </button>`
+                    : null}
+                  ${canRemoveStoredAvatar
+                    ? html`<button
+                        type="button"
+                        class="btn btn-ghost btn-sm"
+                        ?disabled=${!hasUser || this.isSaving}
+                        @click=${this.removeAvatar}
+                      >
+                        ${t('settings.account.actions.removeAvatar')}
+                      </button>`
+                    : null}
+                </div>
               </label>
             </fieldset>
 

@@ -6,6 +6,8 @@ import {
   signIn,
   verifySignIn,
   updateProfile,
+  uploadAvatar,
+  deleteAvatar,
   type LoginPayload,
   type LoginResponse,
   type SignInPayload,
@@ -101,6 +103,26 @@ export class AuthStore {
       throw new Error('Not authenticated');
     }
     const user = await updateProfile(payload);
+    this.user.value = user;
+    storeAuthState({ token: this.token.value, user });
+    return user;
+  }
+
+  async uploadAvatar(file: File): Promise<User> {
+    if (!this.token.value) {
+      throw new Error('Not authenticated');
+    }
+    const user = await uploadAvatar(file);
+    this.user.value = user;
+    storeAuthState({ token: this.token.value, user });
+    return user;
+  }
+
+  async removeAvatar(): Promise<User> {
+    if (!this.token.value) {
+      throw new Error('Not authenticated');
+    }
+    const user = await deleteAvatar();
     this.user.value = user;
     storeAuthState({ token: this.token.value, user });
     return user;

@@ -6,3 +6,4 @@ python-jose[cryptography]==3.3.0
 SQLAlchemy==2.0.34
 passlib==1.7.4
 psycopg[binary]==3.2.3
+Pillow==10.4.0
