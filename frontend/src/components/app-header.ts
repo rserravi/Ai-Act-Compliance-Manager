@@ -93,6 +93,19 @@ export class AppHeader extends LocalizedElement {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
           </div>
+          <div class="flex items-center gap-3 flex-none">
+            <img
+              class="h-8 w-8"
+              src="/assets/favicon-32x32.png"
+              alt=${t('app.logoAlt')}
+              width="32"
+              height="32"
+            />
+            <div class="leading-tight">
+              <p class="text-base font-semibold text-base-content">${t('app.shortTitle')}</p>
+              <p class="text-xs text-base-content/70">${t('app.sidebarSubtitle')}</p>
+            </div>
+          </div>
           <div class="flex-1 min-w-0 flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-6">
             <div class="min-w-0">
               <div class="flex items-center gap-2 min-w-0">
