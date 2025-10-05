@@ -203,8 +203,19 @@ export class AppSidebar extends LocalizedElement {
         }"
       >
         <div class="p-6 border-b border-base-300">
-          <span class="text-lg font-semibold">${t('app.shortTitle')}</span>
-          <p class="text-sm text-base-content/60">${t('app.sidebarSubtitle')}</p>
+          <div class="flex items-center gap-3">
+            <img
+              class="h-10 w-10"
+              src="/assets/favicon-64x64.png"
+              alt=${t('app.logoAlt')}
+              width="64"
+              height="64"
+            />
+            <div class="leading-tight">
+              <p class="text-lg font-semibold text-base-content">${t('app.shortTitle')}</p>
+              <p class="text-sm text-base-content/70">${t('app.sidebarSubtitle')}</p>
+            </div>
+          </div>
         </div>
         <div class="border-b border-base-300 px-6 py-4 space-y-3">
           ${this.renderProjectSelectorMenuItems()}
