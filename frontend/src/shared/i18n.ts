@@ -454,8 +454,27 @@ const resources = {
         title: "Ajustes de la aplicación",
         account: {
           title: "Cuenta",
+          description: "Actualiza la información visible para tu organización.",
           noSession: "Sin sesión activa",
-          noCompany: "Organización no definida"
+          noCompany: "Organización no definida",
+          avatarAlt: "Avatar de {{name}}",
+          fields: {
+            fullName: "Nombre completo",
+            company: "Empresa",
+            email: "Correo de acceso",
+            avatar: "Avatar (URL)",
+            avatarHint: "Pega la URL de una imagen cuadrada o deja vacío para usar las iniciales.",
+            contactMethod: "Canal preferido",
+            language: "Idioma de la interfaz"
+          },
+          actions: {
+            save: "Guardar cambios",
+            saving: "Guardando…"
+          },
+          feedback: {
+            success: "Perfil actualizado correctamente.",
+            error: "No se pudieron guardar los cambios."
+          }
         },
         preferences: {
           title: "Preferencias",
@@ -1123,8 +1142,27 @@ const resources = {
         title: "Application settings",
         account: {
           title: "Account",
+          description: "Keep your profile information up to date for your team.",
           noSession: "No active session",
-          noCompany: "Organization not defined"
+          noCompany: "Organization not defined",
+          avatarAlt: "Avatar of {{name}}",
+          fields: {
+            fullName: "Full name",
+            company: "Company",
+            email: "Login email",
+            avatar: "Avatar (URL)",
+            avatarHint: "Paste the URL of a square image or leave empty to use initials.",
+            contactMethod: "Preferred channel",
+            language: "Interface language"
+          },
+          actions: {
+            save: "Save changes",
+            saving: "Saving…"
+          },
+          feedback: {
+            success: "Profile updated successfully.",
+            error: "We couldn't save your changes."
+          }
         },
         preferences: {
           title: "Preferences",
@@ -1896,8 +1934,27 @@ const resources = {
         title: "Ajustos de l'aplicació",
         account: {
           title: "Compte",
+          description: "Actualitza la informació visible per al teu equip.",
           noSession: "Sense sessió activa",
-          noCompany: "Organització no definida"
+          noCompany: "Organització no definida",
+          avatarAlt: "Avatar de {{name}}",
+          fields: {
+            fullName: "Nom complet",
+            company: "Empresa",
+            email: "Correu d'accés",
+            avatar: "Avatar (URL)",
+            avatarHint: "Enganxa l'URL d'una imatge quadrada o deixa-ho buit per usar les inicials.",
+            contactMethod: "Canal preferit",
+            language: "Llengua de la interfície"
+          },
+          actions: {
+            save: "Desa els canvis",
+            saving: "Desant…"
+          },
+          feedback: {
+            success: "Perfil actualitzat correctament.",
+            error: "No s'han pogut desar els canvis."
+          }
         },
         preferences: {
           title: "Preferències",
@@ -2669,8 +2726,27 @@ const resources = {
         title: "Paramètres de l'application",
         account: {
           title: "Compte",
+          description: "Mettez à jour les informations visibles par votre organisation.",
           noSession: "Aucune session active",
-          noCompany: "Organisation non définie"
+          noCompany: "Organisation non définie",
+          avatarAlt: "Avatar de {{name}}",
+          fields: {
+            fullName: "Nom complet",
+            company: "Entreprise",
+            email: "E-mail de connexion",
+            avatar: "Avatar (URL)",
+            avatarHint: "Collez l'URL d'une image carrée ou laissez vide pour utiliser les initiales.",
+            contactMethod: "Canal préféré",
+            language: "Langue de l'interface"
+          },
+          actions: {
+            save: "Enregistrer les modifications",
+            saving: "Enregistrement…"
+          },
+          feedback: {
+            success: "Profil mis à jour avec succès.",
+            error: "Impossible d'enregistrer les modifications."
+          }
         },
         preferences: {
           title: "Préférences",
