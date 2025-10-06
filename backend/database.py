@@ -72,6 +72,13 @@ def init_db() -> None:
                 else:
                     connection.execute(text("ALTER TABLE projects ADD COLUMN deployments JSON"))
                 connection.commit()
+        if "initial_risk_assessment" not in project_columns:
+            with engine.connect() as connection:
+                if is_sqlite:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN initial_risk_assessment JSON"))
+                else:
+                    connection.execute(text("ALTER TABLE projects ADD COLUMN initial_risk_assessment JSON"))
+                connection.commit()
 
 
 def get_db() -> Iterator[Session]:
